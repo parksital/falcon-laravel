@@ -7,7 +7,7 @@ import AuthLayout from '@/layouts/auth-layout';
 import { store } from '@/routes/password/confirm';
 import { Form, Head } from '@inertiajs/react';
 
-export default function ConfirmPassword() {
+export default function ConfirmPasswordPage() {
     return (
         <AuthLayout
             title="Confirm your password"

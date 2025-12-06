@@ -24,7 +24,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function TwoFactor({
+export default function TwoFactorPage({
     requiresConfirmation = false,
     twoFactorEnabled = false,
 }: TwoFactorProps) {

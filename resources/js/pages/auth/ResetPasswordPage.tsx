@@ -13,7 +13,7 @@ interface ResetPasswordProps {
     email: string;
 }
 
-export default function ResetPassword({ token, email }: ResetPasswordProps) {
+export default function ResetPasswordPage({ token, email }: ResetPasswordProps) {
     return (
         <AuthLayout
             title="Reset password"

@@ -5,7 +5,7 @@ import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { dashboard } from '@/routes';
+import { home } from '@/routes';
 import { type BreadcrumbItem as BreadcrumbItemType, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
@@ -13,8 +13,8 @@ import { Fragment, type PropsWithChildren } from 'react';
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
-        href: dashboard(),
+        title: 'Home',
+        href: home(),
         icon: LayoutGrid,
     },
 ];
@@ -46,7 +46,7 @@ export default function AppSidebarLayout({
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton size="lg" asChild>
-                                <Link href={dashboard()} prefetch>
+                                <Link href={home()} prefetch>
                                     <AppLogo />
                                 </Link>
                             </SidebarMenuButton>
@@ -76,14 +76,14 @@ export default function AppSidebarLayout({
                                         return (
                                             <Fragment key={index}>
                                                 <BreadcrumbItem>
-                                                    {isLast? (
+                                                    {isLast ? (
                                                         <BreadcrumbPage>{item.title}</BreadcrumbPage>
                                                     )
-                                                    : (
-                                                        <BreadcrumbLink asChild>
-                                                            <Link href={item.href}>{item.title}</Link>
-                                                        </BreadcrumbLink>
-                                                    )}
+                                                        : (
+                                                            <BreadcrumbLink asChild>
+                                                                <Link href={item.href}>{item.title}</Link>
+                                                            </BreadcrumbLink>
+                                                        )}
                                                 </BreadcrumbItem>
 
                                                 {!isLast && <BreadcrumbSeparator />}

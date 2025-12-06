@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import AuthLayout from '@/layouts/auth-layout';
 
-export default function Register() {
+export default function RegisterPage() {
     return (
         <AuthLayout
             title="Create an account"

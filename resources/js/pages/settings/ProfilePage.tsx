@@ -21,7 +21,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Profile({
+export default function ProfilePage({
     mustVerifyEmail,
     status,
 }: {

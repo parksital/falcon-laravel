@@ -7,7 +7,7 @@ import { logout } from '@/routes';
 import { send } from '@/routes/verification';
 import { Form, Head } from '@inertiajs/react';
 
-export default function VerifyEmail({ status }: { status?: string }) {
+export default function VerifyEmailPage({ status }: { status?: string }) {
     return (
         <AuthLayout
             title="Verify email"

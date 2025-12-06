@@ -7,17 +7,22 @@ use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\TwoFactorAuthenticationController;
 
-Route::get('/', function () {
-    return Inertia::render('WelcomePage', [
-        'canRegister' => Features::enabled(Features::registration()),
-    ]);
-})->name('home');
-
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::redirect('dashboard', '/settings/profile')->name('dashboard');
-});
+Route::middleware('guest')->group(function () {});
 
 Route::middleware('auth')->group(function () {
+    Route::get('settings/two-factor', [TwoFactorAuthenticationController::class, 'show'])
+        ->name('two-factor.show');
+});
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/', function () {
+        return to_route('product.index');
+    })->name('home');
+
+    Route::get('/products', function () {
+        return Inertia::render('ProductsPage', []);
+    })->name('product.index');
+
     Route::redirect('settings', '/settings/profile');
 
     Route::get('settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -33,7 +38,4 @@ Route::middleware('auth')->group(function () {
     Route::get('settings/appearance', function () {
         return Inertia::render('settings/AppearancePage');
     })->name('appearance.edit');
-
-    Route::get('settings/two-factor', [TwoFactorAuthenticationController::class, 'show'])
-        ->name('two-factor.show');
 });

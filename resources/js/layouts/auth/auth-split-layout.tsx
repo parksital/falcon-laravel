@@ -27,6 +27,7 @@ export default function AuthSplitLayout({
                     <AppLogoIcon className="mr-2 size-8 fill-current text-white" />
                     {name}
                 </Link>
+
                 {quote && (
                     <div className="relative z-20 mt-auto">
                         <blockquote className="space-y-2">
