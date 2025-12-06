@@ -10,19 +10,6 @@ use App\Http\Controllers\Settings\TwoFactorAuthenticationController;
 Route::middleware('guest')->group(function () {});
 
 Route::middleware('auth')->group(function () {
-    Route::get('settings/two-factor', [TwoFactorAuthenticationController::class, 'show'])
-        ->name('two-factor.show');
-});
-
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/', function () {
-        return to_route('product.index');
-    })->name('home');
-
-    Route::get('/products', function () {
-        return Inertia::render('ProductsPage', []);
-    })->name('product.index');
-
     Route::redirect('settings', '/settings/profile');
 
     Route::get('settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -36,6 +23,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('user-password.update');
 
     Route::get('settings/appearance', function () {
-        return Inertia::render('settings/AppearancePage');
+        return Inertia::render('settings/appearance');
     })->name('appearance.edit');
+
+    Route::get('settings/two-factor', [TwoFactorAuthenticationController::class, 'show'])
+        ->name('two-factor.show');
+});
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/', function () {
+        return to_route('product.index');
+    })->name('home');
+
+    Route::get('/products', function () {
+        return Inertia::render('ProductsPage', []);
+    })->name('product.index');
 });

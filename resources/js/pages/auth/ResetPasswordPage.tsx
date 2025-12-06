@@ -13,7 +13,10 @@ interface ResetPasswordProps {
     email: string;
 }
 
-export default function ResetPasswordPage({ token, email }: ResetPasswordProps) {
+export default function ResetPasswordPage({
+    token,
+    email,
+}: ResetPasswordProps) {
     return (
         <AuthLayout
             title="Reset password"
@@ -22,7 +25,7 @@ export default function ResetPasswordPage({ token, email }: ResetPasswordProps) 
             <Head title="Reset password" />
 
             <Form
-                {...update.form()}
+                {...update()}
                 transform={(data) => ({ ...data, token, email })}
                 resetOnSuccess={['password', 'password_confirmation']}
             >
