@@ -11,6 +11,8 @@ type BookingPage = {
     title: string;
     slug: string;
     description: string | null;
+    phone?: string | null;
+    email?: string | null;
     is_public: boolean;
 };
 
@@ -35,6 +37,8 @@ export default function AdminBookingPage({
     const form = useForm({
         title: bookingPage?.title ?? '',
         description: bookingPage?.description ?? '',
+        phone: bookingPage?.phone ?? '',
+        email: bookingPage?.email ?? '',
         is_public: bookingPage?.is_public ?? false,
         product_ids: selectedProductIds ?? [],
     });
@@ -116,6 +120,41 @@ export default function AdminBookingPage({
                                     {form.errors.description}
                                 </p>
                             ) : null}
+                        </div>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                            <div className="grid gap-2">
+                                <label className="text-sm font-medium text-foreground" htmlFor="booking-phone">
+                                    Phone
+                                </label>
+                                <Input
+                                    id="booking-phone"
+                                    value={form.data.phone}
+                                    onChange={(event) => form.setData('phone', event.target.value)}
+                                    placeholder="(555) 123-4567"
+                                />
+                                {form.errors.phone ? (
+                                    <p className="text-sm text-red-600 dark:text-red-400">
+                                        {form.errors.phone}
+                                    </p>
+                                ) : null}
+                            </div>
+                            <div className="grid gap-2">
+                                <label className="text-sm font-medium text-foreground" htmlFor="booking-email">
+                                    Email
+                                </label>
+                                <Input
+                                    id="booking-email"
+                                    type="email"
+                                    value={form.data.email}
+                                    onChange={(event) => form.setData('email', event.target.value)}
+                                    placeholder="events@company.com"
+                                />
+                                {form.errors.email ? (
+                                    <p className="text-sm text-red-600 dark:text-red-400">
+                                        {form.errors.email}
+                                    </p>
+                                ) : null}
+                            </div>
                         </div>
                         <div className="flex items-center gap-2">
                             <Checkbox

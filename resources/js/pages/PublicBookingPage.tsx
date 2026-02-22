@@ -6,6 +6,8 @@ type BookingPage = {
     description: string | null;
     is_public: boolean;
     slug: string;
+    phone?: string | null;
+    email?: string | null;
 };
 
 type PublicBookingPageProps = {
@@ -29,6 +31,26 @@ export default function PublicBookingPage({ bookingPage, products }: PublicBooki
                         <p className="text-sm text-muted-foreground">
                             {bookingPage.description}
                         </p>
+                    ) : null}
+                    {(bookingPage.phone || bookingPage.email) ? (
+                        <div className="flex flex-col gap-1 text-sm text-muted-foreground">
+                            {bookingPage.phone ? (
+                                <a
+                                    className="text-foreground underline-offset-4 hover:underline"
+                                    href={`tel:${bookingPage.phone}`}
+                                >
+                                    {bookingPage.phone}
+                                </a>
+                            ) : null}
+                            {bookingPage.email ? (
+                                <a
+                                    className="text-foreground underline-offset-4 hover:underline"
+                                    href={`mailto:${bookingPage.email}`}
+                                >
+                                    {bookingPage.email}
+                                </a>
+                            ) : null}
+                        </div>
                     ) : null}
                 </section>
                 {products.length > 0 ? (

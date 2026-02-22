@@ -1,3 +1,4 @@
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppSidebarLayout from '@/layouts/app/app-sidebar-layout';
 import { Link } from '@inertiajs/react';
@@ -13,9 +14,16 @@ type BookingPage = {
 
 type AdminBookingPageReadProps = {
     bookingPage: BookingPage | null;
+    products: Array<{
+        id: number;
+        name: string;
+    }>;
 };
 
-export default function AdminBookingPageRead({ bookingPage }: AdminBookingPageReadProps) {
+export default function AdminBookingPageRead({
+    bookingPage,
+    products,
+}: AdminBookingPageReadProps) {
     const publicUrl =
         bookingPage && typeof window !== 'undefined'
             ? `${window.location.origin}/book/${bookingPage.slug}`
@@ -54,6 +62,15 @@ export default function AdminBookingPageRead({ bookingPage }: AdminBookingPageRe
                                 </a>
                             ) : null}
                         </div>
+                        {products.length > 0 ? (
+                            <div className="flex flex-wrap gap-2">
+                                {products.map((product) => (
+                                    <Badge key={product.id} variant="secondary">
+                                        {product.name}
+                                    </Badge>
+                                ))}
+                            </div>
+                        ) : null}
                         {bookingPage.description ? (
                             <p className="text-sm text-muted-foreground">
                                 {bookingPage.description}

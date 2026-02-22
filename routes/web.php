@@ -21,7 +21,15 @@ Route::get('/book/{slug}', function (string $slug) {
         ->firstOrFail();
 
     return Inertia::render('PublicBookingPage', [
-        'bookingPage' => $bookingPage->only(['id', 'title', 'description', 'is_public', 'slug']),
+        'bookingPage' => $bookingPage->only([
+            'id',
+            'title',
+            'description',
+            'phone',
+            'email',
+            'is_public',
+            'slug',
+        ]),
         'products' => $bookingPage->products->map->only(['id', 'name', 'description']),
     ]);
 })->name('booking.public.show');
@@ -56,7 +64,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('ProductsPage', [
             'products' => Product::query()
                 ->latest()
-                ->get(['id', 'name', 'description', 'created_at']),
+                ->get(['id', 'name', 'description', 'created_at', 'updated_at']),
         ]);
     })->name('product.index');
 
@@ -81,10 +89,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
         $bookingPage = BookingPage::query()
             ->where('user_id', auth()->id())
             ->latest()
+            ->with(['products:id,name'])
             ->first();
 
         return Inertia::render('AdminBookingPageRead', [
-            'bookingPage' => $bookingPage?->only(['id', 'title', 'description', 'is_public', 'slug']),
+            'bookingPage' => $bookingPage?->only([
+                'id',
+                'title',
+                'description',
+                'phone',
+                'email',
+                'is_public',
+                'slug',
+            ]),
+            'products' => $bookingPage?->products->map->only(['id', 'name']) ?? [],
         ]);
     })->name('booking.index');
 
@@ -95,7 +113,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->first();
 
         return Inertia::render('AdminBookingPage', [
-            'bookingPage' => $bookingPage?->only(['id', 'title', 'description', 'is_public', 'slug']),
+            'bookingPage' => $bookingPage?->only([
+                'id',
+                'title',
+                'description',
+                'phone',
+                'email',
+                'is_public',
+                'slug',
+            ]),
             'products' => Product::query()
                 ->latest()
                 ->get(['id', 'name', 'description', 'created_at']),
@@ -109,6 +135,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         $data = $request->validate([
             'title' => ['required', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:1000'],
+            'phone' => ['nullable', 'string', 'max:40'],
+            'email' => ['nullable', 'email', 'max:255'],
             'is_public' => ['required', 'boolean'],
             'product_ids' => ['array'],
             'product_ids.*' => ['integer', 'exists:products,id'],

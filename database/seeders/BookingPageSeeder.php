@@ -24,6 +24,8 @@ class BookingPageSeeder extends Seeder
             [
                 'title' => 'Consulting Sessions',
                 'description' => 'Quick sessions for product strategy, design reviews, and roadmap planning.',
+                'phone' => '(555) 123-4567',
+                'email' => 'events@example.com',
                 'is_public' => true,
             ]
         );
@@ -33,6 +35,8 @@ class BookingPageSeeder extends Seeder
             [
                 'title' => 'Internal Planning',
                 'description' => 'Private planning sessions for internal stakeholders.',
+                'phone' => '(555) 555-0101',
+                'email' => 'ops@example.com',
                 'is_public' => false,
             ]
         );

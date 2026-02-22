@@ -28,6 +28,7 @@ type Product = {
     name: string;
     description?: string | null;
     created_at: string;
+    updated_at: string;
 };
 
 type ProductsPageProps = {
@@ -37,6 +38,8 @@ type ProductsPageProps = {
 export default function ProductsPage({ products }: ProductsPageProps) {
     const [productName, setProductName] = useState('');
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+    const [sortKey, setSortKey] = useState<'created_at' | 'updated_at' | 'name'>('created_at');
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
     const editForm = useForm({
         name: editingProduct?.name ?? '',
@@ -53,10 +56,31 @@ export default function ProductsPage({ products }: ProductsPageProps) {
         });
     };
 
-    const sortedProducts = useMemo(
-        () => [...products].sort((a, b) => a.name.localeCompare(b.name)),
-        [products]
-    );
+    const sortedProducts = useMemo(() => {
+        const direction = sortDirection === 'asc' ? 1 : -1;
+
+        return [...products].sort((a, b) => {
+            if (sortKey === 'name') {
+                return a.name.localeCompare(b.name) * direction;
+            }
+
+            const aValue = new Date(a[sortKey]).getTime();
+            const bValue = new Date(b[sortKey]).getTime();
+            if (aValue === bValue) {
+                return a.name.localeCompare(b.name);
+            }
+            return (aValue - bValue) * direction;
+        });
+    }, [products, sortKey, sortDirection]);
+
+    const toggleSort = (key: 'created_at' | 'updated_at' | 'name') => {
+        if (sortKey === key) {
+            setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+        } else {
+            setSortKey(key);
+            setSortDirection('desc');
+        }
+    };
 
     return (
         <AppSidebarLayout>
@@ -104,8 +128,43 @@ export default function ProductsPage({ products }: ProductsPageProps) {
                         <table className="w-full text-left text-sm">
                             <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
                                 <tr>
-                                    <th className="px-4 py-3 font-medium">Service</th>
+                                    <th className="px-4 py-3 font-medium">
+                                        <button
+                                            type="button"
+                                            className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
+                                            onClick={() => toggleSort('name')}
+                                        >
+                                            Service
+                                            {sortKey === 'name' ? (
+                                                <span>{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                                            ) : null}
+                                        </button>
+                                    </th>
                                     <th className="px-4 py-3 font-medium">Description</th>
+                                    <th className="px-4 py-3 font-medium">
+                                        <button
+                                            type="button"
+                                            className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
+                                            onClick={() => toggleSort('created_at')}
+                                        >
+                                            Created
+                                            {sortKey === 'created_at' ? (
+                                                <span>{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                                            ) : null}
+                                        </button>
+                                    </th>
+                                    <th className="px-4 py-3 font-medium">
+                                        <button
+                                            type="button"
+                                            className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
+                                            onClick={() => toggleSort('updated_at')}
+                                        >
+                                            Updated
+                                            {sortKey === 'updated_at' ? (
+                                                <span>{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                                            ) : null}
+                                        </button>
+                                    </th>
                                     <th className="px-4 py-3 text-right font-medium">
                                         Actions
                                     </th>
@@ -122,6 +181,12 @@ export default function ProductsPage({ products }: ProductsPageProps) {
                                         </td>
                                         <td className="px-4 py-3 text-muted-foreground">
                                             {product.description ?? '—'}
+                                        </td>
+                                        <td className="px-4 py-3 text-xs text-muted-foreground">
+                                            {new Date(product.created_at).toLocaleDateString()}
+                                        </td>
+                                        <td className="px-4 py-3 text-xs text-muted-foreground">
+                                            {new Date(product.updated_at).toLocaleDateString()}
                                         </td>
                                         <td className="px-4 py-3">
                                             <div className="flex items-center justify-end">

@@ -15,6 +15,8 @@ class BookingPage extends Model
         'title',
         'slug',
         'description',
+        'phone',
+        'email',
         'is_public',
     ];
 
