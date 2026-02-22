@@ -22,6 +22,7 @@ import {
 import { UserInfo } from '@/components/user-info';
 import { useInitials } from '@/hooks/use-initials';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
+import { cn } from '@/lib/utils';
 import { logout } from '@/routes';
 import { edit } from '@/routes/profile';
 import { SharedData } from '@/types';
@@ -30,7 +31,10 @@ import { LogOut, Menu, Settings } from 'lucide-react';
 import type { PropsWithChildren } from 'react';
 
 export default function AppHeaderLayout({ children }: PropsWithChildren) {
-    const { auth } = usePage<SharedData>().props;
+    const page = usePage<SharedData>();
+    const { auth } = page.props;
+    const currentPath = page.url.split('?')[0];
+    const isActive = (path: string) => currentPath === path;
 
     const getInitials = useInitials();
 
@@ -72,7 +76,27 @@ export default function AppHeaderLayout({ children }: PropsWithChildren) {
                     </div>
 
                     {/* Desktop Navigation */}
-                    <div className="flex h-full w-full items-center justify-end">
+                    <div className="flex h-full w-full items-center justify-between gap-4">
+                        <nav className="hidden items-center gap-4 text-sm font-medium text-muted-foreground lg:flex">
+                            <Link
+                                href="/booking-page"
+                                className={cn(
+                                    'transition-colors hover:text-foreground',
+                                    isActive('/booking-page') && 'text-foreground'
+                                )}
+                            >
+                                Booking Page
+                            </Link>
+                            <Link
+                                href="/products"
+                                className={cn(
+                                    'transition-colors hover:text-foreground',
+                                    isActive('/products') && 'text-foreground'
+                                )}
+                            >
+                                Products
+                            </Link>
+                        </nav>
                         <DropdownMenu>
                             <DropdownMenuTrigger>
                                 <div className="flex flex-row items-center">

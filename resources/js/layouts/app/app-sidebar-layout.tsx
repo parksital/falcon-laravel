@@ -1,102 +1,158 @@
+import { AppContent } from '@/components/app-content';
+import AppLogoIcon from '@/components/app-logo-icon';
+import { AppShell } from '@/components/app-shell';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+    Sidebar,
+    SidebarContent,
+    SidebarFooter,
+    SidebarGroup,
+    SidebarGroupContent,
+    SidebarHeader,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+    SidebarRail,
+} from '@/components/ui/sidebar';
+import { UserInfo } from '@/components/user-info';
+import { useInitials } from '@/hooks/use-initials';
+import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
+import { logout } from '@/routes';
+import { edit } from '@/routes/profile';
+import { SharedData } from '@/types';
+import { Link, router, usePage } from '@inertiajs/react';
+import { Calendar, LogOut, Package, Settings } from 'lucide-react';
+import type { PropsWithChildren } from 'react';
 
-import AppLogo from '@/components/app-logo';
-import { NavFooter } from '@/components/nav-footer';
-import { NavMain } from '@/components/nav-main';
-import { NavUser } from '@/components/nav-user';
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { home } from '@/routes';
-import { type BreadcrumbItem as BreadcrumbItemType, type NavItem, type SharedData } from '@/types';
-import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
-import { Fragment, type PropsWithChildren } from 'react';
+export default function AppSidebarLayout({ children }: PropsWithChildren) {
+    const page = usePage<SharedData>();
+    const { auth } = page.props;
+    const currentPath = page.url.split('?')[0];
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Home',
-        href: home(),
-        icon: LayoutGrid,
-    },
-];
+    const getInitials = useInitials();
+    const cleanup = useMobileNavigation();
 
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
-    },
-];
+    const handleLogout = () => {
+        cleanup();
+        router.flushAll();
+    };
 
-export default function AppSidebarLayout({
-    children,
-    breadcrumbs = [],
-}: PropsWithChildren<{ breadcrumbs?: BreadcrumbItemType[] }>) {
-
-    const isOpen = usePage<SharedData>().props.sidebarOpen;
+    const isBookingActive = currentPath.startsWith('/booking-page');
+    const isProductsActive = currentPath.startsWith('/products');
 
     return (
-        <SidebarProvider defaultOpen={isOpen}>
-            <Sidebar collapsible="icon" variant="inset">
+        <AppShell variant="sidebar">
+            <Sidebar>
                 <SidebarHeader>
-                    <SidebarMenu>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton size="lg" asChild>
-                                <Link href={home()} prefetch>
-                                    <AppLogo />
-                                </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                    </SidebarMenu>
-                </SidebarHeader>
-
-                <SidebarContent>
-                    <NavMain items={mainNavItems} />
-                </SidebarContent>
-
-                <SidebarFooter>
-                    <NavFooter items={footerNavItems} className="mt-auto" />
-                    <NavUser />
-                </SidebarFooter>
-            </Sidebar>
-
-            <SidebarInset>
-                <header className="flex h-16 shrink-0 items-center gap-2 border-b border-sidebar-border/50 px-6 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:px-4">
-                    <div className="flex items-center gap-2">
-                        <SidebarTrigger className="-ml-1" />
-                        {breadcrumbs.length > 0 && (
-                            <Breadcrumb>
-                                <BreadcrumbList>
-                                    {breadcrumbs.map((item, index) => {
-                                        const isLast = index === breadcrumbs.length - 1;
-                                        return (
-                                            <Fragment key={index}>
-                                                <BreadcrumbItem>
-                                                    {isLast ? (
-                                                        <BreadcrumbPage>{item.title}</BreadcrumbPage>
-                                                    )
-                                                        : (
-                                                            <BreadcrumbLink asChild>
-                                                                <Link href={item.href}>{item.title}</Link>
-                                                            </BreadcrumbLink>
-                                                        )}
-                                                </BreadcrumbItem>
-
-                                                {!isLast && <BreadcrumbSeparator />}
-                                            </Fragment>
-                                        );
-                                    })}
-                                </BreadcrumbList>
-                            </Breadcrumb>
-                        )}
+                    <div className="flex items-center gap-2 px-2 py-1">
+                        <AppLogoIcon className="h-6 w-6 fill-current text-black dark:text-white" />
+                        <span className="text-sm font-semibold text-foreground">
+                            Falcon
+                        </span>
                     </div>
-                </header>
-                {children}
-            </SidebarInset>
-        </SidebarProvider>
+                </SidebarHeader>
+                <SidebarContent>
+                    <SidebarGroup>
+                        <SidebarGroupContent>
+                            <SidebarMenu>
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton
+                                        asChild
+                                        isActive={isBookingActive}
+                                    >
+                                        <Link href="/booking-page">
+                                            <Calendar />
+                                            <span>Booking page</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton
+                                        asChild
+                                        isActive={isProductsActive}
+                                    >
+                                        <Link href="/products">
+                                            <Package />
+                                            <span>Products</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            </SidebarMenu>
+                        </SidebarGroupContent>
+                    </SidebarGroup>
+                </SidebarContent>
+                <SidebarFooter>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger className="w-full">
+                            <div className="flex items-center gap-3 rounded-md px-2 py-2 text-left text-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+                                <Avatar className="h-8 w-8">
+                                    <AvatarImage
+                                        src={auth.user.avatar}
+                                        alt={auth.user.name}
+                                    />
+                                    <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
+                                        {getInitials(auth.user.name)}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <div className="flex min-w-0 flex-1 flex-col">
+                                    <span className="truncate text-sm font-medium text-foreground">
+                                        {auth.user.name}
+                                    </span>
+                                    <span className="truncate text-xs text-muted-foreground">
+                                        {auth.user.email}
+                                    </span>
+                                </div>
+                            </div>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-56" align="end">
+                            <DropdownMenuLabel className="p-0 font-normal">
+                                <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                                    <UserInfo user={auth.user} showEmail />
+                                </div>
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuGroup>
+                                <DropdownMenuItem asChild>
+                                    <Link
+                                        className="block w-full"
+                                        href={edit()}
+                                        as="button"
+                                        prefetch
+                                        onClick={cleanup}
+                                    >
+                                        <Settings className="mr-2" />
+                                        Settings
+                                    </Link>
+                                </DropdownMenuItem>
+                            </DropdownMenuGroup>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem asChild>
+                                <Link
+                                    className="block w-full"
+                                    href={logout()}
+                                    as="button"
+                                    onClick={handleLogout}
+                                    data-test="logout-button"
+                                >
+                                    <LogOut className="mr-2" />
+                                    Log out
+                                </Link>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </SidebarFooter>
+                <SidebarRail />
+            </Sidebar>
+            <AppContent variant="sidebar">{children}</AppContent>
+        </AppShell>
     );
 }
