@@ -1,11 +1,10 @@
 // Components
 import { login } from '@/routes';
 import { email } from '@/routes/password';
-import { Form, Head } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
+import { Form, Head, Link } from '@inertiajs/react';
+import { SpinnerIcon } from '@phosphor-icons/react';
 
 import InputError from '@/components/input-error';
-import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,6 +21,14 @@ export default function ForgotPasswordPage({ status }: { status?: string }) {
                         {status}
                     </div>
                 )}
+
+                <div className="flex flex-col items-center gap-2 text-center">
+                    <h1 className="text-xl font-medium">Forgot password</h1>
+                    <p className="text-sm text-balance text-muted-foreground">
+                        Enter your email address and we&apos;ll send you a reset
+                        link.
+                    </p>
+                </div>
 
                 <div className="space-y-6">
                     <Form {...email()}>
@@ -48,7 +55,7 @@ export default function ForgotPasswordPage({ status }: { status?: string }) {
                                         data-test="email-password-reset-link-button"
                                     >
                                         {processing && (
-                                            <LoaderCircle className="h-4 w-4 animate-spin" />
+                                            <SpinnerIcon className="h-4 w-4 animate-spin" />
                                         )}
                                         Email password reset link
                                     </Button>
@@ -57,9 +64,14 @@ export default function ForgotPasswordPage({ status }: { status?: string }) {
                         )}
                     </Form>
 
-                    <div className="space-x-1 text-center text-sm text-muted-foreground">
+                    <div className="space-x-1 text-center text-xs text-muted-foreground">
                         <span>Or, return to</span>
-                        <TextLink href={login()}>log in</TextLink>
+                        <Link
+                            href={login()}
+                            className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current dark:decoration-neutral-500 text-xs"
+                        >
+                            log in
+                        </Link>
                     </div>
                 </div>
             </div>

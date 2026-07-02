@@ -1,5 +1,5 @@
 import { InertiaLinkProps } from '@inertiajs/react';
-import { LucideIcon } from 'lucide-react';
+import { Icon as PhosphorIcon } from '@phosphor-icons/react';
 
 export interface Auth {
     user: User;
@@ -18,7 +18,7 @@ export interface NavGroup {
 export interface NavItem {
     title: string;
     href: NonNullable<InertiaLinkProps['href']>;
-    icon?: LucideIcon | null;
+    icon?: PhosphorIcon | null;
     isActive?: boolean;
 }
 
@@ -28,6 +28,11 @@ export interface SharedData {
     auth: Auth;
     sidebarOpen: boolean;
     [key: string]: unknown;
+}
+
+export interface SelectOption {
+    value: string;
+    label: string;
 }
 
 export interface User {

@@ -23,11 +23,10 @@ import { UserInfo } from '@/components/user-info';
 import { useInitials } from '@/hooks/use-initials';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { cn } from '@/lib/utils';
-import { logout } from '@/routes';
-import { edit } from '@/routes/profile';
+import { home, logout } from '@/routes';
 import { SharedData } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
-import { LogOut, Menu, Settings } from 'lucide-react';
+import { ListIcon, SignOutIcon } from '@phosphor-icons/react';
 import type { PropsWithChildren } from 'react';
 
 export default function AppHeaderLayout({ children }: PropsWithChildren) {
@@ -58,7 +57,7 @@ export default function AppHeaderLayout({ children }: PropsWithChildren) {
                                     size="icon"
                                     className="mr-2 h-[34px] w-[34px]"
                                 >
-                                    <Menu className="h-5 w-5" />
+                                    <ListIcon className="h-5 w-5" />
                                 </Button>
                             </SheetTrigger>
                             <SheetContent
@@ -79,22 +78,14 @@ export default function AppHeaderLayout({ children }: PropsWithChildren) {
                     <div className="flex h-full w-full items-center justify-between gap-4">
                         <nav className="hidden items-center gap-4 text-sm font-medium text-muted-foreground lg:flex">
                             <Link
-                                href="/booking-page"
+                                href={home()}
                                 className={cn(
                                     'transition-colors hover:text-foreground',
-                                    isActive('/booking-page') && 'text-foreground'
+                                    isActive('/merchant/onboarding') &&
+                                        'text-foreground'
                                 )}
                             >
-                                Booking Page
-                            </Link>
-                            <Link
-                                href="/products"
-                                className={cn(
-                                    'transition-colors hover:text-foreground',
-                                    isActive('/products') && 'text-foreground'
-                                )}
-                            >
-                                Products
+                                Merchant
                             </Link>
                         </nav>
                         <DropdownMenu>
@@ -125,21 +116,6 @@ export default function AppHeaderLayout({ children }: PropsWithChildren) {
                                     </div>
                                 </DropdownMenuLabel>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuGroup>
-                                    <DropdownMenuItem asChild>
-                                        <Link
-                                            className="block w-full"
-                                            href={edit()}
-                                            as="button"
-                                            prefetch
-                                            onClick={cleanup}
-                                        >
-                                            <Settings className="mr-2" />
-                                            Settings
-                                        </Link>
-                                    </DropdownMenuItem>
-                                </DropdownMenuGroup>
-                                <DropdownMenuSeparator />
                                 <DropdownMenuItem asChild>
                                     <Link
                                         className="block w-full"
@@ -148,7 +124,7 @@ export default function AppHeaderLayout({ children }: PropsWithChildren) {
                                         onClick={handleLogout}
                                         data-test="logout-button"
                                     >
-                                        <LogOut className="mr-2" />
+                                        <SignOutIcon className="mr-2" />
                                         Log out
                                     </Link>
                                 </DropdownMenuItem>

@@ -1,5 +1,5 @@
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircleIcon } from 'lucide-react';
+import { WarningCircleIcon } from '@phosphor-icons/react';
 
 export default function AlertError({
     errors,
@@ -10,7 +10,7 @@ export default function AlertError({
 }) {
     return (
         <Alert variant="destructive">
-            <AlertCircleIcon />
+            <WarningCircleIcon />
             <AlertTitle>{title || 'Something went wrong.'}</AlertTitle>
             <AlertDescription>
                 <ul className="list-inside list-disc text-sm">

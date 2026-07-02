@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/card';
 import { regenerateRecoveryCodes } from '@/routes/two-factor';
 import { Form } from '@inertiajs/react';
-import { Eye, EyeOff, LockKeyhole, RefreshCw } from 'lucide-react';
+import { ArrowClockwiseIcon, EyeIcon, EyeSlashIcon, PasswordIcon } from '@phosphor-icons/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import AlertError from './alert-error';
 
@@ -50,13 +50,13 @@ export default function TwoFactorRecoveryCodes({
         }
     }, [recoveryCodesList.length, fetchRecoveryCodes]);
 
-    const RecoveryCodeIconComponent = codesAreVisible ? EyeOff : Eye;
+    const RecoveryCodeIconComponent = codesAreVisible ? EyeSlashIcon : EyeIcon;
 
     return (
         <Card>
             <CardHeader>
                 <CardTitle className="flex gap-3">
-                    <LockKeyhole className="size-4" aria-hidden="true" />
+                    <PasswordIcon className="size-4" aria-hidden="true" />
                     2FA Recovery Codes
                 </CardTitle>
                 <CardDescription>
@@ -92,7 +92,7 @@ export default function TwoFactorRecoveryCodes({
                                     disabled={processing}
                                     aria-describedby="regenerate-warning"
                                 >
-                                    <RefreshCw /> Regenerate Codes
+                                    <ArrowClockwiseIcon /> Regenerate Codes
                                 </Button>
                             )}
                         </Form>

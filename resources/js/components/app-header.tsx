@@ -26,7 +26,7 @@ import { cn, isSameUrl } from '@/lib/utils';
 import { home } from '@/routes';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Menu, Search } from 'lucide-react';
+import { ListIcon, MagnifyingGlassIcon, SquaresFourIcon } from '@phosphor-icons/react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 
@@ -34,7 +34,7 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Home',
         href: home(),
-        icon: LayoutGrid,
+        icon: SquaresFourIcon,
     },
 ];
 
@@ -62,7 +62,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                     size="icon"
                                     className="mr-2 h-[34px] w-[34px]"
                                 >
-                                    <Menu className="h-5 w-5" />
+                                    <ListIcon className="h-5 w-5" />
                                 </Button>
                             </SheetTrigger>
                             <SheetContent
@@ -152,7 +152,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                 size="icon"
                                 className="group h-9 w-9 cursor-pointer"
                             >
-                                <Search className="!size-5 opacity-80 group-hover:opacity-100" />
+                                <MagnifyingGlassIcon className="!size-5 opacity-80 group-hover:opacity-100" />
                             </Button>
                         </div>
                         <DropdownMenu>

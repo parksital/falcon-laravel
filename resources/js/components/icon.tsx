@@ -1,9 +1,9 @@
 import { cn } from '@/lib/utils';
-import { type LucideProps } from 'lucide-react';
+import { type IconProps as PhosphorIconProps } from '@phosphor-icons/react';
 import { type ComponentType } from 'react';
 
-interface IconProps extends Omit<LucideProps, 'ref'> {
-    iconNode: ComponentType<LucideProps>;
+interface IconProps extends Omit<PhosphorIconProps, 'ref'> {
+    iconNode: ComponentType<PhosphorIconProps>;
 }
 
 export function Icon({

@@ -1,5 +1,4 @@
 import InputError from '@/components/input-error';
-import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -9,7 +8,7 @@ import AuthSplitLayout from '@/layouts/auth/auth-split-layout';
 import { register } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, Link } from '@inertiajs/react';
 
 interface LoginProps {
     status?: string;
@@ -65,13 +64,13 @@ export default function LoginPage({
                                             Password
                                         </Label>
                                         {canResetPassword && (
-                                            <TextLink
+                                            <Link
                                                 href={request()}
-                                                className="ml-auto text-sm"
+                                                className="ml-auto text-foreground text-xs underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current dark:decoration-neutral-500"
                                                 tabIndex={5}
                                             >
                                                 Forgot password?
-                                            </TextLink>
+                                            </Link>
                                         )}
                                     </div>
                                     <Input
@@ -110,11 +109,15 @@ export default function LoginPage({
                             </div>
 
                             {canRegister && (
-                                <div className="text-center text-sm text-muted-foreground">
+                                <div className="text-center text-xs text-muted-foreground">
                                     Don't have an account?{' '}
-                                    <TextLink href={register()} tabIndex={5}>
+                                    <Link
+                                        href={register()}
+                                        tabIndex={5}
+                                        className="text-foreground text-xs underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current dark:decoration-neutral-500"
+                                    >
                                         Sign up
-                                    </TextLink>
+                                    </Link>
                                 </div>
                             )}
                         </>

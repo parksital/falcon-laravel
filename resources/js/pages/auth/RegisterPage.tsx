@@ -1,13 +1,12 @@
 import { store } from '@/actions/Laravel/Fortify/Http/Controllers/RegisteredUserController';
 import InputError from '@/components/input-error';
-import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import AuthSplitLayout from '@/layouts/auth/auth-split-layout';
 import { login } from '@/routes';
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, Link } from '@inertiajs/react';
 
 export default function RegisterPage() {
     return (
@@ -105,11 +104,15 @@ export default function RegisterPage() {
                                 </Button>
                             </div>
 
-                            <div className="text-center text-sm text-muted-foreground">
+                            <div className="text-center text-xs text-muted-foreground">
                                 Already have an account?{' '}
-                                <TextLink href={login()} tabIndex={6}>
+                                <Link
+                                    href={login()}
+                                    tabIndex={6}
+                                    className="text-foreground text-xs underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current dark:decoration-neutral-500"
+                                >
                                     Log in
-                                </TextLink>
+                                </Link>
                             </div>
                         </>
                     )}

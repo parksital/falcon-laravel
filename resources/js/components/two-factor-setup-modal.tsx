@@ -17,7 +17,7 @@ import { OTP_MAX_LENGTH } from '@/hooks/use-two-factor-auth';
 import { confirm } from '@/routes/two-factor';
 import { Form } from '@inertiajs/react';
 import { REGEXP_ONLY_DIGITS } from 'input-otp';
-import { Check, Copy, ScanLine } from 'lucide-react';
+import { CheckIcon, CopyIcon, ScanIcon } from '@phosphor-icons/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import AlertError from './alert-error';
 import { Spinner } from './ui/spinner';
@@ -42,7 +42,7 @@ function GridScanIcon() {
                         />
                     ))}
                 </div>
-                <ScanLine className="relative z-20 size-6 text-foreground" />
+                <ScanIcon className="relative z-20 size-6 text-foreground" />
             </div>
         </div>
     );
@@ -62,7 +62,7 @@ function TwoFactorSetupStep({
     errors: string[];
 }) {
     const [copiedText, copy] = useClipboard();
-    const IconComponent = copiedText === manualSetupKey ? Check : Copy;
+    const IconComponent = copiedText === manualSetupKey ? CheckIcon : CopyIcon;
 
     return (
         <>

@@ -1,38 +1,18 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
-use Laravel\Fortify\Features;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\TwoFactorAuthenticationController;
-use App\Models\BookingPage;
-use App\Models\Product;
+use App\Models\Merchant;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
-
-Route::middleware('guest')->group(function () {});
+use Illuminate\Validation\Rule;
+use Inertia\Inertia;
 
 Route::get('/book/{slug}', function (string $slug) {
-    $bookingPage = BookingPage::query()
-        ->where('slug', $slug)
-        ->where('is_public', true)
-        ->with(['products:id,name,description'])
-        ->firstOrFail();
-
-    return Inertia::render('PublicBookingPage', [
-        'bookingPage' => $bookingPage->only([
-            'id',
-            'title',
-            'description',
-            'phone',
-            'email',
-            'is_public',
-            'slug',
-        ]),
-        'products' => $bookingPage->products->map->only(['id', 'name', 'description']),
-    ]);
-})->name('booking.public.show');
+    return Inertia::render('PublicBookingPage', []);
+});
 
 Route::middleware('auth')->group(function () {
     Route::redirect('settings', '/settings/profile');
@@ -57,117 +37,79 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/', function () {
-        return to_route('product.index');
+        return to_route('dashboard');
     })->name('home');
 
-    Route::get('/products', function () {
-        return Inertia::render('ProductsPage', [
-            'products' => Product::query()
-                ->latest()
-                ->get(['id', 'name', 'description', 'created_at', 'updated_at']),
+    Route::get('/dashboard', function () {
+        return Inertia::render('MerchantDashboardPage');
+    })->name('dashboard');
+
+    Route::get('/merchant/onboarding', function (Request $request) {
+        $merchant = $request->user()->merchant;
+
+        return Inertia::render('MerchantOnboardingPage', [
+            'merchantTypes' => collect(config('merchant_types'))
+                ->map(fn (string $label, string $value) => [
+                    'value' => $value,
+                    'label' => $label,
+                ])
+                ->values(),
+            'initialValues' => [
+                'business_name' => $merchant?->name ?? '',
+                'business_type' => $merchant?->business_type ?? '',
+                'contact_email' => $merchant?->contact_email ?? '',
+                'short_description' => $merchant?->short_description ?? '',
+            ],
         ]);
-    })->name('product.index');
+    })->name('merchant.onboarding');
 
-    Route::patch('/products/{product}', function (Request $request, Product $product) {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:120'],
-            'description' => ['nullable', 'string', 'max:1000'],
-        ]);
-
-        $product->update($data);
-
-        return back();
-    })->name('product.update');
-
-    Route::delete('/products/{product}', function (Product $product) {
-        $product->delete();
-
-        return back();
-    })->name('product.destroy');
-
-    Route::get('/booking-page', function () {
-        $bookingPage = BookingPage::query()
-            ->where('user_id', auth()->id())
-            ->latest()
-            ->with(['products:id,name'])
-            ->first();
-
-        return Inertia::render('AdminBookingPageRead', [
-            'bookingPage' => $bookingPage?->only([
-                'id',
-                'title',
-                'description',
-                'phone',
-                'email',
-                'is_public',
-                'slug',
-            ]),
-            'products' => $bookingPage?->products->map->only(['id', 'name']) ?? [],
-        ]);
-    })->name('booking.index');
-
-    Route::get('/booking-page/edit', function () {
-        $bookingPage = BookingPage::query()
-            ->where('user_id', auth()->id())
-            ->latest()
-            ->first();
-
-        return Inertia::render('AdminBookingPage', [
-            'bookingPage' => $bookingPage?->only([
-                'id',
-                'title',
-                'description',
-                'phone',
-                'email',
-                'is_public',
-                'slug',
-            ]),
-            'products' => Product::query()
-                ->latest()
-                ->get(['id', 'name', 'description', 'created_at']),
-            'selectedProductIds' => $bookingPage
-                ? $bookingPage->products()->pluck('products.id')
-                : [],
-        ]);
-    })->name('booking.edit');
-
-    Route::patch('/booking-page', function (Request $request) {
-        $data = $request->validate([
-            'title' => ['required', 'string', 'max:120'],
-            'description' => ['nullable', 'string', 'max:1000'],
-            'phone' => ['nullable', 'string', 'max:40'],
-            'email' => ['nullable', 'email', 'max:255'],
-            'is_public' => ['required', 'boolean'],
-            'product_ids' => ['array'],
-            'product_ids.*' => ['integer', 'exists:products,id'],
+    Route::post('/merchant/onboarding', function (Request $request) {
+        $validated = $request->validate([
+            'business_name' => ['required', 'string', 'max:120'],
+            'business_type' => [
+                'required',
+                'string',
+                Rule::in(array_keys(config('merchant_types'))),
+            ],
+            'contact_email' => ['nullable', 'email', 'max:255'],
+            'short_description' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $bookingPage = BookingPage::query()
-            ->where('user_id', auth()->id())
-            ->latest()
-            ->first();
+        $merchant = $request->user()->merchant;
+        $baseSlug = Str::slug($validated['business_name']) ?: 'merchant';
+        $slug = $baseSlug;
+        $suffix = 1;
 
-        if (! $bookingPage) {
-            $slug = Str::slug($data['title']) ?: 'booking-page';
-            $baseSlug = $slug;
-            $suffix = 1;
-
-            while (BookingPage::query()->where('slug', $slug)->exists()) {
-                $slug = $baseSlug . '-' . $suffix;
-                $suffix++;
-            }
-
-            $bookingPage = BookingPage::create([
-                'user_id' => auth()->id(),
-                'slug' => $slug,
-                ...$data,
-            ]);
-        } else {
-            $bookingPage->update($data);
+        while (
+            Merchant::query()
+                ->where('slug', $slug)
+                ->when(
+                    $merchant,
+                    fn ($query) => $query->whereKeyNot($merchant->id),
+                )
+                ->exists()
+        ) {
+            $slug = $baseSlug.'-'.$suffix;
+            $suffix++;
         }
 
-        $bookingPage->products()->sync($data['product_ids'] ?? []);
+        $attributes = [
+            'name' => $validated['business_name'],
+            'slug' => $slug,
+            'business_type' => $validated['business_type'],
+            'contact_email' => $validated['contact_email'] ?: null,
+            'short_description' => $validated['short_description'] ?: null,
+        ];
 
-        return back();
-    })->name('booking.update');
+        if ($merchant) {
+            $merchant->update($attributes);
+        } else {
+            Merchant::create([
+                'user_id' => $request->user()->id,
+                ...$attributes,
+            ]);
+        }
+
+        return to_route('dashboard');
+    })->name('merchant.store');
 });

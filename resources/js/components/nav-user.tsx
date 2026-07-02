@@ -14,7 +14,7 @@ import { UserMenuContent } from '@/components/user-menu-content';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { type SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
-import { ChevronsUpDown } from 'lucide-react';
+import { CaretUpDownIcon } from '@phosphor-icons/react';
 
 export function NavUser() {
     const { auth } = usePage<SharedData>().props;
@@ -32,7 +32,7 @@ export function NavUser() {
                             data-test="sidebar-menu-button"
                         >
                             <UserInfo user={auth.user} />
-                            <ChevronsUpDown className="ml-auto size-4" />
+                            <CaretUpDownIcon className="ml-auto size-4" />
                         </SidebarMenuButton>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
