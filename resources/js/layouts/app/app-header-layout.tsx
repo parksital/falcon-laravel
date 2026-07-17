@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
-    DropdownMenuGroup,
     DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuSeparator,
@@ -81,11 +80,11 @@ export default function AppHeaderLayout({ children }: PropsWithChildren) {
                                 href={home()}
                                 className={cn(
                                     'transition-colors hover:text-foreground',
-                                    isActive('/merchant/onboarding') &&
-                                        'text-foreground'
+                                    isActive('/vendor/onboarding') &&
+                                        'text-foreground',
                                 )}
                             >
-                                Merchant
+                                Vendor
                             </Link>
                         </nav>
                         <DropdownMenu>

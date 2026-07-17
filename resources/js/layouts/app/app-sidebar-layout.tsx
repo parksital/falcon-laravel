@@ -43,7 +43,7 @@ export default function AppSidebarLayout({ children }: PropsWithChildren) {
         router.flushAll();
     };
 
-    const isMerchantActive = currentPath.startsWith('/merchant');
+    const isVendorActive = currentPath.startsWith('/vendor');
 
     return (
         <AppShell variant="sidebar">
@@ -64,7 +64,7 @@ export default function AppSidebarLayout({ children }: PropsWithChildren) {
                                 <SidebarMenuItem>
                                     <SidebarMenuButton
                                         asChild
-                                        isActive={isMerchantActive}
+                                        isActive={isVendorActive}
                                     >
                                         <Link href={home()}>
                                             <StorefrontIcon />
@@ -100,7 +100,11 @@ export default function AppSidebarLayout({ children }: PropsWithChildren) {
                                 </div>
                             </div>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent className="" align="end" side="top">
+                        <DropdownMenuContent
+                            className=""
+                            align="end"
+                            side="top"
+                        >
                             <DropdownMenuLabel className="p-0 font-normal">
                                 <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                                     <UserInfo user={auth.user} showEmail />
@@ -124,10 +128,7 @@ export default function AppSidebarLayout({ children }: PropsWithChildren) {
                 </SidebarFooter>
             </Sidebar>
 
-            <AppContent variant="sidebar">
-                {children}
-            </AppContent>
-
+            <AppContent variant="sidebar">{children}</AppContent>
         </AppShell>
     );
 }

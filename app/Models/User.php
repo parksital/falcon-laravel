@@ -51,8 +51,8 @@ class User extends Authenticatable
         ];
     }
 
-    public function merchant(): HasOne
+    public function vendor(): HasOne
     {
-        return $this->hasOne(Merchant::class);
+        return $this->hasOne(Vendor::class);
     }
 }

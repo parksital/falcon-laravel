@@ -3,7 +3,7 @@
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\TwoFactorAuthenticationController;
-use App\Models\Merchant;
+use App\Models\Vendor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
@@ -36,56 +36,88 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/', function () {
+    Route::get('/', function (Request $request) {
+        $vendor = $request->user()->vendor;
+
+        if (! $vendor) {
+            return to_route('vendor.onboarding');
+        }
+
         return to_route('dashboard');
     })->name('home');
 
-    Route::get('/dashboard', function () {
-        return Inertia::render('MerchantDashboardPage');
+    Route::get('/dashboard', function (Request $request) {
+        if (! $request->user()->vendor) {
+            return to_route('vendor.onboarding');
+        }
+
+        $vendor = $request->user()->vendor;
+
+        return Inertia::render('VendorDashboardPage', [
+            'vendor' => [
+                'name' => $vendor->name,
+                'category' => $vendor->category,
+                'category_other' => $vendor->category_other,
+                'category_label' => $vendor->category === 'other'
+                    ? ($vendor->category_other ?: config('vendor_categories.other'))
+                    : config("vendor_categories.{$vendor->category}", $vendor->category),
+                'based_in' => $vendor->based_in,
+                'contact_email' => $vendor->contact_email,
+                'short_description' => $vendor->short_description,
+                'is_public' => (bool) $vendor->is_public,
+                'created_at' => $vendor->created_at?->toDateString(),
+                'updated_at' => $vendor->updated_at?->toDateString(),
+            ],
+        ]);
     })->name('dashboard');
 
-    Route::get('/merchant/onboarding', function (Request $request) {
-        $merchant = $request->user()->merchant;
+    Route::get('/vendor/onboarding', function (Request $request) {
+        $vendor = $request->user()->vendor;
 
-        return Inertia::render('MerchantOnboardingPage', [
-            'merchantTypes' => collect(config('merchant_types'))
+        return Inertia::render('VendorOnboardingPage', [
+            'vendorCategories' => collect(config('vendor_categories'))
                 ->map(fn (string $label, string $value) => [
                     'value' => $value,
                     'label' => $label,
                 ])
                 ->values(),
             'initialValues' => [
-                'business_name' => $merchant?->name ?? '',
-                'business_type' => $merchant?->business_type ?? '',
-                'contact_email' => $merchant?->contact_email ?? '',
-                'short_description' => $merchant?->short_description ?? '',
+                'business_name' => $vendor?->name ?? '',
+                'category' => $vendor?->category ?? '',
+                'category_other' => $vendor?->category_other ?? '',
+                'based_in' => $vendor?->based_in ?? '',
             ],
         ]);
-    })->name('merchant.onboarding');
+    })->name('vendor.onboarding');
 
-    Route::post('/merchant/onboarding', function (Request $request) {
+    Route::post('/vendor/onboarding', function (Request $request) {
         $validated = $request->validate([
             'business_name' => ['required', 'string', 'max:120'],
-            'business_type' => [
+            'category' => [
                 'required',
                 'string',
-                Rule::in(array_keys(config('merchant_types'))),
+                Rule::in(array_keys(config('vendor_categories'))),
             ],
-            'contact_email' => ['nullable', 'email', 'max:255'],
-            'short_description' => ['nullable', 'string', 'max:1000'],
+            'category_other' => [
+                'required_if:category,other',
+                'nullable',
+                'string',
+                'max:120',
+            ],
+            'based_in' => ['required', 'string', 'max:120'],
         ]);
 
-        $merchant = $request->user()->merchant;
-        $baseSlug = Str::slug($validated['business_name']) ?: 'merchant';
+        $vendor = $request->user()->vendor;
+        $baseSlug = Str::slug($validated['business_name']) ?: 'vendor';
         $slug = $baseSlug;
         $suffix = 1;
 
         while (
-            Merchant::query()
+            Vendor::query()
                 ->where('slug', $slug)
                 ->when(
-                    $merchant,
-                    fn ($query) => $query->whereKeyNot($merchant->id),
+                    $vendor,
+                    fn ($query) => $query->whereKeyNot($vendor->id),
                 )
                 ->exists()
         ) {
@@ -96,20 +128,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
         $attributes = [
             'name' => $validated['business_name'],
             'slug' => $slug,
-            'business_type' => $validated['business_type'],
-            'contact_email' => $validated['contact_email'] ?: null,
-            'short_description' => $validated['short_description'] ?: null,
+            'category' => $validated['category'],
+            'category_other' => $validated['category'] === 'other'
+                ? $validated['category_other']
+                : null,
+            'based_in' => $validated['based_in'],
         ];
 
-        if ($merchant) {
-            $merchant->update($attributes);
+        if ($vendor) {
+            $vendor->update($attributes);
         } else {
-            Merchant::create([
+            Vendor::create([
                 'user_id' => $request->user()->id,
                 ...$attributes,
             ]);
         }
 
         return to_route('dashboard');
-    })->name('merchant.store');
+    })->name('vendor.store');
 });

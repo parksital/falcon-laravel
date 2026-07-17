@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('merchants', function (Blueprint $table) {
+        Schema::create('vendors', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')
                 ->unique()
@@ -19,7 +19,9 @@ return new class extends Migration
                 ->cascadeOnDelete();
             $table->string('name');
             $table->string('slug')->unique();
-            $table->string('business_type')->nullable()->index();
+            $table->string('category')->index();
+            $table->string('category_other')->nullable()->index();
+            $table->string('based_in')->index();
             $table->string('contact_email')->nullable()->index();
             $table->text('short_description')->nullable();
             $table->boolean('is_public')->default(false)->index();
@@ -32,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('merchants');
+        Schema::dropIfExists('vendors');
     }
 };

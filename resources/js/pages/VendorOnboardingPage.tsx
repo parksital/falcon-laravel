@@ -1,5 +1,4 @@
 import InputError from '@/components/input-error';
-import AuthSplitLayout from '@/layouts/auth/auth-split-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,31 +10,31 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
-import { Textarea } from '@/components/ui/textarea';
-import { store } from '@/routes/merchant';
+import AuthSplitLayout from '@/layouts/auth/auth-split-layout';
+import { store } from '@/routes/vendor';
 import { SelectOption } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import { CheckIcon } from '@phosphor-icons/react';
 
-interface MerchantOnboardingPageProps {
-    merchantTypes: SelectOption[];
+interface VendorOnboardingPageProps {
+    vendorCategories: SelectOption[];
     initialValues: {
         business_name: string;
-        business_type: string;
-        contact_email: string;
-        short_description: string;
+        category: string;
+        category_other: string;
+        based_in: string;
     };
 }
 
-export default function MerchantOnboardingPage({
-    merchantTypes,
+export default function VendorOnboardingPage({
+    vendorCategories,
     initialValues,
-}: MerchantOnboardingPageProps) {
+}: VendorOnboardingPageProps) {
     const form = useForm({
         business_name: initialValues.business_name,
-        business_type: initialValues.business_type,
-        contact_email: initialValues.contact_email,
-        short_description: initialValues.short_description,
+        category: initialValues.category,
+        category_other: initialValues.category_other,
+        based_in: initialValues.based_in,
     });
 
     return (
@@ -46,7 +45,7 @@ export default function MerchantOnboardingPage({
                 <div className="flex flex-col items-center gap-2 text-center">
                     <h1 className="text-xl font-medium">Welcome</h1>
                     <p className="text-sm text-balance text-muted-foreground">
-                        Set up your business to get started.
+                        Add the basics for your vendor profile.
                     </p>
                 </div>
 
@@ -58,9 +57,7 @@ export default function MerchantOnboardingPage({
                     }}
                 >
                     <div className="grid gap-2">
-                        <Label htmlFor="business-name">
-                            Business name
-                        </Label>
+                        <Label htmlFor="business-name">Business name</Label>
                         <Input
                             id="business-name"
                             name="business_name"
@@ -79,73 +76,71 @@ export default function MerchantOnboardingPage({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="business-type">
-                            Business type
+                        <Label htmlFor="vendor-category">
+                            Business category
                         </Label>
                         <Select
-                            name="business_type"
-                            value={form.data.business_type}
+                            name="category"
+                            value={form.data.category}
                             onValueChange={(value) =>
-                                form.setData('business_type', value)
+                                form.setData('category', value)
                             }
                         >
                             <SelectTrigger
-                                id="business-type"
+                                id="vendor-category"
                                 className="w-full"
                             >
                                 <SelectValue placeholder="Required" />
                             </SelectTrigger>
                             <SelectContent position="popper">
-                                {merchantTypes.map((merchantType) => (
+                                {vendorCategories.map((vendorCategory) => (
                                     <SelectItem
-                                        key={merchantType.value}
-                                        value={merchantType.value}
+                                        key={vendorCategory.value}
+                                        value={vendorCategory.value}
                                     >
-                                        {merchantType.label}
+                                        {vendorCategory.label}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
-                        <InputError message={form.errors.business_type} />
+                        <InputError message={form.errors.category} />
                     </div>
 
+                    {form.data.category === 'other' ? (
+                        <div className="grid gap-2">
+                            <Label htmlFor="vendor-category-other">
+                                What type of business is it?
+                            </Label>
+                            <Input
+                                id="vendor-category-other"
+                                name="category_other"
+                                type="text"
+                                placeholder="Event styling, rentals, planning..."
+                                value={form.data.category_other}
+                                onChange={(event) =>
+                                    form.setData(
+                                        'category_other',
+                                        event.target.value,
+                                    )
+                                }
+                            />
+                            <InputError message={form.errors.category_other} />
+                        </div>
+                    ) : null}
+
                     <div className="grid gap-2">
-                        <Label htmlFor="contact-email">Contact email</Label>
+                        <Label htmlFor="based-in">Based in</Label>
                         <Input
-                            id="contact-email"
-                            name="contact_email"
-                            type="email"
-                            placeholder="Enter a business contact email"
-                            value={form.data.contact_email}
+                            id="based-in"
+                            name="based_in"
+                            type="text"
+                            placeholder="Amsterdam, Noord-Holland"
+                            value={form.data.based_in}
                             onChange={(event) =>
-                                form.setData(
-                                    'contact_email',
-                                    event.target.value,
-                                )
+                                form.setData('based_in', event.target.value)
                             }
                         />
-                        <InputError message={form.errors.contact_email} />
-                    </div>
-
-                    <div className="grid gap-2">
-                        <Label htmlFor="short-description">
-                            Short description
-                        </Label>
-
-                        <Textarea
-                            id="short-description"
-                            name="short_description"
-                            rows={4}
-                            placeholder="Summarize what you offer and the types of events you serve."
-                            value={form.data.short_description}
-                            onChange={(event) =>
-                                form.setData(
-                                    'short_description',
-                                    event.target.value,
-                                )
-                            }
-                        />
-                        <InputError message={form.errors.short_description} />
+                        <InputError message={form.errors.based_in} />
                     </div>
 
                     <Button
@@ -153,9 +148,8 @@ export default function MerchantOnboardingPage({
                         className="w-full"
                         disabled={form.processing}
                     >
-                        {form.processing ? <Spinner /> : <CheckIcon/>}
+                        {form.processing ? <Spinner /> : <CheckIcon />}
                         Continue
-
                     </Button>
                 </form>
             </main>
