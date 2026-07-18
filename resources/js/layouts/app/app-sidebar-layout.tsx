@@ -24,10 +24,14 @@ import {
 import { UserInfo } from '@/components/user-info';
 import { useInitials } from '@/hooks/use-initials';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
-import { home, logout } from '@/routes';
+import { logout } from '@/routes';
 import { SharedData } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
-import { SignOutIcon, StorefrontIcon } from '@phosphor-icons/react';
+import {
+    PackageIcon,
+    SignOutIcon,
+    StorefrontIcon,
+} from '@phosphor-icons/react';
 import type { PropsWithChildren } from 'react';
 
 export default function AppSidebarLayout({ children }: PropsWithChildren) {
@@ -43,7 +47,8 @@ export default function AppSidebarLayout({ children }: PropsWithChildren) {
         router.flushAll();
     };
 
-    const isVendorActive = currentPath.startsWith('/vendor');
+    const isVendorProfileActive = currentPath.startsWith('/vendor');
+    const isProductsActive = currentPath.startsWith('/products');
 
     return (
         <AppShell variant="sidebar">
@@ -64,11 +69,22 @@ export default function AppSidebarLayout({ children }: PropsWithChildren) {
                                 <SidebarMenuItem>
                                     <SidebarMenuButton
                                         asChild
-                                        isActive={isVendorActive}
+                                        isActive={isVendorProfileActive}
                                     >
-                                        <Link href={home()}>
+                                        <Link href="/vendor/profile">
                                             <StorefrontIcon />
-                                            <span>Overview</span>
+                                            <span>Vendor Profile</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton
+                                        asChild
+                                        isActive={isProductsActive}
+                                    >
+                                        <Link href="/products">
+                                            <PackageIcon />
+                                            <span>Products</span>
                                         </Link>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>

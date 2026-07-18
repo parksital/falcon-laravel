@@ -43,7 +43,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return to_route('vendor.onboarding');
         }
 
-        return to_route('dashboard');
+        return to_route('vendor.profile');
     })->name('home');
 
     Route::get('/dashboard', function (Request $request) {
@@ -51,9 +51,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return to_route('vendor.onboarding');
         }
 
+        return to_route('vendor.profile');
+    })->name('dashboard');
+
+    Route::get('/vendor/profile', function (Request $request) {
+        if (! $request->user()->vendor) {
+            return to_route('vendor.onboarding');
+        }
+
         $vendor = $request->user()->vendor;
 
-        return Inertia::render('VendorDashboardPage', [
+        return Inertia::render('VendorProfilePage', [
             'vendor' => [
                 'name' => $vendor->name,
                 'category' => $vendor->category,
@@ -69,7 +77,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 'updated_at' => $vendor->updated_at?->toDateString(),
             ],
         ]);
-    })->name('dashboard');
+    })->name('vendor.profile');
+
+    Route::get('/products', function (Request $request) {
+        if (! $request->user()->vendor) {
+            return to_route('vendor.onboarding');
+        }
+
+        return Inertia::render('ProductsPage');
+    })->name('products.index');
 
     Route::get('/vendor/onboarding', function (Request $request) {
         $vendor = $request->user()->vendor;
@@ -144,6 +160,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ]);
         }
 
-        return to_route('dashboard');
+        return to_route('vendor.profile');
     })->name('vendor.store');
 });
