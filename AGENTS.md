@@ -37,6 +37,10 @@ Before changing code in this repository, read and follow these project rules.
   across layouts or shared components, such as header navigation or account menu
   labels. Prefer broad shared prop names like `layoutCopy` over names tied to a
   specific component when the copy may be reused.
+- For forms that submit to Laravel/Inertia endpoints, prefer Inertia form
+  helpers first. Use `<Form {...store.form()}>`, `disableWhileProcessing`, and
+  form slot props for processing/errors when they fit. Use `useForm` when the
+  form needs controlled state or custom client-side behavior.
 
 ## UI Style
 

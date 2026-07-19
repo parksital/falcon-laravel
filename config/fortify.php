@@ -76,6 +76,7 @@ return [
     'home' => '/',
 
     'redirects' => [
+        'register' => '/vendor/onboarding',
         'login' => '/overview',
         'logout' => '/login',
     ],

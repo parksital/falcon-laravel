@@ -5,11 +5,11 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import AuthSplitLayout from '@/layouts/auth/auth-split-layout';
 import { store } from '@/routes/vendor';
-import { Head, useForm } from '@inertiajs/react';
+import { Form, Head } from '@inertiajs/react';
 import { CheckIcon } from '@phosphor-icons/react';
 
 interface VendorOnboardingPageProps {
-    initialValues: {
+    vendor: {
         business_name: string;
         location: string;
     };
@@ -26,14 +26,9 @@ interface VendorOnboardingPageProps {
 }
 
 export default function VendorOnboardingPage({
+    vendor,
     copy,
-    initialValues,
 }: VendorOnboardingPageProps) {
-    const form = useForm({
-        business_name: initialValues.business_name,
-        location: initialValues.location,
-    });
-
     return (
         <AuthSplitLayout>
             <Head title={copy.title} />
@@ -46,60 +41,49 @@ export default function VendorOnboardingPage({
                     </p>
                 </div>
 
-                <form
+                <Form
+                    {...store.form()}
+                    disableWhileProcessing
                     className="flex flex-col gap-6"
-                    onSubmit={(event) => {
-                        event.preventDefault();
-                        form.post(store().url);
-                    }}
                 >
-                    <div className="grid gap-2">
-                        <Label htmlFor="business-name">{copy.business_name_label}</Label>
-                        <Input
-                            id="business-name"
-                            name="business_name"
-                            type="text"
-                            autoFocus
-                            required
-                            maxLength={120}
-                            placeholder={copy.business_name_placeholder}
-                            value={form.data.business_name}
-                            onChange={(event) =>
-                                form.setData(
-                                    'business_name',
-                                    event.target.value,
-                                )
-                            }
-                        />
-                        <InputError message={form.errors.business_name} />
-                    </div>
+                    {({ processing, errors }) => (
+                        <>
+                            <div className="grid gap-2">
+                                <Label htmlFor="business-name">{copy.business_name_label}</Label>
+                                <Input
+                                    id="business-name"
+                                    name="business_name"
+                                    type="text"
+                                    autoFocus
+                                    required
+                                    maxLength={120}
+                                    placeholder={copy.business_name_placeholder}
+                                    defaultValue={vendor.business_name}
+                                />
+                                <InputError message={errors.business_name} />
+                            </div>
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="location">{copy.location_label}</Label>
-                        <Input
-                            id="location"
-                            name="location"
-                            type="text"
-                            required
-                            maxLength={120}
-                            placeholder={copy.location_placeholder}
-                            value={form.data.location}
-                            onChange={(event) =>
-                                form.setData('location', event.target.value)
-                            }
-                        />
-                        <InputError message={form.errors.location} />
-                    </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="location">{copy.location_label}</Label>
+                                <Input
+                                    id="location"
+                                    name="location"
+                                    type="text"
+                                    required
+                                    maxLength={120}
+                                    placeholder={copy.location_placeholder}
+                                    defaultValue={vendor.location}
+                                />
+                                <InputError message={errors.location} />
+                            </div>
 
-                    <Button
-                        type="submit"
-                        className="w-full"
-                        disabled={form.processing}
-                    >
-                        {form.processing ? <Spinner /> : <CheckIcon />}
-                        {copy.submit}
-                    </Button>
-                </form>
+                            <Button type="submit" className="w-full" disabled={processing}>
+                                {processing ? <Spinner /> : <CheckIcon />}
+                                {copy.submit}
+                            </Button>
+                        </>
+                    )}
+                </Form>
             </main>
         </AuthSplitLayout>
     );

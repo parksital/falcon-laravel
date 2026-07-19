@@ -35,9 +35,7 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/', function (Request $request) {
-        $vendor = $request->user()->vendor;
-
-        if (! $vendor) {
+        if (! $request->user()->vendor()->exists()) {
             return to_route('vendor.onboarding');
         }
 
@@ -45,7 +43,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('home');
 
     Route::get('/dashboard', function (Request $request) {
-        if (! $request->user()->vendor) {
+        if (! $request->user()->vendor()->exists()) {
             return to_route('vendor.onboarding');
         }
 
@@ -53,7 +51,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 
     Route::get('/overview', function (Request $request) {
-        if (! $request->user()->vendor) {
+        if (! $request->user()->vendor()->exists()) {
             return to_route('vendor.onboarding');
         }
 
@@ -111,7 +109,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/services/{service}', [ServiceController::class, 'destroy'])->name('services.destroy');
 
     Route::get('/settings', function (Request $request) {
-        if (! $request->user()->vendor) {
+        if (! $request->user()->vendor()->exists()) {
             return to_route('vendor.onboarding');
         }
 
@@ -121,7 +119,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('settings');
 
     Route::get('/products', function (Request $request) {
-        if (! $request->user()->vendor) {
+        if (! $request->user()->vendor()->exists()) {
             return to_route('vendor.onboarding');
         }
 
@@ -129,10 +127,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('products.index');
 
     Route::get('/vendor/onboarding', function (Request $request) {
+
         $vendor = $request->user()->vendor;
 
         return Inertia::render('VendorOnboardingPage', [
-            'initialValues' => [
+            'vendor' => [
                 'business_name' => $vendor?->name ?? '',
                 'location' => $vendor?->location ?? '',
             ],
@@ -154,10 +153,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         while (
             Vendor::query()
                 ->where('slug', $slug)
-                ->when(
-                    $vendor,
-                    fn ($query) => $query->whereKeyNot($vendor->id),
-                )
+                ->when($vendor, fn ($query) => $query->whereKeyNot($vendor->id))
                 ->exists()
         ) {
             $slug = $baseSlug.'-'.$suffix;
