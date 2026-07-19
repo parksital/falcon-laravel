@@ -5,6 +5,7 @@ use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\TwoFactorAuthenticationController;
 use App\Models\Vendor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -15,8 +16,6 @@ Route::get('/book/{slug}', function (string $slug) {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::redirect('settings', '/settings/profile');
-
     Route::get('settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('settings/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('settings/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -43,7 +42,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return to_route('vendor.onboarding');
         }
 
-        return to_route('vendor.profile');
+        return to_route('overview');
     })->name('home');
 
     Route::get('/dashboard', function (Request $request) {
@@ -51,57 +50,129 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return to_route('vendor.onboarding');
         }
 
-        return to_route('vendor.profile');
+        return to_route('overview');
     })->name('dashboard');
 
-    Route::get('/vendor/profile', function (Request $request) {
+    Route::get('/overview', function (Request $request) {
         if (! $request->user()->vendor) {
             return to_route('vendor.onboarding');
         }
 
-        $vendor = $request->user()->vendor;
+        $vendor = $request->user()->vendor()->with('services.customCategory')->first();
 
-        return Inertia::render('VendorProfilePage', [
+        return Inertia::render('OverviewPage', [
             'vendor' => [
-                'name' => $vendor->name,
-                'category' => $vendor->category,
-                'category_other' => $vendor->category_other,
-                'category_label' => $vendor->category === 'other'
-                    ? ($vendor->category_other ?: config('vendor_categories.other'))
-                    : config("vendor_categories.{$vendor->category}", $vendor->category),
-                'based_in' => $vendor->based_in,
-                'contact_email' => $vendor->contact_email,
+                'id' => $vendor->id,
+                'title' => $vendor->name,
+                'slug' => $vendor->slug,
+                'location' => $vendor->location,
                 'short_description' => $vendor->short_description,
                 'is_public' => (bool) $vendor->is_public,
-                'created_at' => $vendor->created_at?->toDateString(),
-                'updated_at' => $vendor->updated_at?->toDateString(),
+                'created_at' => $vendor->created_at?->format('F j, Y'),
             ],
+            'services' => $vendor->services
+                ->map(fn ($service) => [
+                    'id' => $service->id,
+                    'name' => $service->name,
+                    'category' => $service->category,
+                    'category_label' => $service->category === 'other'
+                        ? $service->customCategory?->name ?? config('service_categories.other')
+                        : config("service_categories.{$service->category}", $service->category),
+                    'price_in_minor' => $service->price_in_minor,
+                    'unit' => $service->unit,
+                    'is_public' => (bool) $service->is_public,
+                ])
+                ->all(),
+            'serviceCategories' => collect(config('service_categories'))
+                ->map(fn (string $label, string $value) => [
+                    'value' => $value,
+                    'label' => $label,
+                ])
+                ->values()
+                ->all(),
         ]);
-    })->name('vendor.profile');
+    })->name('overview');
+
+    Route::redirect('/vendor/profile', '/overview')->name('vendor.profile');
+
+    Route::get('/services', function (Request $request) {
+        if (! $request->user()->vendor) {
+            return to_route('vendor.onboarding');
+        }
+
+        return Inertia::render('ServicesPage');
+    })->name('services.index');
+
+    Route::post('/services', function (Request $request) {
+        $vendor = $request->user()->vendor;
+
+        if (! $vendor) {
+            return to_route('vendor.onboarding');
+        }
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:120'],
+            'category' => ['required', 'string', Rule::in(array_keys(config('service_categories')))],
+            'custom_category' => ['nullable', 'required_if:category,other', 'string', 'max:120'],
+            'description' => ['nullable', 'string', 'max:2000'],
+            'price_in_minor' => ['required', 'integer', 'min:0', 'max:4294967295'],
+            'unit' => ['nullable', 'string', Rule::in(['package', 'hour', 'person', 'day', 'event'])],
+            'is_public' => ['boolean'],
+        ]);
+
+        $baseSlug = Str::slug($validated['name']) ?: 'service';
+        $slug = $baseSlug;
+        $suffix = 1;
+
+        while ($vendor->services()->where('slug', $slug)->exists()) {
+            $slug = $baseSlug.'-'.$suffix;
+            $suffix++;
+        }
+
+        DB::transaction(function () use ($vendor, $validated, $slug) {
+            $service = $vendor->services()->create([
+                'name' => $validated['name'],
+                'slug' => $slug,
+                'category' => $validated['category'],
+                'description' => $validated['description'] ?? null,
+                'price_in_minor' => $validated['price_in_minor'],
+                'unit' => $validated['unit'] ?? null,
+                'is_public' => $validated['is_public'] ?? false,
+            ]);
+
+            if ($validated['category'] === 'other') {
+                $service->customCategory()->create([
+                    'name' => $validated['custom_category'],
+                ]);
+            }
+        });
+
+        return to_route('overview');
+    })->name('services.store');
+
+    Route::get('/settings', function (Request $request) {
+        if (! $request->user()->vendor) {
+            return to_route('vendor.onboarding');
+        }
+
+        return Inertia::render('SettingsPage');
+    })->name('settings');
 
     Route::get('/products', function (Request $request) {
         if (! $request->user()->vendor) {
             return to_route('vendor.onboarding');
         }
 
-        return Inertia::render('ProductsPage');
+        return to_route('services.index');
     })->name('products.index');
 
     Route::get('/vendor/onboarding', function (Request $request) {
         $vendor = $request->user()->vendor;
 
         return Inertia::render('VendorOnboardingPage', [
-            'vendorCategories' => collect(config('vendor_categories'))
-                ->map(fn (string $label, string $value) => [
-                    'value' => $value,
-                    'label' => $label,
-                ])
-                ->values(),
             'initialValues' => [
                 'business_name' => $vendor?->name ?? '',
-                'category' => $vendor?->category ?? '',
-                'category_other' => $vendor?->category_other ?? '',
-                'based_in' => $vendor?->based_in ?? '',
+                'location' => $vendor?->location ?? '',
             ],
         ]);
     })->name('vendor.onboarding');
@@ -109,18 +180,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/vendor/onboarding', function (Request $request) {
         $validated = $request->validate([
             'business_name' => ['required', 'string', 'max:120'],
-            'category' => [
-                'required',
-                'string',
-                Rule::in(array_keys(config('vendor_categories'))),
-            ],
-            'category_other' => [
-                'required_if:category,other',
-                'nullable',
-                'string',
-                'max:120',
-            ],
-            'based_in' => ['required', 'string', 'max:120'],
+            'location' => ['required', 'string', 'max:120'],
         ]);
 
         $vendor = $request->user()->vendor;
@@ -144,11 +204,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         $attributes = [
             'name' => $validated['business_name'],
             'slug' => $slug,
-            'category' => $validated['category'],
-            'category_other' => $validated['category'] === 'other'
-                ? $validated['category_other']
-                : null,
-            'based_in' => $validated['based_in'],
+            'location' => $validated['location'],
         ];
 
         if ($vendor) {
@@ -160,6 +216,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ]);
         }
 
-        return to_route('vendor.profile');
+        return to_route('overview');
     })->name('vendor.store');
 });

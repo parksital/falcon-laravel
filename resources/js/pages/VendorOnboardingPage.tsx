@@ -2,39 +2,25 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import AuthSplitLayout from '@/layouts/auth/auth-split-layout';
 import { store } from '@/routes/vendor';
-import { SelectOption } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import { CheckIcon } from '@phosphor-icons/react';
 
 interface VendorOnboardingPageProps {
-    vendorCategories: SelectOption[];
     initialValues: {
         business_name: string;
-        category: string;
-        category_other: string;
-        based_in: string;
+        location: string;
     };
 }
 
 export default function VendorOnboardingPage({
-    vendorCategories,
     initialValues,
 }: VendorOnboardingPageProps) {
     const form = useForm({
         business_name: initialValues.business_name,
-        category: initialValues.category,
-        category_other: initialValues.category_other,
-        based_in: initialValues.based_in,
+        location: initialValues.location,
     });
 
     return (
@@ -63,6 +49,8 @@ export default function VendorOnboardingPage({
                             name="business_name"
                             type="text"
                             autoFocus
+                            required
+                            maxLength={120}
                             placeholder="Required"
                             value={form.data.business_name}
                             onChange={(event) =>
@@ -76,71 +64,20 @@ export default function VendorOnboardingPage({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="vendor-category">
-                            Business category
-                        </Label>
-                        <Select
-                            name="category"
-                            value={form.data.category}
-                            onValueChange={(value) =>
-                                form.setData('category', value)
-                            }
-                        >
-                            <SelectTrigger
-                                id="vendor-category"
-                                className="w-full"
-                            >
-                                <SelectValue placeholder="Required" />
-                            </SelectTrigger>
-                            <SelectContent position="popper">
-                                {vendorCategories.map((vendorCategory) => (
-                                    <SelectItem
-                                        key={vendorCategory.value}
-                                        value={vendorCategory.value}
-                                    >
-                                        {vendorCategory.label}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <InputError message={form.errors.category} />
-                    </div>
-
-                    {form.data.category === 'other' ? (
-                        <div className="grid gap-2">
-                            <Label htmlFor="vendor-category-other">
-                                What type of business is it?
-                            </Label>
-                            <Input
-                                id="vendor-category-other"
-                                name="category_other"
-                                type="text"
-                                placeholder="Event styling, rentals, planning..."
-                                value={form.data.category_other}
-                                onChange={(event) =>
-                                    form.setData(
-                                        'category_other',
-                                        event.target.value,
-                                    )
-                                }
-                            />
-                            <InputError message={form.errors.category_other} />
-                        </div>
-                    ) : null}
-
-                    <div className="grid gap-2">
-                        <Label htmlFor="based-in">Based in</Label>
+                        <Label htmlFor="location">City</Label>
                         <Input
-                            id="based-in"
-                            name="based_in"
+                            id="location"
+                            name="location"
                             type="text"
-                            placeholder="Amsterdam, Noord-Holland"
-                            value={form.data.based_in}
+                            required
+                            maxLength={120}
+                            placeholder="Where are you based?"
+                            value={form.data.location}
                             onChange={(event) =>
-                                form.setData('based_in', event.target.value)
+                                form.setData('location', event.target.value)
                             }
                         />
-                        <InputError message={form.errors.based_in} />
+                        <InputError message={form.errors.location} />
                     </div>
 
                     <Button

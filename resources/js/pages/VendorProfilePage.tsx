@@ -5,9 +5,7 @@ import { Head } from '@inertiajs/react';
 type VendorProfilePageProps = {
     vendor: {
         name: string;
-        category_label: string | null;
-        based_in: string;
-        contact_email: string | null;
+        location: string;
         short_description: string | null;
         is_public: boolean;
     };
@@ -16,10 +14,10 @@ type VendorProfilePageProps = {
 export default function VendorProfilePage({ vendor }: VendorProfilePageProps) {
     return (
         <AppSidebarLayout>
-            <Head title="Vendor Profile" />
+            <Head title="Overview" />
 
             <main className="mx-auto flex h-full w-full max-w-3xl flex-1 flex-col gap-6 p-6">
-                <h1 className="text-2xl font-semibold">Vendor Profile</h1>
+                <h1 className="text-2xl font-semibold">Overview</h1>
 
                 <Card>
                     <CardHeader>
@@ -27,14 +25,8 @@ export default function VendorProfilePage({ vendor }: VendorProfilePageProps) {
                     </CardHeader>
                     <CardContent className="grid gap-3">
                         <div>
-                            <p className="text-muted-foreground">Category</p>
-                            <p className="font-medium">
-                                {vendor.category_label ?? 'Not set'}
-                            </p>
-                        </div>
-                        <div>
-                            <p className="text-muted-foreground">Based in</p>
-                            <p className="font-medium">{vendor.based_in}</p>
+                            <p className="text-muted-foreground">Location</p>
+                            <p className="font-medium">{vendor.location}</p>
                         </div>
                     </CardContent>
                 </Card>

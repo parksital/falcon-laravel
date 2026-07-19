@@ -22,7 +22,7 @@ import { UserInfo } from '@/components/user-info';
 import { useInitials } from '@/hooks/use-initials';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { cn } from '@/lib/utils';
-import { home, logout } from '@/routes';
+import { logout } from '@/routes';
 import { SharedData } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
 import { ListIcon, SignOutIcon } from '@phosphor-icons/react';
@@ -30,9 +30,8 @@ import type { PropsWithChildren } from 'react';
 
 export default function AppHeaderLayout({ children }: PropsWithChildren) {
     const page = usePage<SharedData>();
-    const { auth } = page.props;
+    const { auth, name } = page.props;
     const currentPath = page.url.split('?')[0];
-    const isActive = (path: string) => currentPath === path;
 
     const getInitials = useInitials();
 
@@ -46,63 +45,76 @@ export default function AppHeaderLayout({ children }: PropsWithChildren) {
     return (
         <AppShell>
             <div className="border-b border-sidebar-border/80">
-                <div className="mx-auto flex items-center px-4 py-2 md:max-w-7xl">
-                    {/* Mobile Menu */}
-                    <div className="lg:hidden">
-                        <Sheet>
-                            <SheetTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="mr-2 h-[34px] w-[34px]"
-                                >
-                                    <ListIcon className="h-5 w-5" />
-                                </Button>
-                            </SheetTrigger>
-                            <SheetContent
-                                side="left"
-                                className="flex h-full w-64 flex-col items-stretch justify-between bg-sidebar"
-                            >
-                                <SheetTitle className="sr-only">
-                                    Navigation Menu
-                                </SheetTitle>
-                                <SheetHeader className="flex justify-start text-left">
-                                    <AppLogoIcon className="h-6 w-6 fill-current text-black dark:text-white" />
-                                </SheetHeader>
-                            </SheetContent>
-                        </Sheet>
-                    </div>
+                <div className="mx-auto flex flex-col px-4 md:max-w-7xl">
+                    <div className="flex h-16 items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="lg:hidden">
+                                <Sheet>
+                                    <SheetTrigger asChild>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="-ml-2 size-[34px]"
+                                        >
+                                            <ListIcon data-icon="inline-start" />
+                                        </Button>
+                                    </SheetTrigger>
+                                    <SheetContent
+                                        side="left"
+                                        className="flex h-full w-64 flex-col items-stretch justify-between bg-sidebar"
+                                    >
+                                        <SheetTitle className="sr-only">
+                                            Navigation Menu
+                                        </SheetTitle>
+                                        <SheetHeader className="flex justify-start text-left">
+                                            <AppLogoIcon className="h-6 w-6 fill-current text-black dark:text-white" />
+                                        </SheetHeader>
+                                        <nav className="flex flex-col gap-1 px-4 text-sm font-medium text-sidebar-foreground">
+                                            <Link
+                                                href="/overview"
+                                                className={cn(
+                                                    'px-2 py-2 transition-colors hover:text-foreground',
+                                                    currentPath ===
+                                                        '/overview' &&
+                                                        'text-foreground',
+                                                )}
+                                            >
+                                                Overview
+                                            </Link>
+                                            <Link
+                                                href="/settings"
+                                                className={cn(
+                                                    'px-2 py-2 transition-colors hover:text-foreground',
+                                                    currentPath ===
+                                                        '/settings' &&
+                                                        'text-foreground',
+                                                )}
+                                            >
+                                                Settings
+                                            </Link>
+                                        </nav>
+                                    </SheetContent>
+                                </Sheet>
+                            </div>
 
-                    {/* Desktop Navigation */}
-                    <div className="flex h-full w-full items-center justify-between gap-4">
-                        <nav className="hidden items-center gap-4 text-sm font-medium text-muted-foreground lg:flex">
-                            <Link
-                                href={home()}
-                                className={cn(
-                                    'transition-colors hover:text-foreground',
-                                    isActive('/vendor/onboarding') &&
-                                        'text-foreground',
-                                )}
-                            >
-                                Vendor
-                            </Link>
-                        </nav>
+                            <AppLogoIcon className="size-6 fill-current text-black dark:text-white" />
+                            <span className="text-base font-semibold text-foreground">
+                                {name}
+                            </span>
+                        </div>
+
                         <DropdownMenu>
                             <DropdownMenuTrigger>
                                 <div className="flex flex-row items-center">
-                                    <Avatar className="">
+                                    <Avatar>
                                         <AvatarImage
                                             src={auth.user.avatar}
                                             alt={auth.user.name}
                                         />
-                                        <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
+                                        <AvatarFallback className="bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
                                             {getInitials(auth.user.name)}
                                         </AvatarFallback>
                                     </Avatar>
-
-                                    <div>
-                                        <p></p>
-                                    </div>
                                 </div>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="w-56" align="end">
@@ -129,6 +141,31 @@ export default function AppHeaderLayout({ children }: PropsWithChildren) {
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
+                    </div>
+
+                    <div className="flex items-end">
+                        <nav className="hidden items-center gap-4 text-sm font-medium text-muted-foreground lg:flex">
+                            <Button
+                                variant="ghost"
+                                asChild
+                                className={cn(
+                                    currentPath === '/overview' &&
+                                        'text-foreground',
+                                )}
+                            >
+                                <Link href="/overview">Overview</Link>
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                asChild
+                                className={cn(
+                                    currentPath === '/settings' &&
+                                        'text-foreground',
+                                )}
+                            >
+                                <Link href="/settings">Settings</Link>
+                            </Button>
+                        </nav>
                     </div>
                 </div>
             </div>

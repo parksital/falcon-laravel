@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Vendor extends Model
 {
@@ -14,10 +15,7 @@ class Vendor extends Model
         'user_id',
         'name',
         'slug',
-        'category',
-        'category_other',
-        'based_in',
-        'contact_email',
+        'location',
         'short_description',
         'is_public',
     ];
@@ -25,5 +23,10 @@ class Vendor extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function services(): HasMany
+    {
+        return $this->hasMany(Service::class);
     }
 }

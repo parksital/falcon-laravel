@@ -11,18 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('vendors', function (Blueprint $table) {
+        Schema::create('services', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')
-                ->unique()
+            $table->foreignId('vendor_id')
                 ->constrained()
                 ->cascadeOnDelete();
             $table->string('name');
-            $table->string('slug')->unique();
-            $table->string('location')->index();
-            $table->text('short_description')->nullable();
+            $table->string('slug');
+            $table->string('category')->index();
+            $table->text('description')->nullable();
+            $table->unsignedInteger('price_in_minor')->nullable();
+            $table->string('unit')->nullable();
             $table->boolean('is_public')->default(false)->index();
             $table->timestamps();
+
+            $table->unique(['vendor_id', 'slug']);
+            $table->index(['vendor_id', 'category']);
         });
     }
 
@@ -31,6 +35,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('vendors');
+        Schema::dropIfExists('services');
     }
 };

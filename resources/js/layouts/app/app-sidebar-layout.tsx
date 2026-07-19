@@ -55,7 +55,8 @@ export default function AppSidebarLayout({ children }: PropsWithChildren) {
             <Sidebar collapsible="none" className="h-svh">
                 <SidebarHeader>
                     <div className="flex items-center gap-2 px-2 py-1">
-                        <AppLogoIcon className="h-6 w-6 fill-current text-black dark:text-white" />
+                        {/* Logo Here */}
+
                         <span className="text-sm font-semibold text-foreground">
                             {name}
                         </span>
@@ -73,7 +74,7 @@ export default function AppSidebarLayout({ children }: PropsWithChildren) {
                                     >
                                         <Link href="/vendor/profile">
                                             <StorefrontIcon />
-                                            <span>Vendor Profile</span>
+                                            <span>Overview</span>
                                         </Link>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
