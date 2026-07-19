@@ -9,7 +9,6 @@ return [
     'password_label' => 'Password',
     'password_placeholder' => 'Password',
     'forgot_password' => 'Forgot password?',
-    'remember_me' => 'Remember me',
     'submit' => 'Log in',
     'register_prompt' => "Don't have an account?",
     'register_link' => 'Sign up',

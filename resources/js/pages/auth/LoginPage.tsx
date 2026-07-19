@@ -1,6 +1,5 @@
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
@@ -23,7 +22,6 @@ interface LoginProps {
         password_label: string;
         password_placeholder: string;
         forgot_password: string;
-        remember_me: string;
         submit: string;
         register_prompt: string;
         register_link: string;
@@ -99,17 +97,6 @@ export default function LoginPage({
                                         placeholder={copy.password_placeholder}
                                     />
                                     <InputError message={errors.password} />
-                                </div>
-
-                                <div className="flex items-center space-x-3">
-                                    <Checkbox
-                                        id="remember"
-                                        name="remember"
-                                        tabIndex={3}
-                                    />
-                                    <Label htmlFor="remember">
-                                        {copy.remember_me}
-                                    </Label>
                                 </div>
 
                                 <Button

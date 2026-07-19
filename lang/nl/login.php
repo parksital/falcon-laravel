@@ -9,7 +9,6 @@ return [
     'password_label' => 'Wachtwoord',
     'password_placeholder' => 'Wachtwoord',
     'forgot_password' => 'Wachtwoord vergeten?',
-    'remember_me' => 'Onthoud mij',
     'submit' => 'Inloggen',
     'register_prompt' => 'Nog geen account?',
     'register_link' => 'Aanmelden',
