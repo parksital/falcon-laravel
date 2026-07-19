@@ -37,6 +37,7 @@ export default function LoginPage({
 
                 <Form
                     {...store()}
+                    options={{ preserveState: false, replace: true }}
                     resetOnSuccess={['password']}
                     className="flex flex-col gap-6"
                 >

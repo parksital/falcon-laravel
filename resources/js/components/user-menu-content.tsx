@@ -7,7 +7,7 @@ import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { logout } from '@/routes';
 import { type User } from '@/types';
-import { Link, router } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import { SignOutIcon } from '@phosphor-icons/react';
 
 interface UserMenuContentProps {
@@ -20,6 +20,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
     const handleLogout = () => {
         cleanup();
         router.flushAll();
+        router.post(logout.url(), {}, { preserveState: false, replace: true });
     };
 
     return (
@@ -30,17 +31,15 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                 </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-                <Link
-                    className="block w-full"
-                    href={logout()}
-                    as="button"
-                    onClick={handleLogout}
-                    data-test="logout-button"
-                >
-                    <SignOutIcon className="mr-2" />
-                    Log out
-                </Link>
+            <DropdownMenuItem
+                onClick={(event) => {
+                    event.preventDefault();
+                    handleLogout();
+                }}
+                data-test="logout-button"
+            >
+                <SignOutIcon />
+                Log out
             </DropdownMenuItem>
         </>
     );

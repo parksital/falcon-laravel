@@ -40,6 +40,7 @@ export default function AppHeaderLayout({ children }: PropsWithChildren) {
     const handleLogout = () => {
         cleanup();
         router.flushAll();
+        router.post(logout.url(), {}, { preserveState: false, replace: true });
     };
 
     return (
@@ -127,17 +128,15 @@ export default function AppHeaderLayout({ children }: PropsWithChildren) {
                                     </div>
                                 </DropdownMenuLabel>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem asChild>
-                                    <Link
-                                        className="block w-full"
-                                        href={logout()}
-                                        as="button"
-                                        onClick={handleLogout}
-                                        data-test="logout-button"
-                                    >
-                                        <SignOutIcon className="mr-2" />
-                                        Log out
-                                    </Link>
+                                <DropdownMenuItem
+                                    onClick={(event) => {
+                                        event.preventDefault();
+                                        handleLogout();
+                                    }}
+                                    data-test="logout-button"
+                                >
+                                    <SignOutIcon />
+                                    Log out
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>

@@ -4,7 +4,7 @@ import { Spinner } from '@/components/ui/spinner';
 import AuthSplitLayout from '@/layouts/auth/auth-split-layout';
 import { logout } from '@/routes';
 import { send } from '@/routes/verification';
-import { Form, Head, Link } from '@inertiajs/react';
+import { Form, Head, router } from '@inertiajs/react';
 
 export default function VerifyEmailPage({ status }: { status?: string }) {
     return (
@@ -26,12 +26,19 @@ export default function VerifyEmailPage({ status }: { status?: string }) {
                             Resend verification email
                         </Button>
 
-                        <Link
-                            href={logout()}
+                        <button
+                            type="button"
+                            onClick={(event) => {
+                                event.preventDefault();
+                                router.post(logout.url(), {}, {
+                                    preserveState: false,
+                                    replace: true,
+                                });
+                            }}
                             className="mx-auto block text-foreground text-sm underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current dark:decoration-neutral-500"
                         >
                             Log out
-                        </Link>
+                        </button>
                     </>
                 )}
             </Form>
