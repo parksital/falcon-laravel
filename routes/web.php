@@ -58,6 +58,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         }
 
         $vendor = $request->user()->vendor()->with('services.customCategory')->first();
+        $serviceCategoryLabels = collect(config('service_categories'))
+            ->mapWithKeys(function (string $value) {
+                $translation = __("config-service-categories.{$value}");
+
+                return [
+                    $value => $translation === "config-service-categories.{$value}" ? $value : $translation,
+                ];
+            })
+            ->all();
 
         return Inertia::render('OverviewPage', [
             'vendor' => [
@@ -67,7 +76,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 'location' => $vendor->location,
                 'short_description' => $vendor->short_description,
                 'is_public' => (bool) $vendor->is_public,
-                'created_at' => $vendor->created_at?->format('F j, Y'),
+                'created_at' => $vendor->created_at?->locale(app()->getLocale())->translatedFormat(__('overview.date_format')),
             ],
             'services' => $vendor->services
                 ->map(fn ($service) => [
@@ -75,8 +84,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
                     'name' => $service->name,
                     'category' => $service->category,
                     'category_label' => $service->category === 'other'
-                        ? $service->customCategory?->name ?? config('service_categories.other')
-                        : config("service_categories.{$service->category}", $service->category),
+                        ? ($service->customCategory?->name ?? $serviceCategoryLabels['other'] ?? $service->category)
+                        : $serviceCategoryLabels[$service->category] ?? $service->category,
                     'custom_category' => $service->customCategory?->name,
                     'description' => $service->description,
                     'price_in_minor' => $service->price_in_minor,
@@ -85,12 +94,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ])
                 ->all(),
             'serviceCategories' => collect(config('service_categories'))
-                ->map(fn (string $label, string $value) => [
+                ->map(fn (string $value) => [
                     'value' => $value,
-                    'label' => $label,
+                    'label' => $serviceCategoryLabels[$value] ?? $value,
                 ])
                 ->values()
                 ->all(),
+            'copy' => __('overview'),
         ]);
     })->name('overview');
 
@@ -125,6 +135,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 'business_name' => $vendor?->name ?? '',
                 'location' => $vendor?->location ?? '',
             ],
+            'copy' => __('vendor-onboarding'),
         ]);
     })->name('vendor.onboarding');
 

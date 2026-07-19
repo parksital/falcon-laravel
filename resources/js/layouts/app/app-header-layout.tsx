@@ -9,6 +9,9 @@ import {
     DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuSeparator,
+    DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -30,7 +33,7 @@ import type { PropsWithChildren } from 'react';
 
 export default function AppHeaderLayout({ children }: PropsWithChildren) {
     const page = usePage<SharedData>();
-    const { auth, name } = page.props;
+    const { auth, layoutCopy, name } = page.props;
     const currentPath = page.url.split('?')[0];
 
     const getInitials = useInitials();
@@ -65,7 +68,7 @@ export default function AppHeaderLayout({ children }: PropsWithChildren) {
                                         className="flex h-full w-64 flex-col items-stretch justify-between bg-sidebar"
                                     >
                                         <SheetTitle className="sr-only">
-                                            Navigation Menu
+                                            {layoutCopy.navigation_menu}
                                         </SheetTitle>
                                         <SheetHeader className="flex justify-start text-left">
                                             <AppLogoIcon className="h-6 w-6 fill-current text-black dark:text-white" />
@@ -80,7 +83,7 @@ export default function AppHeaderLayout({ children }: PropsWithChildren) {
                                                         'text-foreground',
                                                 )}
                                             >
-                                                Overview
+                                                {layoutCopy.nav_overview}
                                             </Link>
                                             <Link
                                                 href="/settings"
@@ -91,7 +94,7 @@ export default function AppHeaderLayout({ children }: PropsWithChildren) {
                                                         'text-foreground',
                                                 )}
                                             >
-                                                Settings
+                                                {layoutCopy.nav_settings}
                                             </Link>
                                         </nav>
                                     </SheetContent>
@@ -128,6 +131,20 @@ export default function AppHeaderLayout({ children }: PropsWithChildren) {
                                     </div>
                                 </DropdownMenuLabel>
                                 <DropdownMenuSeparator />
+                                <DropdownMenuSub>
+                                    <DropdownMenuSubTrigger>
+                                        {layoutCopy.language}
+                                    </DropdownMenuSubTrigger>
+                                    <DropdownMenuSubContent>
+                                        <DropdownMenuItem>
+                                            {layoutCopy.language_english}
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem>
+                                            {layoutCopy.language_dutch}
+                                        </DropdownMenuItem>
+                                    </DropdownMenuSubContent>
+                                </DropdownMenuSub>
+                                <DropdownMenuSeparator />
                                 <DropdownMenuItem
                                     onClick={(event) => {
                                         event.preventDefault();
@@ -136,7 +153,7 @@ export default function AppHeaderLayout({ children }: PropsWithChildren) {
                                     data-test="logout-button"
                                 >
                                     <SignOutIcon />
-                                    Log out
+                                    {layoutCopy.logout}
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -152,7 +169,7 @@ export default function AppHeaderLayout({ children }: PropsWithChildren) {
                                         'text-foreground',
                                 )}
                             >
-                                <Link href="/overview">Overview</Link>
+                                <Link href="/overview">{layoutCopy.nav_overview}</Link>
                             </Button>
                             <Button
                                 variant="ghost"
@@ -162,7 +179,7 @@ export default function AppHeaderLayout({ children }: PropsWithChildren) {
                                         'text-foreground',
                                 )}
                             >
-                                <Link href="/settings">Settings</Link>
+                                <Link href="/settings">{layoutCopy.nav_settings}</Link>
                             </Button>
                         </nav>
                     </div>

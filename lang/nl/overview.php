@@ -1,0 +1,80 @@
+<?php
+
+return [
+    'title' => 'Overzicht',
+    'date_format' => 'j F Y',
+
+    'not_set' => 'Niet ingesteld',
+    'not_available' => 'Niet beschikbaar',
+    'public_status' => 'Openbaar',
+    'draft_status' => 'Concept',
+    'other' => 'Anders',
+
+    'overview_heading' => 'Overzicht',
+    'overview_slug' => 'Slug',
+    'overview_location' => 'Locatie',
+    'overview_status' => 'Status',
+    'overview_created_at' => 'Aangemaakt op',
+    'overview_short_description' => 'Korte beschrijving',
+
+    'services_heading' => 'Services',
+    'services_add' => 'Service toevoegen',
+    'services_empty' => 'Er zijn nog geen services toegevoegd.',
+    'services_table_name' => 'Naam',
+    'services_table_category' => 'Categorie',
+    'services_table_price' => 'Prijs',
+    'services_table_status' => 'Status',
+
+    'service_step' => 'Stap :step van :total',
+    'service_add_title' => 'Service toevoegen',
+    'service_edit_title' => 'Service bewerken',
+    'service_edit_description' => 'Werk de gegevens bij die voor deze service worden getoond.',
+
+    'service_field_name' => 'Naam',
+    'service_field_category' => 'Categorie',
+    'service_field_category_placeholder' => 'Selecteer categorie',
+    'service_field_custom_category' => 'Aangepaste categorie',
+    'service_field_description' => 'Beschrijving',
+    'service_field_price_in_minor' => 'Prijs in centen',
+    'service_field_price_placeholder' => '0',
+    'service_field_unit' => 'Prijs per',
+    'service_field_unit_placeholder' => 'Selecteer eenheid',
+
+    'service_unit_package' => 'Pakket',
+    'service_unit_hour' => 'Uur',
+    'service_unit_person' => 'Persoon',
+    'service_unit_day' => 'Dag',
+    'service_unit_event' => 'Evenement',
+    'service_unit_description' => 'Kies waar deze prijs voor geldt, zoals evenement, uur of persoon.',
+
+    'service_preview_by' => 'Door',
+    'service_preview_price' => 'Prijs',
+    'service_preview_per' => 'Per',
+
+    'service_make_public_label' => 'Openbaar maken',
+    'service_make_public_description' => 'Toon deze service op je openbare vendorpagina zodra deze is opgeslagen.',
+
+    'service_action_cancel' => 'Annuleren',
+    'service_action_back' => 'Terug',
+    'service_action_continue' => 'Verder',
+    'service_action_save_service' => 'Service opslaan',
+    'service_action_save_changes' => 'Wijzigingen opslaan',
+
+    'cancel_service_title' => 'Service annuleren?',
+    'cancel_service_description' => 'Alle gegevens die je voor deze service hebt ingevuld gaan verloren.',
+    'cancel_service_keep_editing' => 'Blijven bewerken',
+    'cancel_service_confirm' => 'Service annuleren',
+
+    'danger_zone_heading' => 'Gevarenzone',
+    'danger_zone_delete_service' => 'Service verwijderen',
+
+    'delete_service_title' => 'Service verwijderen?',
+    'delete_service_description' => 'Deze service wordt verwijderd van je vendorpagina.',
+    'delete_service_type_to_confirm_before' => 'Typ',
+    'delete_service_type_to_confirm_after' => 'om te bevestigen.',
+    'delete_service_fallback_service_name' => 'de servicenaam',
+    'delete_service_service_name' => 'Servicenaam',
+    'delete_service_keep_service' => 'Service behouden',
+    'delete_service_confirm' => 'Service verwijderen',
+    'delete_service_confirmation_mismatch' => 'De servicenaam komt niet overeen.',
+];

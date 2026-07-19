@@ -6,8 +6,8 @@ import {
 import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { logout } from '@/routes';
-import { type User } from '@/types';
-import { router } from '@inertiajs/react';
+import { SharedData, type User } from '@/types';
+import { router, usePage } from '@inertiajs/react';
 import { SignOutIcon } from '@phosphor-icons/react';
 
 interface UserMenuContentProps {
@@ -15,6 +15,7 @@ interface UserMenuContentProps {
 }
 
 export function UserMenuContent({ user }: UserMenuContentProps) {
+    const { layoutCopy } = usePage<SharedData>().props;
     const cleanup = useMobileNavigation();
 
     const handleLogout = () => {
@@ -39,7 +40,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                 data-test="logout-button"
             >
                 <SignOutIcon />
-                Log out
+                {layoutCopy.logout}
             </DropdownMenuItem>
         </>
     );

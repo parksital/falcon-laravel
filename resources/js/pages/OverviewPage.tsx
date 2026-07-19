@@ -85,12 +85,24 @@ interface OverviewPageProps {
         value: string;
         label: string;
     }[];
+    copy: Record<string, string>;
+}
+
+function interpolate(
+    value: string,
+    replacements: Record<string, string>,
+) {
+    return Object.entries(replacements).reduce(
+        (result, [key, replacement]) => result.replace(`:${key}`, replacement),
+        value,
+    );
 }
 
 function getServiceCategoryLabel(
     serviceCategories: OverviewPageProps['serviceCategories'],
     category: string,
-    customCategory: string,
+    customCategory: string | null,
+    copy: OverviewPageProps['copy'],
 ) {
     if (category === 'other') {
         return (
@@ -98,17 +110,26 @@ function getServiceCategoryLabel(
             serviceCategories.find(
                 (serviceCategory) => serviceCategory.value === category,
             )?.label ||
-            'Other'
+            copy.other
         );
     }
 
     return (
-        serviceCategories.find((serviceCategory) => serviceCategory.value === category)?.label || 'Not set'
+        serviceCategories.find((serviceCategory) => serviceCategory.value === category)?.label || copy.not_set
     );
 }
 
-function formatPriceInMinor(priceInMinor: string | number | null) {
-    if (priceInMinor === null || priceInMinor === '') return 'Not set';
+function getServiceUnitLabel(copy: OverviewPageProps['copy'], unit: string | null) {
+    if (!unit) return copy.not_set;
+
+    return copy[`service_unit_${unit}`] || unit;
+}
+
+function formatPriceInMinor(
+    priceInMinor: string | number | null,
+    notSetLabel: string,
+) {
+    if (priceInMinor === null || priceInMinor === '') return notSetLabel;
 
     return formatPriceInMinorValue(String(priceInMinor));
 }
@@ -138,6 +159,7 @@ export default function OverviewPage({
     vendor,
     services,
     serviceCategories,
+    copy,
 }: OverviewPageProps) {
     const [isAddServiceOpen, setIsAddServiceOpen] = useState(false);
     const [isCancelAddServiceOpen, setIsCancelAddServiceOpen] = useState(false);
@@ -154,12 +176,12 @@ export default function OverviewPage({
 
     return (
         <AppLayout>
-            <Head title="Overview" />
+            <Head title={copy.title} />
 
             <main className="container mx-auto flex h-full w-full flex-1 flex-col gap-10 p-6">
                 <section className="flex flex-col gap-3">
                     <h1 className="flex gap-2 text-2xl font-semibold">
-                        <span>Overview</span>
+                        <span>{copy.overview_heading}</span>
                         <span className="text-muted-foreground">·</span>
                         <span>{vendor.title}</span>
                     </h1>
@@ -167,32 +189,32 @@ export default function OverviewPage({
                     <Card>
                         <CardContent className="grid grid-cols-5 gap-4">
                             <div className="grid gap-1">
-                                <p className="text-muted-foreground">Slug</p>
+                                <p className="text-muted-foreground">{copy.overview_slug}</p>
                                 <p className="font-medium">/{vendor.slug}</p>
                             </div>
 
                             <div className="grid gap-1">
-                                <p className="text-muted-foreground">Location</p>
+                                <p className="text-muted-foreground">{copy.overview_location}</p>
                                 <p className="font-medium">{vendor.location}</p>
                             </div>
 
                             <div className="grid gap-1">
-                                <p className="text-muted-foreground">Status</p>
+                                <p className="text-muted-foreground">{copy.overview_status}</p>
                                 <Badge variant={vendor.is_public ? 'default' : 'secondary'}>
-                                    {vendor.is_public ? 'Public' : 'Draft'}
+                                    {vendor.is_public ? copy.public_status : copy.draft_status}
                                 </Badge>
                             </div>
 
                             <div className="grid gap-1">
-                                <p className="text-muted-foreground">Created at</p>
+                                <p className="text-muted-foreground">{copy.overview_created_at}</p>
                                 <p className="font-medium">
-                                    {vendor.created_at ?? 'Not available'}
+                                    {vendor.created_at ?? copy.not_available}
                                 </p>
                             </div>
 
                             <div className="grid gap-1 sm:col-span-3">
-                                <p className="text-muted-foreground">Short description</p>
-                                <p className="font-medium">{vendor.short_description ?? 'Not set'}</p>
+                                <p className="text-muted-foreground">{copy.overview_short_description}</p>
+                                <p className="font-medium">{vendor.short_description ?? copy.not_set}</p>
                             </div>
                         </CardContent>
                     </Card>
@@ -200,7 +222,7 @@ export default function OverviewPage({
 
                 <section className="flex flex-col gap-3">
                     <div className="flex items-center justify-between">
-                        <h2 className="text-2xl font-semibold">Services</h2>
+                        <h2 className="text-2xl font-semibold">{copy.services_heading}</h2>
 
                         <Button
                             onClick={() => {
@@ -211,17 +233,17 @@ export default function OverviewPage({
                             }}
                         >
                             <PlusIcon />
-                            Add service
+                            {copy.services_add}
                         </Button>
                     </div>
 
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Name</TableHead>
-                                <TableHead>Category</TableHead>
-                                <TableHead>Price</TableHead>
-                                <TableHead>Status</TableHead>
+                                <TableHead>{copy.services_table_name}</TableHead>
+                                <TableHead>{copy.services_table_category}</TableHead>
+                                <TableHead>{copy.services_table_price}</TableHead>
+                                <TableHead>{copy.services_table_status}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -253,12 +275,12 @@ export default function OverviewPage({
                                             <Badge variant="secondary">{service.category_label}</Badge>
                                         </TableCell>
                                         <TableCell>
-                                            {formatPriceInMinor(service.price_in_minor)}
-                                            {service.unit ? ` / ${service.unit}` : ''}
+                                            {formatPriceInMinor(service.price_in_minor, copy.not_set)}
+                                            {service.unit ? ` / ${getServiceUnitLabel(copy, service.unit)}` : ''}
                                         </TableCell>
                                         <TableCell>
                                             <Badge variant={service.is_public ? 'default' : 'secondary'}>
-                                                {service.is_public ? 'Public' : 'Draft'}
+                                                {service.is_public ? copy.public_status : copy.draft_status}
                                             </Badge>
                                         </TableCell>
                                     </TableRow>
@@ -269,7 +291,7 @@ export default function OverviewPage({
                                         colSpan={4}
                                         className="text-center text-muted-foreground"
                                     >
-                                        No services have been added yet.
+                                        {copy.services_empty}
                                     </TableCell>
                                 </TableRow>
                             )}
@@ -315,16 +337,19 @@ export default function OverviewPage({
                         }}
                     >
                         <DialogHeader>
-                            <DialogTitle>Add service</DialogTitle>
+                            <DialogTitle>{copy.service_add_title}</DialogTitle>
                             <DialogDescription>
-                                Step {addServiceStep} of 3
+                                {interpolate(copy.service_step, {
+                                    step: String(addServiceStep),
+                                    total: '3',
+                                })}
                             </DialogDescription>
                         </DialogHeader>
 
                         {addServiceStep === 1 ? (
                             <div className="flex flex-col gap-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="service-name">Name</Label>
+                                    <Label htmlFor="service-name">{copy.service_field_name}</Label>
                                     <Input
                                         id="service-name"
                                         name="name"
@@ -339,7 +364,7 @@ export default function OverviewPage({
 
                                 <div className="grid gap-2">
                                     <Label htmlFor="service-category">
-                                        Category
+                                        {copy.service_field_category}
                                     </Label>
                                     <Select
                                         name="category"
@@ -353,7 +378,7 @@ export default function OverviewPage({
                                             id="service-category"
                                             className="w-full"
                                         >
-                                            <SelectValue placeholder="Select category" />
+                                            <SelectValue placeholder={copy.service_field_category_placeholder} />
                                         </SelectTrigger>
                                         <SelectContent position="popper">
                                             <SelectGroup>
@@ -371,7 +396,7 @@ export default function OverviewPage({
                                 {addForm.data.category === 'other' ? (
                                     <div className="grid gap-2">
                                         <Label htmlFor="service-custom-category">
-                                            Custom category
+                                            {copy.service_field_custom_category}
                                         </Label>
                                         <Input
                                             id="service-custom-category"
@@ -388,7 +413,7 @@ export default function OverviewPage({
 
                                 <div className="grid gap-2">
                                     <Label htmlFor="service-description">
-                                        Description
+                                        {copy.service_field_description}
                                     </Label>
                                     <Textarea
                                         id="service-description"
@@ -407,7 +432,7 @@ export default function OverviewPage({
                             <div className="flex flex-col gap-4">
                                 <Field>
                                     <FieldLabel htmlFor="service-price">
-                                        Price in cents
+                                        {copy.service_field_price_in_minor}
                                     </FieldLabel>
                                     <InputGroup>
                                         <InputGroupInput
@@ -416,7 +441,7 @@ export default function OverviewPage({
                                             inputMode="numeric"
                                             type="text"
                                             required
-                                            placeholder="0"
+                                            placeholder={copy.service_field_price_placeholder}
                                             value={addForm.data.price_in_minor}
                                             onChange={(event) => addForm.setData('price_in_minor', event.target.value.replace(/\D/g, ''))}
                                         />
@@ -429,7 +454,7 @@ export default function OverviewPage({
 
                                 <Field>
                                     <FieldLabel htmlFor="service-unit">
-                                        Charge per
+                                        {copy.service_field_unit}
                                     </FieldLabel>
                                     <Select
                                         name="unit"
@@ -442,31 +467,30 @@ export default function OverviewPage({
                                             id="service-unit"
                                             className="w-full"
                                         >
-                                            <SelectValue placeholder="Select unit" />
+                                            <SelectValue placeholder={copy.service_field_unit_placeholder} />
                                         </SelectTrigger>
                                         <SelectContent position="popper">
                                             <SelectGroup>
                                                 <SelectItem value="package">
-                                                    Package
+                                                    {copy.service_unit_package}
                                                 </SelectItem>
                                                 <SelectItem value="hour">
-                                                    Hour
+                                                    {copy.service_unit_hour}
                                                 </SelectItem>
                                                 <SelectItem value="person">
-                                                    Person
+                                                    {copy.service_unit_person}
                                                 </SelectItem>
                                                 <SelectItem value="day">
-                                                    Day
+                                                    {copy.service_unit_day}
                                                 </SelectItem>
                                                 <SelectItem value="event">
-                                                    Event
+                                                    {copy.service_unit_event}
                                                 </SelectItem>
                                             </SelectGroup>
                                         </SelectContent>
                                     </Select>
                                     <FieldDescription>
-                                        Choose what this price applies to, like
-                                        event, hour, or person.
+                                        {copy.service_unit_description}
                                     </FieldDescription>
                                     <InputError message={addForm.errors.unit} />
                                 </Field>
@@ -483,6 +507,7 @@ export default function OverviewPage({
                                                 serviceCategories,
                                                 addForm.data.category,
                                                 addForm.data.custom_category,
+                                                copy,
                                             )}
                                         </Badge>
 
@@ -491,7 +516,7 @@ export default function OverviewPage({
                                         </h2>
 
                                         <p>
-                                            By <strong>{vendor.title}</strong>
+                                            {copy.service_preview_by} <strong>{vendor.title}</strong>
                                         </p>
 
                                         <p className="font-medium">
@@ -504,15 +529,15 @@ export default function OverviewPage({
 
                                         <div className="grid gap-1">
                                             <p className="text-muted-foreground">
-                                                Price
+                                                {copy.service_preview_price}
                                             </p>
-                                            <p className="font-medium">{formatPriceInMinor(addForm.data.price_in_minor)}</p>
+                                            <p className="font-medium">{formatPriceInMinor(addForm.data.price_in_minor, copy.not_set)}</p>
                                         </div>
 
                                         <div className="grid gap-1">
-                                            <p className="text-muted-foreground">Per</p>
+                                            <p className="text-muted-foreground">{copy.service_preview_per}</p>
                                             <p className="font-medium capitalize">
-                                                {addForm.data.unit}
+                                                {getServiceUnitLabel(copy, addForm.data.unit)}
                                             </p>
                                         </div>
                                     </div>
@@ -532,11 +557,10 @@ export default function OverviewPage({
                                 />
                                 <FieldContent>
                                     <FieldLabel htmlFor="service-is-public">
-                                        Make public
+                                        {copy.service_make_public_label}
                                     </FieldLabel>
                                     <FieldDescription>
-                                        Show this service on your public vendor
-                                        page once it has been saved.
+                                        {copy.service_make_public_description}
                                     </FieldDescription>
                                 </FieldContent>
                             </Field>
@@ -550,7 +574,7 @@ export default function OverviewPage({
                                     setIsCancelAddServiceOpen(true);
                                 }}
                             >
-                                Cancel
+                                {copy.service_action_cancel}
                             </Button>
                             {addServiceStep > 1 ? (
                                 <Button
@@ -562,15 +586,15 @@ export default function OverviewPage({
                                         );
                                     }}
                                 >
-                                    Back
+                                    {copy.service_action_back}
                                 </Button>
                             ) : null}
                             <Button type="submit" disabled={addForm.processing}>
                                 {addServiceStep < 3
-                                    ? 'Continue'
+                                    ? copy.service_action_continue
                                     : addForm.processing
                                         ? <Spinner />
-                                        : 'Save service'}
+                                        : copy.service_action_save_service}
                             </Button>
                         </DialogFooter>
                     </form>
@@ -583,9 +607,9 @@ export default function OverviewPage({
             >
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Cancel service?</DialogTitle>
+                        <DialogTitle>{copy.cancel_service_title}</DialogTitle>
                         <DialogDescription>
-                            Any details you entered for this service will be lost.
+                            {copy.cancel_service_description}
                         </DialogDescription>
                     </DialogHeader>
 
@@ -597,7 +621,7 @@ export default function OverviewPage({
                                 setIsCancelAddServiceOpen(false);
                             }}
                         >
-                            Keep editing
+                            {copy.cancel_service_keep_editing}
                         </Button>
                         <Button
                             type="button"
@@ -609,7 +633,7 @@ export default function OverviewPage({
                                 addForm.clearErrors();
                             }}
                         >
-                            Cancel service
+                            {copy.cancel_service_confirm}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -639,15 +663,15 @@ export default function OverviewPage({
                         }}
                     >
                         <SheetHeader>
-                            <SheetTitle>Edit service</SheetTitle>
+                            <SheetTitle>{copy.service_edit_title}</SheetTitle>
                             <SheetDescription>
-                                Update the details shown for this service.
+                                {copy.service_edit_description}
                             </SheetDescription>
                         </SheetHeader>
 
                         <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="edit-service-name">Name</Label>
+                                <Label htmlFor="edit-service-name">{copy.service_field_name}</Label>
                                 <Input
                                     id="edit-service-name"
                                     name="name"
@@ -659,7 +683,7 @@ export default function OverviewPage({
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="edit-service-category">Category</Label>
+                                <Label htmlFor="edit-service-category">{copy.service_field_category}</Label>
                                 <Select
                                     name="category"
                                     required
@@ -670,7 +694,7 @@ export default function OverviewPage({
                                         id="edit-service-category"
                                         className="w-full"
                                     >
-                                        <SelectValue placeholder="Select category" />
+                                        <SelectValue placeholder={copy.service_field_category_placeholder} />
                                     </SelectTrigger>
                                     <SelectContent position="popper">
                                         <SelectGroup>
@@ -688,7 +712,7 @@ export default function OverviewPage({
                             {editForm.data.category === 'other' ? (
                                 <div className="grid gap-2">
                                     <Label htmlFor="edit-service-custom-category">
-                                        Custom category
+                                        {copy.service_field_custom_category}
                                     </Label>
                                     <Input
                                         id="edit-service-custom-category"
@@ -702,7 +726,7 @@ export default function OverviewPage({
                             ) : null}
 
                             <div className="grid gap-2">
-                                <Label htmlFor="edit-service-description">Description</Label>
+                                <Label htmlFor="edit-service-description">{copy.service_field_description}</Label>
                                 <Textarea
                                     id="edit-service-description"
                                     name="description"
@@ -714,7 +738,7 @@ export default function OverviewPage({
 
                             <Field>
                                 <FieldLabel htmlFor="edit-service-price">
-                                    Price in cents
+                                    {copy.service_field_price_in_minor}
                                 </FieldLabel>
                                 <InputGroup>
                                     <InputGroupInput
@@ -723,7 +747,7 @@ export default function OverviewPage({
                                         inputMode="numeric"
                                         type="text"
                                         required
-                                        placeholder="0"
+                                        placeholder={copy.service_field_price_placeholder}
                                         value={editForm.data.price_in_minor}
                                         onChange={(event) => editForm.setData('price_in_minor', event.target.value.replace(/\D/g, ''))}
                                     />
@@ -735,7 +759,7 @@ export default function OverviewPage({
 
                             <Field>
                                 <FieldLabel htmlFor="edit-service-unit">
-                                    Charge per
+                                    {copy.service_field_unit}
                                 </FieldLabel>
                                 <Select
                                     name="unit"
@@ -746,31 +770,30 @@ export default function OverviewPage({
                                         id="edit-service-unit"
                                         className="w-full"
                                     >
-                                        <SelectValue placeholder="Select unit" />
+                                        <SelectValue placeholder={copy.service_field_unit_placeholder} />
                                     </SelectTrigger>
                                     <SelectContent position="popper">
                                         <SelectGroup>
                                             <SelectItem value="package">
-                                                Package
+                                                {copy.service_unit_package}
                                             </SelectItem>
                                             <SelectItem value="hour">
-                                                Hour
+                                                {copy.service_unit_hour}
                                             </SelectItem>
                                             <SelectItem value="person">
-                                                Person
+                                                {copy.service_unit_person}
                                             </SelectItem>
                                             <SelectItem value="day">
-                                                Day
+                                                {copy.service_unit_day}
                                             </SelectItem>
                                             <SelectItem value="event">
-                                                Event
+                                                {copy.service_unit_event}
                                             </SelectItem>
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
                                 <FieldDescription>
-                                    Choose what this price applies to, like
-                                    event, hour, or person.
+                                    {copy.service_unit_description}
                                 </FieldDescription>
                                 <InputError message={editForm.errors.unit} />
                             </Field>
@@ -784,17 +807,16 @@ export default function OverviewPage({
                                 />
                                 <FieldContent>
                                     <FieldLabel htmlFor="edit-service-is-public">
-                                        Make public
+                                        {copy.service_make_public_label}
                                     </FieldLabel>
                                     <FieldDescription>
-                                        Show this service on your public vendor
-                                        page once it has been saved.
+                                        {copy.service_make_public_description}
                                     </FieldDescription>
                                 </FieldContent>
                             </Field>
 
                             <div className="flex flex-col gap-3 border-t pt-4">
-                                <h3 className="font-medium">Danger zone</h3>
+                                <h3 className="font-medium">{copy.danger_zone_heading}</h3>
                                 <Button
                                 type="button"
                                 variant="destructive"
@@ -804,7 +826,7 @@ export default function OverviewPage({
                                     setIsDeleteServiceOpen(true);
                                 }}
                             >
-                                    Delete service
+                                    {copy.danger_zone_delete_service}
                                 </Button>
                             </div>
                         </div>
@@ -820,10 +842,10 @@ export default function OverviewPage({
                                     editForm.clearErrors();
                                 }}
                             >
-                                Cancel
+                                {copy.service_action_cancel}
                             </Button>
                             <Button type="submit" disabled={!editForm.isDirty || editForm.processing}>
-                                {editForm.processing ? <Spinner /> : 'Save changes'}
+                                {editForm.processing ? <Spinner /> : copy.service_action_save_changes}
                             </Button>
                         </SheetFooter>
                     </form>
@@ -843,17 +865,21 @@ export default function OverviewPage({
             >
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Delete service?</DialogTitle>
+                        <DialogTitle>{copy.delete_service_title}</DialogTitle>
                         <DialogDescription>
-                            This service will be removed from your vendor page.
+                            {copy.delete_service_description}
                             <br />
-                            Type <span className="font-medium text-foreground">{editingService?.name ?? 'the service name'}</span> to confirm.
+                            {copy.delete_service_type_to_confirm_before}{' '}
+                            <span className="font-medium text-foreground">
+                                {editingService?.name ?? copy.delete_service_fallback_service_name}
+                            </span>{' '}
+                            {copy.delete_service_type_to_confirm_after}
                         </DialogDescription>
                     </DialogHeader>
 
                     <div className="grid gap-2">
                         <Label htmlFor="delete-service-confirmation-name">
-                            Service name
+                            {copy.delete_service_service_name}
                         </Label>
                         <Input
                             id="delete-service-confirmation-name"
@@ -874,7 +900,7 @@ export default function OverviewPage({
                                 deleteForm.clearErrors();
                             }}
                         >
-                            Keep service
+                            {copy.delete_service_keep_service}
                         </Button>
                         <Button
                             type="button"
@@ -897,7 +923,7 @@ export default function OverviewPage({
                                 });
                             }}
                         >
-                            {deleteForm.processing ? <Spinner /> : 'Delete service'}
+                            {deleteForm.processing ? <Spinner /> : copy.delete_service_confirm}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

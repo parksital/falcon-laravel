@@ -14,24 +14,39 @@ interface LoginProps {
     status?: string;
     canResetPassword: boolean;
     canRegister: boolean;
+    copy: {
+        title: string;
+        heading: string;
+        description: string;
+        email_label: string;
+        email_placeholder: string;
+        password_label: string;
+        password_placeholder: string;
+        forgot_password: string;
+        remember_me: string;
+        submit: string;
+        register_prompt: string;
+        register_link: string;
+    };
 }
 
 export default function LoginPage({
     status,
     canResetPassword,
     canRegister,
+    copy,
 }: LoginProps) {
     return (
         <AuthSplitLayout>
-            <Head title="Log in" />
+            <Head title={copy.title} />
 
             <div className="mx-auto flex w-[350px] flex-col justify-center space-y-6">
                 <div className="flex flex-col items-center gap-2 text-center">
                     <h1 className="text-xl font-medium">
-                        Log in to your account
+                        {copy.heading}
                     </h1>
                     <p className="text-sm text-balance text-muted-foreground">
-                        Enter your email and password below to log in
+                        {copy.description}
                     </p>
                 </div>
 
@@ -45,7 +60,7 @@ export default function LoginPage({
                         <>
                             <div className="grid gap-6">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="email">Email address</Label>
+                                    <Label htmlFor="email">{copy.email_label}</Label>
                                     <Input
                                         id="email"
                                         type="email"
@@ -54,7 +69,7 @@ export default function LoginPage({
                                         autoFocus
                                         tabIndex={1}
                                         autoComplete="email"
-                                        placeholder="email@example.com"
+                                        placeholder={copy.email_placeholder}
                                     />
                                     <InputError message={errors.email} />
                                 </div>
@@ -62,7 +77,7 @@ export default function LoginPage({
                                 <div className="grid gap-2">
                                     <div className="flex items-center">
                                         <Label htmlFor="password">
-                                            Password
+                                            {copy.password_label}
                                         </Label>
                                         {canResetPassword && (
                                             <Link
@@ -70,7 +85,7 @@ export default function LoginPage({
                                                 className="ml-auto text-foreground text-xs underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current dark:decoration-neutral-500"
                                                 tabIndex={5}
                                             >
-                                                Forgot password?
+                                                {copy.forgot_password}
                                             </Link>
                                         )}
                                     </div>
@@ -81,7 +96,7 @@ export default function LoginPage({
                                         required
                                         tabIndex={2}
                                         autoComplete="current-password"
-                                        placeholder="Password"
+                                        placeholder={copy.password_placeholder}
                                     />
                                     <InputError message={errors.password} />
                                 </div>
@@ -93,7 +108,7 @@ export default function LoginPage({
                                         tabIndex={3}
                                     />
                                     <Label htmlFor="remember">
-                                        Remember me
+                                        {copy.remember_me}
                                     </Label>
                                 </div>
 
@@ -105,19 +120,19 @@ export default function LoginPage({
                                     data-test="login-button"
                                 >
                                     {processing && <Spinner />}
-                                    Log in
+                                    {copy.submit}
                                 </Button>
                             </div>
 
                             {canRegister && (
                                 <div className="text-center text-xs text-muted-foreground">
-                                    Don't have an account?{' '}
+                                    {copy.register_prompt}{' '}
                                     <Link
                                         href={register()}
                                         tabIndex={5}
                                         className="text-foreground text-xs underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current dark:decoration-neutral-500"
                                     >
-                                        Sign up
+                                        {copy.register_link}
                                     </Link>
                                 </div>
                             )}

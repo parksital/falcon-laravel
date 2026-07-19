@@ -1,6 +1,6 @@
 import { Form, Head } from '@inertiajs/react';
 
-import { update } from '@/actions/App/Http/Controllers/Settings/PasswordController';
+import { store } from '@/actions/Laravel/Fortify/Http/Controllers/NewPasswordController';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,33 +11,45 @@ import AuthSplitLayout from '@/layouts/auth/auth-split-layout';
 interface ResetPasswordProps {
     token: string;
     email: string;
+    copy: {
+        title: string;
+        heading: string;
+        description: string;
+        email_label: string;
+        password_label: string;
+        password_placeholder: string;
+        password_confirmation_label: string;
+        password_confirmation_placeholder: string;
+        submit: string;
+    };
 }
 
 export default function ResetPasswordPage({
     token,
     email,
+    copy,
 }: ResetPasswordProps) {
     return (
         <AuthSplitLayout>
-            <Head title="Reset password" />
+            <Head title={copy.title} />
 
             <div className="mx-auto flex w-[350px] flex-col justify-center space-y-6">
                 <div className="flex flex-col items-center gap-2 text-center">
-                    <h1 className="text-xl font-medium">Reset password</h1>
+                    <h1 className="text-xl font-medium">{copy.heading}</h1>
                     <p className="text-sm text-balance text-muted-foreground">
-                        Please enter your new password below.
+                        {copy.description}
                     </p>
                 </div>
 
                 <Form
-                    {...update.form()}
+                    {...store.form()}
                     transform={(data) => ({ ...data, token, email })}
                     resetOnSuccess={['password', 'password_confirmation']}
                 >
                     {({ processing, errors }) => (
                         <div className="grid gap-6">
                             <div className="grid gap-2">
-                                <Label htmlFor="email">Email</Label>
+                                <Label htmlFor="email">{copy.email_label}</Label>
                                 <Input
                                     id="email"
                                     type="email"
@@ -54,7 +66,7 @@ export default function ResetPasswordPage({
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="password">Password</Label>
+                                <Label htmlFor="password">{copy.password_label}</Label>
                                 <Input
                                     id="password"
                                     type="password"
@@ -62,14 +74,14 @@ export default function ResetPasswordPage({
                                     autoComplete="new-password"
                                     className="mt-1 block w-full"
                                     autoFocus
-                                    placeholder="Password"
+                                    placeholder={copy.password_placeholder}
                                 />
                                 <InputError message={errors.password} />
                             </div>
 
                             <div className="grid gap-2">
                                 <Label htmlFor="password_confirmation">
-                                    Confirm password
+                                    {copy.password_confirmation_label}
                                 </Label>
                                 <Input
                                     id="password_confirmation"
@@ -77,7 +89,7 @@ export default function ResetPasswordPage({
                                     name="password_confirmation"
                                     autoComplete="new-password"
                                     className="mt-1 block w-full"
-                                    placeholder="Confirm password"
+                                    placeholder={copy.password_confirmation_placeholder}
                                 />
                                 <InputError
                                     message={errors.password_confirmation}
@@ -92,7 +104,7 @@ export default function ResetPasswordPage({
                                 data-test="reset-password-button"
                             >
                                 {processing && <Spinner />}
-                                Reset password
+                                {copy.submit}
                             </Button>
                         </div>
                     )}

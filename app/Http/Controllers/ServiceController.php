@@ -104,7 +104,7 @@ class ServiceController extends Controller
         $request->validate([
             'confirmation_name' => ['required', 'string', Rule::in([$service->name])],
         ], [
-            'confirmation_name.in' => 'The service name does not match.',
+            'confirmation_name.in' => __('overview.delete_service_confirmation_mismatch'),
         ]);
 
         $service->delete();
@@ -116,7 +116,7 @@ class ServiceController extends Controller
     {
         return $request->validate([
             'name' => ['required', 'string', 'max:120'],
-            'category' => ['required', 'string', Rule::in(array_keys(config('service_categories')))],
+            'category' => ['required', 'string', Rule::in(config('service_categories'))],
             'custom_category' => ['nullable', 'required_if:category,other', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:2000'],
             'price_in_minor' => ['required', 'integer', 'min:0', 'max:4294967295'],

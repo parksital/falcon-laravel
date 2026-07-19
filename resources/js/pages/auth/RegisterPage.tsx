@@ -8,16 +8,35 @@ import AuthSplitLayout from '@/layouts/auth/auth-split-layout';
 import { login } from '@/routes';
 import { Form, Head, Link } from '@inertiajs/react';
 
-export default function RegisterPage() {
+interface RegisterPageProps {
+    copy: {
+        title: string;
+        heading: string;
+        description: string;
+        name_label: string;
+        name_placeholder: string;
+        email_label: string;
+        email_placeholder: string;
+        password_label: string;
+        password_placeholder: string;
+        password_confirmation_label: string;
+        password_confirmation_placeholder: string;
+        submit: string;
+        login_prompt: string;
+        login_link: string;
+    };
+}
+
+export default function RegisterPage({ copy }: RegisterPageProps) {
     return (
         <AuthSplitLayout>
-            <Head title="Create Account" />
+            <Head title={copy.title} />
 
             <div className="mx-auto flex w-[350px] flex-col justify-center space-y-6">
                 <div className="flex flex-col items-center gap-2 text-center">
-                    <h1 className="text-xl font-medium">Create an account</h1>
+                    <h1 className="text-xl font-medium">{copy.heading}</h1>
                     <p className="text-sm text-balance text-muted-foreground">
-                        Enter your details below to create your account
+                        {copy.description}
                     </p>
                 </div>
                 <Form
@@ -30,7 +49,7 @@ export default function RegisterPage() {
                         <>
                             <div className="grid gap-6">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="name">Name</Label>
+                                    <Label htmlFor="name">{copy.name_label}</Label>
                                     <Input
                                         id="name"
                                         type="text"
@@ -39,7 +58,7 @@ export default function RegisterPage() {
                                         tabIndex={1}
                                         autoComplete="name"
                                         name="name"
-                                        placeholder="Full name"
+                                        placeholder={copy.name_placeholder}
                                     />
                                     <InputError
                                         message={errors.name}
@@ -48,7 +67,7 @@ export default function RegisterPage() {
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="email">Email address</Label>
+                                    <Label htmlFor="email">{copy.email_label}</Label>
                                     <Input
                                         id="email"
                                         type="email"
@@ -56,13 +75,13 @@ export default function RegisterPage() {
                                         tabIndex={2}
                                         autoComplete="email"
                                         name="email"
-                                        placeholder="email@example.com"
+                                        placeholder={copy.email_placeholder}
                                     />
                                     <InputError message={errors.email} />
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="password">Password</Label>
+                                    <Label htmlFor="password">{copy.password_label}</Label>
                                     <Input
                                         id="password"
                                         type="password"
@@ -70,14 +89,14 @@ export default function RegisterPage() {
                                         tabIndex={3}
                                         autoComplete="new-password"
                                         name="password"
-                                        placeholder="Password"
+                                        placeholder={copy.password_placeholder}
                                     />
                                     <InputError message={errors.password} />
                                 </div>
 
                                 <div className="grid gap-2">
                                     <Label htmlFor="password_confirmation">
-                                        Confirm password
+                                        {copy.password_confirmation_label}
                                     </Label>
                                     <Input
                                         id="password_confirmation"
@@ -86,7 +105,7 @@ export default function RegisterPage() {
                                         tabIndex={4}
                                         autoComplete="new-password"
                                         name="password_confirmation"
-                                        placeholder="Confirm password"
+                                        placeholder={copy.password_confirmation_placeholder}
                                     />
                                     <InputError
                                         message={errors.password_confirmation}
@@ -100,18 +119,18 @@ export default function RegisterPage() {
                                     data-test="register-user-button"
                                 >
                                     {processing && <Spinner />}
-                                    Create account
+                                    {copy.submit}
                                 </Button>
                             </div>
 
                             <div className="text-center text-xs text-muted-foreground">
-                                Already have an account?{' '}
+                                {copy.login_prompt}{' '}
                                 <Link
                                     href={login()}
                                     tabIndex={6}
                                     className="text-foreground text-xs underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current dark:decoration-neutral-500"
                                 >
-                                    Log in
+                                    {copy.login_link}
                                 </Link>
                             </div>
                         </>

@@ -13,9 +13,20 @@ interface VendorOnboardingPageProps {
         business_name: string;
         location: string;
     };
+    copy: {
+        title: string;
+        heading: string;
+        description: string;
+        business_name_label: string;
+        business_name_placeholder: string;
+        location_label: string;
+        location_placeholder: string;
+        submit: string;
+    };
 }
 
 export default function VendorOnboardingPage({
+    copy,
     initialValues,
 }: VendorOnboardingPageProps) {
     const form = useForm({
@@ -25,13 +36,13 @@ export default function VendorOnboardingPage({
 
     return (
         <AuthSplitLayout>
-            <Head title="Onboarding" />
+            <Head title={copy.title} />
 
             <main className="mx-auto flex min-h-dvh w-full max-w-[350px] flex-col justify-center space-y-6">
                 <div className="flex flex-col items-center gap-2 text-center">
-                    <h1 className="text-xl font-medium">Welcome</h1>
+                    <h1 className="text-xl font-medium">{copy.heading}</h1>
                     <p className="text-sm text-balance text-muted-foreground">
-                        Add the basics for your vendor profile.
+                        {copy.description}
                     </p>
                 </div>
 
@@ -43,7 +54,7 @@ export default function VendorOnboardingPage({
                     }}
                 >
                     <div className="grid gap-2">
-                        <Label htmlFor="business-name">Business name</Label>
+                        <Label htmlFor="business-name">{copy.business_name_label}</Label>
                         <Input
                             id="business-name"
                             name="business_name"
@@ -51,7 +62,7 @@ export default function VendorOnboardingPage({
                             autoFocus
                             required
                             maxLength={120}
-                            placeholder="Required"
+                            placeholder={copy.business_name_placeholder}
                             value={form.data.business_name}
                             onChange={(event) =>
                                 form.setData(
@@ -64,14 +75,14 @@ export default function VendorOnboardingPage({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="location">City</Label>
+                        <Label htmlFor="location">{copy.location_label}</Label>
                         <Input
                             id="location"
                             name="location"
                             type="text"
                             required
                             maxLength={120}
-                            placeholder="Where are you based?"
+                            placeholder={copy.location_placeholder}
                             value={form.data.location}
                             onChange={(event) =>
                                 form.setData('location', event.target.value)
@@ -86,7 +97,7 @@ export default function VendorOnboardingPage({
                         disabled={form.processing}
                     >
                         {form.processing ? <Spinner /> : <CheckIcon />}
-                        Continue
+                        {copy.submit}
                     </Button>
                 </form>
             </main>
