@@ -3,12 +3,11 @@
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\TwoFactorAuthenticationController;
+use App\Http\Controllers\ServiceController;
 use App\Models\Vendor;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 Route::get('/book/{slug}', function (string $slug) {
@@ -78,6 +77,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
                     'category_label' => $service->category === 'other'
                         ? $service->customCategory?->name ?? config('service_categories.other')
                         : config("service_categories.{$service->category}", $service->category),
+                    'custom_category' => $service->customCategory?->name,
+                    'description' => $service->description,
                     'price_in_minor' => $service->price_in_minor,
                     'unit' => $service->unit,
                     'is_public' => (bool) $service->is_public,
@@ -95,60 +96,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::redirect('/vendor/profile', '/overview')->name('vendor.profile');
 
-    Route::get('/services', function (Request $request) {
-        if (! $request->user()->vendor) {
-            return to_route('vendor.onboarding');
-        }
-
-        return Inertia::render('ServicesPage');
-    })->name('services.index');
-
-    Route::post('/services', function (Request $request) {
-        $vendor = $request->user()->vendor;
-
-        if (! $vendor) {
-            return to_route('vendor.onboarding');
-        }
-
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:120'],
-            'category' => ['required', 'string', Rule::in(array_keys(config('service_categories')))],
-            'custom_category' => ['nullable', 'required_if:category,other', 'string', 'max:120'],
-            'description' => ['nullable', 'string', 'max:2000'],
-            'price_in_minor' => ['required', 'integer', 'min:0', 'max:4294967295'],
-            'unit' => ['nullable', 'string', Rule::in(['package', 'hour', 'person', 'day', 'event'])],
-            'is_public' => ['boolean'],
-        ]);
-
-        $baseSlug = Str::slug($validated['name']) ?: 'service';
-        $slug = $baseSlug;
-        $suffix = 1;
-
-        while ($vendor->services()->where('slug', $slug)->exists()) {
-            $slug = $baseSlug.'-'.$suffix;
-            $suffix++;
-        }
-
-        DB::transaction(function () use ($vendor, $validated, $slug) {
-            $service = $vendor->services()->create([
-                'name' => $validated['name'],
-                'slug' => $slug,
-                'category' => $validated['category'],
-                'description' => $validated['description'] ?? null,
-                'price_in_minor' => $validated['price_in_minor'],
-                'unit' => $validated['unit'] ?? null,
-                'is_public' => $validated['is_public'] ?? false,
-            ]);
-
-            if ($validated['category'] === 'other') {
-                $service->customCategory()->create([
-                    'name' => $validated['custom_category'],
-                ]);
-            }
-        });
-
-        return to_route('overview');
-    })->name('services.store');
+    Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
+    Route::post('/services', [ServiceController::class, 'store'])->name('services.store');
+    Route::patch('/services/{service}', [ServiceController::class, 'update'])->name('services.update');
+    Route::delete('/services/{service}', [ServiceController::class, 'destroy'])->name('services.destroy');
 
     Route::get('/settings', function (Request $request) {
         if (! $request->user()->vendor) {
