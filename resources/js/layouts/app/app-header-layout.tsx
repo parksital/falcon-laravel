@@ -171,7 +171,7 @@ export default function AppHeaderLayout({ children }: PropsWithChildren) {
                             >
                                 <Link href="/overview">{layoutCopy.nav_overview}</Link>
                             </Button>
-                            <Button
+                            {/*<Button
                                 variant="ghost"
                                 asChild
                                 className={cn(
@@ -180,7 +180,7 @@ export default function AppHeaderLayout({ children }: PropsWithChildren) {
                                 )}
                             >
                                 <Link href="/settings">{layoutCopy.nav_settings}</Link>
-                            </Button>
+                            </Button>*/}
                         </nav>
                     </div>
                 </div>

@@ -3,7 +3,7 @@
 return [
     'catering' => 'Catering',
     'photography' => 'Photography',
-    'photobooths' => 'Photo Booths',
+    'photobooths' => 'Photo Booth',
     'videography' => 'Videography',
     'florist' => 'Florist',
     'decor' => 'Decor',

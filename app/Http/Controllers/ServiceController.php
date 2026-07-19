@@ -8,19 +8,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
-use Inertia\Inertia;
 
 class ServiceController extends Controller
 {
-    public function index(Request $request)
-    {
-        if (! $request->user()->vendor) {
-            return to_route('vendor.onboarding');
-        }
-
-        return Inertia::render('ServicesPage');
-    }
-
     public function store(Request $request)
     {
         $vendor = $request->user()->vendor;

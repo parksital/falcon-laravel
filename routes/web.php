@@ -106,7 +106,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::redirect('/vendor/profile', '/overview')->name('vendor.profile');
 
-    Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
     Route::post('/services', [ServiceController::class, 'store'])->name('services.store');
     Route::patch('/services/{service}', [ServiceController::class, 'update'])->name('services.update');
     Route::delete('/services/{service}', [ServiceController::class, 'destroy'])->name('services.destroy');
@@ -116,7 +115,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return to_route('vendor.onboarding');
         }
 
-        return Inertia::render('SettingsPage');
+        return Inertia::render('SettingsPage', [
+            'copy' => __('settings'),
+        ]);
     })->name('settings');
 
     Route::get('/products', function (Request $request) {
@@ -124,7 +125,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return to_route('vendor.onboarding');
         }
 
-        return to_route('services.index');
+        return to_route('overview');
     })->name('products.index');
 
     Route::get('/vendor/onboarding', function (Request $request) {
