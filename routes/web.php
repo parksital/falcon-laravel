@@ -4,11 +4,45 @@ use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\TwoFactorAuthenticationController;
 use App\Http\Controllers\ServiceController;
+use App\Models\Service;
 use App\Models\Vendor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+
+Route::get('/index', function () {
+    $serviceCategoryLabels = collect(config('service_categories'))
+        ->mapWithKeys(function (string $value) {
+            $translation = __("config-service-categories.{$value}");
+
+            return [
+                $value => $translation === "config-service-categories.{$value}" ? $value : $translation,
+            ];
+        })
+        ->all();
+
+    return Inertia::render('IndexPage', [
+        'services' => Service::query()
+            ->with(['customCategory', 'vendor'])
+            ->get()
+            ->map(fn (Service $service) => [
+                'id' => $service->id,
+                'name' => $service->name,
+                'category_label' => $service->category === 'other'
+                    ? ($service->customCategory?->name ?? $serviceCategoryLabels['other'] ?? $service->category)
+                    : $serviceCategoryLabels[$service->category] ?? $service->category,
+                'description' => $service->description,
+                'price_in_minor' => $service->price_in_minor,
+                'unit' => $service->unit,
+                'vendor' => [
+                    'name' => $service->vendor?->name,
+                ],
+            ])
+            ->all(),
+        'copy' => __('index'),
+    ]);
+})->name('index');
 
 Route::get('/book/{slug}', function (string $slug) {
     return Inertia::render('PublicBookingPage', []);
