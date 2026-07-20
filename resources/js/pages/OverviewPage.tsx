@@ -85,6 +85,10 @@ interface OverviewPageProps {
         value: string;
         label: string;
     }[];
+    serviceUnits: {
+        value: string;
+        label: string;
+    }[];
     copy: Record<string, string>;
 }
 
@@ -119,10 +123,14 @@ function getServiceCategoryLabel(
     );
 }
 
-function getServiceUnitLabel(copy: OverviewPageProps['copy'], unit: string | null) {
+function getServiceUnitLabel(
+    serviceUnits: OverviewPageProps['serviceUnits'],
+    copy: OverviewPageProps['copy'],
+    unit: string | null,
+) {
     if (!unit) return copy.not_set;
 
-    return copy[`service_unit_${unit}`] || unit;
+    return serviceUnits.find((serviceUnit) => serviceUnit.value === unit)?.label || unit;
 }
 
 function formatPriceInMinor(
@@ -159,6 +167,7 @@ export default function OverviewPage({
     vendor,
     services,
     serviceCategories,
+    serviceUnits,
     copy,
 }: OverviewPageProps) {
     const [isAddServiceOpen, setIsAddServiceOpen] = useState(false);
@@ -276,7 +285,7 @@ export default function OverviewPage({
                                         </TableCell>
                                         <TableCell>
                                             {formatPriceInMinor(service.price_in_minor, copy.not_set)}
-                                            {service.unit ? ` / ${getServiceUnitLabel(copy, service.unit)}` : ''}
+                                            {service.unit ? ` / ${getServiceUnitLabel(serviceUnits, copy, service.unit)}` : ''}
                                         </TableCell>
                                         <TableCell>
                                             <Badge variant={service.is_public ? 'default' : 'secondary'}>
@@ -471,21 +480,11 @@ export default function OverviewPage({
                                         </SelectTrigger>
                                         <SelectContent position="popper">
                                             <SelectGroup>
-                                                <SelectItem value="package">
-                                                    {copy.service_unit_package}
-                                                </SelectItem>
-                                                <SelectItem value="hour">
-                                                    {copy.service_unit_hour}
-                                                </SelectItem>
-                                                <SelectItem value="person">
-                                                    {copy.service_unit_person}
-                                                </SelectItem>
-                                                <SelectItem value="day">
-                                                    {copy.service_unit_day}
-                                                </SelectItem>
-                                                <SelectItem value="event">
-                                                    {copy.service_unit_event}
-                                                </SelectItem>
+                                                {serviceUnits.map((serviceUnit) => (
+                                                    <SelectItem key={serviceUnit.value} value={serviceUnit.value}>
+                                                        {serviceUnit.label}
+                                                    </SelectItem>
+                                                ))}
                                             </SelectGroup>
                                         </SelectContent>
                                     </Select>
@@ -537,7 +536,7 @@ export default function OverviewPage({
                                         <div className="grid gap-1">
                                             <p className="text-muted-foreground">{copy.service_preview_per}</p>
                                             <p className="font-medium capitalize">
-                                                {getServiceUnitLabel(copy, addForm.data.unit)}
+                                                {getServiceUnitLabel(serviceUnits, copy, addForm.data.unit)}
                                             </p>
                                         </div>
                                     </div>
@@ -774,21 +773,11 @@ export default function OverviewPage({
                                     </SelectTrigger>
                                     <SelectContent position="popper">
                                         <SelectGroup>
-                                            <SelectItem value="package">
-                                                {copy.service_unit_package}
-                                            </SelectItem>
-                                            <SelectItem value="hour">
-                                                {copy.service_unit_hour}
-                                            </SelectItem>
-                                            <SelectItem value="person">
-                                                {copy.service_unit_person}
-                                            </SelectItem>
-                                            <SelectItem value="day">
-                                                {copy.service_unit_day}
-                                            </SelectItem>
-                                            <SelectItem value="event">
-                                                {copy.service_unit_event}
-                                            </SelectItem>
+                                            {serviceUnits.map((serviceUnit) => (
+                                                <SelectItem key={serviceUnit.value} value={serviceUnit.value}>
+                                                    {serviceUnit.label}
+                                                </SelectItem>
+                                            ))}
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>

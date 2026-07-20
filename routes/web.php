@@ -21,6 +21,15 @@ Route::get('/index', function () {
             ];
         })
         ->all();
+    $serviceUnitLabels = collect(config('service_units'))
+        ->mapWithKeys(function (string $value) {
+            $translation = __("config-service-units.{$value}");
+
+            return [
+                $value => $translation === "config-service-units.{$value}" ? $value : $translation,
+            ];
+        })
+        ->all();
 
     return Inertia::render('IndexPage', [
         'services' => Service::query()
@@ -29,17 +38,27 @@ Route::get('/index', function () {
             ->map(fn (Service $service) => [
                 'id' => $service->id,
                 'name' => $service->name,
+                'category' => $service->category,
                 'category_label' => $service->category === 'other'
                     ? ($service->customCategory?->name ?? $serviceCategoryLabels['other'] ?? $service->category)
                     : $serviceCategoryLabels[$service->category] ?? $service->category,
                 'description' => $service->description,
                 'price_in_minor' => $service->price_in_minor,
                 'unit' => $service->unit,
+                'unit_label' => $service->unit ? ($serviceUnitLabels[$service->unit] ?? $service->unit) : null,
                 'vendor' => [
                     'name' => $service->vendor?->name,
                 ],
             ])
             ->all(),
+        'serviceCategories' => collect(config('service_categories'))
+            ->map(fn (string $value) => [
+                'value' => $value,
+                'label' => $serviceCategoryLabels[$value] ?? $value,
+            ])
+            ->values()
+            ->all(),
+        'locale' => app()->getLocale(),
         'copy' => __('index'),
     ]);
 })->name('index');
@@ -99,6 +118,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ];
             })
             ->all();
+        $serviceUnitLabels = collect(config('service_units'))
+            ->mapWithKeys(function (string $value) {
+                $translation = __("config-service-units.{$value}");
+
+                return [
+                    $value => $translation === "config-service-units.{$value}" ? $value : $translation,
+                ];
+            })
+            ->all();
 
         return Inertia::render('OverviewPage', [
             'vendor' => [
@@ -129,6 +157,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->map(fn (string $value) => [
                     'value' => $value,
                     'label' => $serviceCategoryLabels[$value] ?? $value,
+                ])
+                ->values()
+                ->all(),
+            'serviceUnits' => collect(config('service_units'))
+                ->map(fn (string $value) => [
+                    'value' => $value,
+                    'label' => $serviceUnitLabels[$value] ?? $value,
                 ])
                 ->values()
                 ->all(),

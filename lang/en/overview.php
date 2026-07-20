@@ -40,11 +40,6 @@ return [
     'service_field_unit' => 'Charge per',
     'service_field_unit_placeholder' => 'Select unit',
 
-    'service_unit_package' => 'Package',
-    'service_unit_hour' => 'Hour',
-    'service_unit_person' => 'Person',
-    'service_unit_day' => 'Day',
-    'service_unit_event' => 'Event',
     'service_unit_description' => 'Choose what this price applies to, like event, hour, or person.',
 
     'service_preview_by' => 'By',

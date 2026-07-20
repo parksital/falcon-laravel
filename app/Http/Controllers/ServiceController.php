@@ -110,7 +110,7 @@ class ServiceController extends Controller
             'custom_category' => ['nullable', 'required_if:category,other', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:2000'],
             'price_in_minor' => ['required', 'integer', 'min:0', 'max:4294967295'],
-            'unit' => ['nullable', 'string', Rule::in(['package', 'hour', 'person', 'day', 'event'])],
+            'unit' => ['nullable', 'string', Rule::in(config('service_units'))],
             'is_public' => ['boolean'],
         ]);
     }

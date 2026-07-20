@@ -40,11 +40,6 @@ return [
     'service_field_unit' => 'Prijs per',
     'service_field_unit_placeholder' => 'Selecteer eenheid',
 
-    'service_unit_package' => 'Pakket',
-    'service_unit_hour' => 'Uur',
-    'service_unit_person' => 'Persoon',
-    'service_unit_day' => 'Dag',
-    'service_unit_event' => 'Evenement',
     'service_unit_description' => 'Kies waar deze prijs voor geldt, zoals evenement, uur of persoon.',
 
     'service_preview_by' => 'Door',
