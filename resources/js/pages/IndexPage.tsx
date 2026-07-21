@@ -4,16 +4,14 @@ import {
     Card,
     CardContent,
     CardDescription,
+    CardFooter,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import PublicLayout from '@/layouts/public/public-layout';
 import { index as indexRoute, login, register } from '@/routes';
 import { type SharedData } from '@/types';
-import { Head, Link, usePage } from '@inertiajs/react';
-import { StorefrontIcon } from '@phosphor-icons/react';
-import { useState } from 'react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 
 type Service = {
     id: number;
@@ -26,15 +24,13 @@ type Service = {
     unit_label: string | null;
     vendor: {
         name: string | null;
+        location: string | null;
     };
+    url: string;
 };
 
 type IndexPageProps = {
     services: Service[];
-    serviceCategories: {
-        value: string;
-        label: string;
-    }[];
     locale: string;
     copy: Record<string, string>;
 };
@@ -55,16 +51,16 @@ function formatPriceInMinor(priceInMinor: number | null, locale: string, copy: I
     }).format(priceInMinor / 100);
 }
 
-export default function IndexPage({ services, serviceCategories, locale, copy }: IndexPageProps) {
+export default function IndexPage({ services, locale, copy }: IndexPageProps) {
     const { layoutCopy } = usePage<SharedData>().props;
-    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-    const results = selectedCategory
-        ? services.filter((service) => service.category === selectedCategory)
-        : services;
 
     return (
         <PublicLayout>
-            <Head title={copy.title} />
+            <Head title={copy.title}>
+                {copy.meta_description ? (
+                    <meta name="description" content={copy.meta_description} />
+                ) : null}
+            </Head>
 
             <main className="flex min-h-screen w-full flex-1 flex-col">
                 <header className="border-b bg-background">
@@ -77,101 +73,70 @@ export default function IndexPage({ services, serviceCategories, locale, copy }:
 
                         </nav>
 
-                        <Button variant="ghost" className="hidden sm:inline-flex" asChild>
-                            <Link href={login()}>{copy.nav_login}</Link>
+                        <Button variant="ghost" className="hidden sm:inline-flex" onClick={() => router.visit(login())}>
+                            {copy.nav_login}
                         </Button>
-                        <Button asChild>
-                            <Link href={register()}>{copy.nav_register}</Link>
+                        <Button onClick={() => router.visit(register())}>
+                            {copy.nav_register}
                         </Button>
                     </div>
                 </header>
 
-                <section id="results" className="mx-auto grid w-full max-w-5xl gap-8 px-6 py-12 grid-cols-[320px_1fr]">
-                    <aside className="flex flex-col gap-4">
-                        <div className="flex flex-col gap-2">
-                            <h2 className="text-2xl font-semibold">{copy.category_heading}</h2>
-                        </div>
+                <section id="services" className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-6 py-12">
+                    <div className="flex flex-col gap-1">
+                        <h1 className="text-2xl font-semibold">{copy.services_heading}</h1>
+                    </div>
 
-                        <ToggleGroup
-                            type="single"
-                            variant="outline"
-                            size="lg"
-                            spacing={3}
-                            value={selectedCategory ?? 'all'}
-                            onValueChange={(value) => setSelectedCategory(value && value !== 'all' ? value : null)}
-                            className="flex-wrap"
-                        >
-                            <ToggleGroupItem value="all" aria-label={copy.all_categories}>
-                                {copy.all_categories}
-                            </ToggleGroupItem>
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        <Card className="h-full">
+                            <CardHeader>
+                                <CardTitle>{copy.cta_title}</CardTitle>
+                            </CardHeader>
+                            <CardFooter className="mt-auto justify-end">
+                                <Button onClick={() => router.visit(register())}>
+                                    {copy.cta_button}
+                                </Button>
+                            </CardFooter>
+                        </Card>
 
-                            {serviceCategories.map((serviceCategory) => {
-                                return (
-                                    <ToggleGroupItem
-                                        key={serviceCategory.value}
-                                        value={serviceCategory.value}
-                                        aria-label={serviceCategory.label}
-                                    >
-                                        {serviceCategory.label}
-                                    </ToggleGroupItem>
-                                );
-                            })}
-                        </ToggleGroup>
-                    </aside>
-
-                    <div className="flex flex-col gap-4">
-                        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                            <div className="flex flex-col gap-1">
-                                <h2 className="text-2xl font-semibold">{copy.heading}</h2>
-                                <p className="text-sm text-muted-foreground">
-                                    {interpolate(copy.results_count, {
-                                        count: String(results.length),
-                                    })}
-                                </p>
-                            </div>
-                        </div>
-
-                        {results.length > 0 ? (
-                            <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                                {results.map((service) => (
-                                    <Card key={service.id}>
-                                        <CardHeader>
-                                            <Badge variant="secondary">{service.category_label}</Badge>
-                                            <CardTitle>{service.name}</CardTitle>
-                                            <CardDescription>
-                                                {interpolate(copy.by_vendor, {
-                                                    vendor: service.vendor.name || copy.vendor_not_set,
-                                                })}
-                                            </CardDescription>
-                                        </CardHeader>
-                                        <CardContent className="flex flex-col gap-4">
-                                            <p className="font-medium">
-                                                {formatPriceInMinor(service.price_in_minor, locale, copy)}{' '}
-                                                {interpolate(copy.per_unit, {
-                                                    unit: service.unit_label || copy.unit_not_set,
-                                                })}
+                        {services.map((service) => (
+                            <Link key={service.id} href={service.url} className="block">
+                                <Card className="h-full transition-colors hover:bg-muted/50">
+                                    <CardHeader>
+                                        <Badge variant="secondary">{service.category_label}</Badge>
+                                        <CardTitle>{service.name}</CardTitle>
+                                        <CardDescription>
+                                            {interpolate(copy.by_vendor, {
+                                                vendor: service.vendor.name || copy.vendor_not_set,
+                                            })}
+                                            {service.vendor.location ? ` - ${service.vendor.location}` : null}
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="flex flex-col gap-4">
+                                        <p className="font-medium">
+                                            {formatPriceInMinor(service.price_in_minor, locale, copy)}{' '}
+                                            {interpolate(copy.per_unit, {
+                                                unit: service.unit_label || copy.unit_not_set,
+                                            })}
+                                        </p>
+                                        {service.description ? (
+                                            <p className="text-muted-foreground">
+                                                {service.description}
                                             </p>
-                                            {service.description ? (
-                                                <p className="text-muted-foreground">
-                                                    {service.description}
-                                                </p>
-                                            ) : null}
-                                        </CardContent>
-                                    </Card>
-                                ))}
-                            </section>
-                        ) : (
+                                        ) : null}
+                                    </CardContent>
+                                </Card>
+                            </Link>
+                        ))}
+
+                        {services.length === 0 ? (
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>
-                                        {selectedCategory ? copy.empty_filtered_title : copy.empty_title}
-                                    </CardTitle>
-                                    <CardDescription>
-                                        {selectedCategory ? copy.empty_filtered_description : copy.empty_description}
-                                    </CardDescription>
+                                    <CardTitle>{copy.empty_title}</CardTitle>
+                                    <CardDescription>{copy.empty_description}</CardDescription>
                                 </CardHeader>
                             </Card>
-                        )}
+                        ) : null}
                     </div>
                 </section>
             </main>

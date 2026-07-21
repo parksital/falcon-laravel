@@ -3,6 +3,7 @@
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\TwoFactorAuthenticationController;
+use App\Http\Controllers\PublicBookingPageController;
 use App\Http\Controllers\ServiceController;
 use App\Models\Service;
 use App\Models\Vendor;
@@ -30,11 +31,46 @@ Route::get('/index', function () {
             ];
         })
         ->all();
+    $publicServices = Service::query()
+        ->with(['customCategory', 'vendor'])
+        ->where('is_public', true)
+        ->whereHas('vendor', fn ($query) => $query->where('is_public', true))
+        ->orderBy('name')
+        ->get();
+    $copy = __('index');
+    $schemaServices = $publicServices
+        ->values()
+        ->map(function (Service $service, int $index) use ($serviceCategoryLabels) {
+            $offer = [
+                '@type' => 'Offer',
+                'position' => $index + 1,
+                'url' => route('public.booking.service.show', [$service->vendor->slug, $service->slug]),
+                'itemOffered' => [
+                    '@type' => 'Service',
+                    'name' => $service->name,
+                    'description' => $service->description,
+                    'category' => $service->category === 'other'
+                        ? ($service->customCategory?->name ?? $serviceCategoryLabels['other'] ?? $service->category)
+                        : $serviceCategoryLabels[$service->category] ?? $service->category,
+                    'provider' => [
+                        '@type' => 'LocalBusiness',
+                        'name' => $service->vendor->name,
+                        'url' => route('public.booking.show', $service->vendor->slug),
+                    ],
+                ],
+            ];
+
+            if ($service->price_in_minor !== null) {
+                $offer['price'] = number_format($service->price_in_minor / 100, 2, '.', '');
+                $offer['priceCurrency'] = 'EUR';
+            }
+
+            return $offer;
+        })
+        ->all();
 
     return Inertia::render('IndexPage', [
-        'services' => Service::query()
-            ->with(['customCategory', 'vendor'])
-            ->get()
+        'services' => $publicServices
             ->map(fn (Service $service) => [
                 'id' => $service->id,
                 'name' => $service->name,
@@ -48,24 +84,31 @@ Route::get('/index', function () {
                 'unit_label' => $service->unit ? ($serviceUnitLabels[$service->unit] ?? $service->unit) : null,
                 'vendor' => [
                     'name' => $service->vendor?->name,
+                    'location' => $service->vendor?->location,
                 ],
+                'url' => route('public.booking.service.show', [$service->vendor->slug, $service->slug]),
             ])
-            ->all(),
-        'serviceCategories' => collect(config('service_categories'))
-            ->map(fn (string $value) => [
-                'value' => $value,
-                'label' => $serviceCategoryLabels[$value] ?? $value,
-            ])
-            ->values()
             ->all(),
         'locale' => app()->getLocale(),
-        'copy' => __('index'),
-    ]);
+        'copy' => $copy,
+    ])->withViewData(['seo' => [
+        'title' => $copy['title'] ?? config('app.name'),
+        'description' => $copy['meta_description'] ?? 'Discover public services from local vendors.',
+        'canonical' => route('index'),
+        'robots' => 'index, follow',
+        'schema' => [
+            '@context' => 'https://schema.org',
+            '@type' => 'ItemList',
+            'name' => $copy['services_heading'] ?? 'Services',
+            'url' => route('index'),
+            'numberOfItems' => count($schemaServices),
+            'itemListElement' => $schemaServices,
+        ],
+    ]]);
 })->name('index');
 
-Route::get('/book/{slug}', function (string $slug) {
-    return Inertia::render('PublicBookingPage', []);
-});
+Route::get('/book/{slug}', [PublicBookingPageController::class, 'showVendor'])->name('public.booking.show');
+Route::get('/book/{vendorSlug}/services/{serviceSlug}', [PublicBookingPageController::class, 'showService'])->name('public.booking.service.show');
 
 Route::middleware('auth')->group(function () {
     Route::get('settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
