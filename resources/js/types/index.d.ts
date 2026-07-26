@@ -24,6 +24,7 @@ export interface NavItem {
 
 export interface SharedData {
     name: string;
+    locale: string;
     quote: { message: string; author: string };
     auth: Auth;
     layoutCopy: Record<string, string>;
@@ -40,6 +41,7 @@ export interface User {
     id: number;
     name: string;
     email: string;
+    preferred_locale: string | null;
     avatar?: string;
     email_verified_at: string | null;
     two_factor_enabled?: boolean;

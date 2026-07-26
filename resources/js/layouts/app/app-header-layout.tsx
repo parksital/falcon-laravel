@@ -8,6 +8,8 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuLabel,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
     DropdownMenuSeparator,
     DropdownMenuSub,
     DropdownMenuSubContent,
@@ -26,6 +28,7 @@ import { useInitials } from '@/hooks/use-initials';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { cn } from '@/lib/utils';
 import { logout } from '@/routes';
+import { update as updateLocale } from '@/routes/locale';
 import { SharedData } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
 import { ListIcon, SignOutIcon } from '@phosphor-icons/react';
@@ -35,6 +38,15 @@ export default function AppHeaderLayout({ children }: PropsWithChildren) {
     const page = usePage<SharedData>();
     const { auth, layoutCopy, name } = page.props;
     const currentPath = page.url.split('?')[0];
+    const currentLocale =
+        auth.user.preferred_locale === 'en' || auth.user.preferred_locale === 'nl'
+            ? auth.user.preferred_locale
+            : page.props.locale;
+
+    const currentLocaleLabel =
+        currentLocale === 'nl'
+            ? layoutCopy.language_dutch
+            : layoutCopy.language_english;
 
     const getInitials = useInitials();
 
@@ -44,6 +56,10 @@ export default function AppHeaderLayout({ children }: PropsWithChildren) {
         cleanup();
         router.flushAll();
         router.post(logout.url(), {}, { preserveState: false, replace: true });
+    };
+
+    const handleLocaleChange = (preferredLocale: string) => {
+        router.patch(updateLocale.url(), { preferred_locale: preferredLocale }, { preserveScroll: true });
     };
 
     return (
@@ -136,12 +152,17 @@ export default function AppHeaderLayout({ children }: PropsWithChildren) {
                                         {layoutCopy.language}
                                     </DropdownMenuSubTrigger>
                                     <DropdownMenuSubContent>
-                                        <DropdownMenuItem>
-                                            {layoutCopy.language_english}
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem>
-                                            {layoutCopy.language_dutch}
-                                        </DropdownMenuItem>
+                                        <DropdownMenuRadioGroup
+                                            value={currentLocale}
+                                            onValueChange={handleLocaleChange}
+                                        >
+                                            <DropdownMenuRadioItem value="en">
+                                                {layoutCopy.language_english}
+                                            </DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="nl">
+                                                {layoutCopy.language_dutch}
+                                            </DropdownMenuRadioItem>
+                                        </DropdownMenuRadioGroup>
                                     </DropdownMenuSubContent>
                                 </DropdownMenuSub>
                                 <DropdownMenuSeparator />
