@@ -1,7 +1,11 @@
-import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
+import {
+    Field,
+    FieldError,
+    FieldGroup,
+    FieldLabel,
+} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import AuthSplitLayout from '@/layouts/auth/auth-split-layout';
 import { register } from '@/routes';
@@ -38,7 +42,7 @@ export default function LoginPage({
         <AuthSplitLayout>
             <Head title={copy.title} />
 
-            <div className="mx-auto flex w-[350px] flex-col justify-center space-y-6">
+            <div className="mx-auto flex w-[350px] flex-col justify-center gap-6">
                 <div className="flex flex-col items-center gap-2 text-center">
                     <h1 className="text-xl font-medium">
                         {copy.heading}
@@ -49,55 +53,59 @@ export default function LoginPage({
                 </div>
 
                 <Form
-                    {...store()}
-                    options={{ preserveState: false, replace: true }}
+                    {...store.form()}
+                    options={{ replace: true }}
                     resetOnSuccess={['password']}
                     className="flex flex-col gap-6"
                 >
                     {({ processing, errors }) => (
                         <>
-                            <div className="grid gap-6">
-                                <div className="grid gap-2">
-                                    <Label htmlFor="email">{copy.email_label}</Label>
-                                    <Input
-                                        id="email"
-                                        type="email"
-                                        name="email"
-                                        required
-                                        autoFocus
-                                        tabIndex={1}
-                                        autoComplete="email"
-                                        placeholder={copy.email_placeholder}
-                                    />
-                                    <InputError message={errors.email} />
-                                </div>
+                            <div className="flex flex-col gap-6">
+                                <FieldGroup>
+                                    <Field data-invalid={errors.email ? true : undefined}>
+                                        <FieldLabel htmlFor="email">{copy.email_label}</FieldLabel>
+                                        <Input
+                                            id="email"
+                                            type="email"
+                                            name="email"
+                                            required
+                                            autoFocus
+                                            tabIndex={1}
+                                            autoComplete="email"
+                                            placeholder={copy.email_placeholder}
+                                            aria-invalid={Boolean(errors.email)}
+                                        />
+                                        <FieldError>{errors.email}</FieldError>
+                                    </Field>
 
-                                <div className="grid gap-2">
-                                    <div className="flex items-center">
-                                        <Label htmlFor="password">
-                                            {copy.password_label}
-                                        </Label>
-                                        {canResetPassword && (
-                                            <Link
-                                                href={request()}
-                                                className="ml-auto text-foreground text-xs underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current dark:decoration-neutral-500"
-                                                tabIndex={5}
-                                            >
-                                                {copy.forgot_password}
-                                            </Link>
-                                        )}
-                                    </div>
-                                    <Input
-                                        id="password"
-                                        type="password"
-                                        name="password"
-                                        required
-                                        tabIndex={2}
-                                        autoComplete="current-password"
-                                        placeholder={copy.password_placeholder}
-                                    />
-                                    <InputError message={errors.password} />
-                                </div>
+                                    <Field data-invalid={errors.password ? true : undefined}>
+                                        <div className="flex items-center">
+                                            <FieldLabel htmlFor="password">
+                                                {copy.password_label}
+                                            </FieldLabel>
+                                            {canResetPassword && (
+                                                <Link
+                                                    href={request()}
+                                                    className="ml-auto text-foreground text-xs underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current dark:decoration-neutral-500"
+                                                    tabIndex={5}
+                                                >
+                                                    {copy.forgot_password}
+                                                </Link>
+                                            )}
+                                        </div>
+                                        <Input
+                                            id="password"
+                                            type="password"
+                                            name="password"
+                                            required
+                                            tabIndex={2}
+                                            autoComplete="current-password"
+                                            placeholder={copy.password_placeholder}
+                                            aria-invalid={Boolean(errors.password)}
+                                        />
+                                        <FieldError>{errors.password}</FieldError>
+                                    </Field>
+                                </FieldGroup>
 
                                 <Button
                                     type="submit"
@@ -106,7 +114,7 @@ export default function LoginPage({
                                     disabled={processing}
                                     data-test="login-button"
                                 >
-                                    {processing && <Spinner />}
+                                    {processing && <Spinner data-icon="inline-start" />}
                                     {copy.submit}
                                 </Button>
                             </div>
