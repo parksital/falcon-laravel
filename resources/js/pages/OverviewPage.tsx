@@ -57,7 +57,7 @@ import {
     update as updateService,
 } from '@/routes/services';
 import { Head, useForm } from '@inertiajs/react';
-import { PlusIcon } from '@phosphor-icons/react';
+import { PlusIcon, TrashIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 
 interface OverviewPageProps {
@@ -77,8 +77,15 @@ interface OverviewPageProps {
         category_label: string;
         custom_category: string | null;
         description: string | null;
-        price_in_minor: number | null;
-        unit: string | null;
+        pricing_options: {
+            id: number;
+            name: string;
+            description: string | null;
+            price_in_minor: number;
+            unit: string;
+            unit_label: string;
+            is_public: boolean;
+        }[];
         is_public: boolean;
     }[];
     serviceCategories: {
@@ -163,6 +170,21 @@ const serviceFormDefaults = {
     is_public: false,
 };
 
+type EditPricingOption = {
+    id: number | null;
+    price_in_minor: string;
+    unit: string;
+};
+
+const editServiceFormDefaults = {
+    name: '',
+    category: '',
+    custom_category: '',
+    description: '',
+    pricing_options: [] as EditPricingOption[],
+    is_public: false,
+};
+
 export default function OverviewPage({
     vendor,
     services,
@@ -177,11 +199,12 @@ export default function OverviewPage({
     const [isDeleteServiceOpen, setIsDeleteServiceOpen] = useState(false);
     const [editingServiceId, setEditingServiceId] = useState<number | null>(null);
     const addForm = useForm(serviceFormDefaults);
-    const editForm = useForm(serviceFormDefaults);
+    const editForm = useForm(editServiceFormDefaults);
     const deleteForm = useForm({
         confirmation_name: '',
     });
     const editingService = services.find((service) => service.id === editingServiceId);
+    const editFormErrors = editForm.errors as Record<string, string | undefined>;
 
     return (
         <AppLayout>
@@ -267,8 +290,17 @@ export default function OverviewPage({
                                                 category: service.category,
                                                 custom_category: service.custom_category ?? '',
                                                 description: service.description ?? '',
-                                                price_in_minor: service.price_in_minor === null ? '' : String(service.price_in_minor),
-                                                unit: service.unit ?? '',
+                                                pricing_options: service.pricing_options.length > 0
+                                                    ? service.pricing_options.map((pricingOption) => ({
+                                                        id: pricingOption.id,
+                                                        price_in_minor: String(pricingOption.price_in_minor),
+                                                        unit: pricingOption.unit,
+                                                    }))
+                                                    : [{
+                                                        id: null,
+                                                        price_in_minor: '',
+                                                        unit: '',
+                                                    }],
                                                 is_public: service.is_public,
                                             };
 
@@ -284,8 +316,23 @@ export default function OverviewPage({
                                             <Badge variant="secondary">{service.category_label}</Badge>
                                         </TableCell>
                                         <TableCell>
-                                            {formatPriceInMinor(service.price_in_minor, copy.not_set)}
-                                            {service.unit ? ` / ${getServiceUnitLabel(serviceUnits, copy, service.unit)}` : ''}
+                                            {service.pricing_options.length > 0 ? (
+                                                <div className="flex flex-col gap-3">
+                                                    {service.pricing_options.map((pricingOption) => (
+                                                        <div key={pricingOption.id} className="flex flex-col gap-1">
+                                                            <p className="font-medium">
+                                                                {formatPriceInMinor(pricingOption.price_in_minor, copy.not_set)}
+                                                                {` / ${pricingOption.unit_label}`}
+                                                            </p>
+                                                            {pricingOption.description ? (
+                                                                <p className="text-muted-foreground">
+                                                                    {pricingOption.description}
+                                                                </p>
+                                                            ) : null}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : copy.services_no_pricing_options}
                                         </TableCell>
                                         <TableCell>
                                             <Badge variant={service.is_public ? 'default' : 'secondary'}>
@@ -639,7 +686,7 @@ export default function OverviewPage({
             </Dialog>
 
             <Sheet open={isEditServiceOpen}>
-                <SheetContent showCloseButton={false}>
+                <SheetContent showCloseButton={false} className="sm:max-w-2xl">
                     <form
                         className="flex min-h-0 flex-1 flex-col"
                         onSubmit={(event) => {
@@ -736,55 +783,119 @@ export default function OverviewPage({
                             </div>
 
                             <Field>
-                                <FieldLabel htmlFor="edit-service-price">
-                                    {copy.service_field_price_in_minor}
-                                </FieldLabel>
-                                <InputGroup>
-                                    <InputGroupInput
-                                        id="edit-service-price"
-                                        name="price_in_minor"
-                                        inputMode="numeric"
-                                        type="text"
-                                        required
-                                        placeholder={copy.service_field_price_placeholder}
-                                        value={editForm.data.price_in_minor}
-                                        onChange={(event) => editForm.setData('price_in_minor', event.target.value.replace(/\D/g, ''))}
-                                    />
+                                <FieldLabel>{copy.service_pricing_label}</FieldLabel>
+                                <FieldDescription>{copy.service_pricing_description}</FieldDescription>
 
-                                    <InputGroupAddon align="inline-end">{formatPriceInMinorDescription(editForm.data.price_in_minor)}</InputGroupAddon>
-                                </InputGroup>
-                                <InputError message={editForm.errors.price_in_minor} />
-                            </Field>
+                                <div className="grid grid-cols-[minmax(0,1fr)_8rem_2rem] gap-2">
+                                    <FieldLabel>
+                                        {copy.service_field_price_in_minor}
+                                    </FieldLabel>
 
-                            <Field>
-                                <FieldLabel htmlFor="edit-service-unit">
-                                    {copy.service_field_unit}
-                                </FieldLabel>
-                                <Select
-                                    name="unit"
-                                    value={editForm.data.unit}
-                                    onValueChange={(value) => editForm.setData('unit', value)}
+                                    <FieldLabel>{copy.service_field_unit}</FieldLabel>
+                                    <span aria-hidden="true" />
+                                </div>
+
+                                <div className="flex flex-col gap-2">
+                                    {editForm.data.pricing_options.map((pricingOption, index) => (
+                                        <div
+                                            key={pricingOption.id ?? `new-${index}`}
+                                            className="grid grid-cols-[minmax(0,1fr)_8rem_2rem] gap-2"
+                                        >
+                                            <Field data-invalid={editFormErrors[`pricing_options.${index}.price_in_minor`] ? true : undefined}>
+                                                <InputGroup>
+                                                    <InputGroupInput
+                                                        id={`edit-service-price-${index}`}
+                                                        inputMode="numeric"
+                                                        type="text"
+                                                        required
+                                                        aria-invalid={Boolean(editFormErrors[`pricing_options.${index}.price_in_minor`])}
+                                                        placeholder={copy.service_field_price_placeholder}
+                                                        value={pricingOption.price_in_minor}
+                                                        onChange={(event) => {
+                                                            const pricingOptions = editForm.data.pricing_options.map((option, optionIndex) =>
+                                                                optionIndex === index
+                                                                    ? { ...option, price_in_minor: event.target.value.replace(/\D/g, '') }
+                                                                    : option,
+                                                            );
+
+                                                            editForm.setData('pricing_options', pricingOptions);
+                                                        }}
+                                                    />
+
+                                                    <InputGroupAddon align="inline-end">
+                                                        {formatPriceInMinorDescription(pricingOption.price_in_minor)}
+                                                    </InputGroupAddon>
+                                                </InputGroup>
+                                                <InputError message={editFormErrors[`pricing_options.${index}.price_in_minor`]} />
+                                            </Field>
+
+                                            <Field data-invalid={editFormErrors[`pricing_options.${index}.unit`] ? true : undefined}>
+                                                <Select
+                                                    value={pricingOption.unit}
+                                                    onValueChange={(value) => {
+                                                        const pricingOptions = editForm.data.pricing_options.map((option, optionIndex) =>
+                                                            optionIndex === index
+                                                                ? { ...option, unit: value }
+                                                                : option,
+                                                        );
+
+                                                        editForm.setData('pricing_options', pricingOptions);
+                                                    }}
+                                                >
+                                                    <SelectTrigger
+                                                        aria-invalid={Boolean(editFormErrors[`pricing_options.${index}.unit`])}
+                                                    >
+                                                        <SelectValue placeholder={copy.service_field_unit_placeholder} />
+                                                    </SelectTrigger>
+                                                    <SelectContent position="popper">
+                                                        <SelectGroup>
+                                                            {serviceUnits.map((serviceUnit) => (
+                                                                <SelectItem key={serviceUnit.value} value={serviceUnit.value}>
+                                                                    {serviceUnit.label}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectGroup>
+                                                    </SelectContent>
+                                                </Select>
+                                                <InputError message={editFormErrors[`pricing_options.${index}.unit`]} />
+                                            </Field>
+
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="icon"
+                                                disabled={editForm.data.pricing_options.length === 1}
+                                                aria-label={copy.service_action_delete_price}
+                                                onClick={() => {
+                                                    editForm.setData(
+                                                        'pricing_options',
+                                                        editForm.data.pricing_options.filter((_, optionIndex) => optionIndex !== index),
+                                                    );
+                                                }}
+                                            >
+                                                <TrashIcon data-icon="inline-start" />
+                                            </Button>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => {
+                                        editForm.setData('pricing_options', [
+                                            ...editForm.data.pricing_options,
+                                            {
+                                                id: null,
+                                                price_in_minor: '',
+                                                unit: '',
+                                            },
+                                        ]);
+                                    }}
                                 >
-                                    <SelectTrigger
-                                        id="edit-service-unit"
-                                        className="w-full"
-                                    >
-                                        <SelectValue placeholder={copy.service_field_unit_placeholder} />
-                                    </SelectTrigger>
-                                    <SelectContent position="popper">
-                                        <SelectGroup>
-                                            {serviceUnits.map((serviceUnit) => (
-                                                <SelectItem key={serviceUnit.value} value={serviceUnit.value}>
-                                                    {serviceUnit.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                                <FieldDescription>
-                                    {copy.service_unit_description}
-                                </FieldDescription>
-                                <InputError message={editForm.errors.unit} />
+                                    <PlusIcon data-icon="inline-start" />
+                                    {copy.service_action_add_price}
+                                </Button>
                             </Field>
 
                             <Field orientation="horizontal">

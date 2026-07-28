@@ -15,11 +15,17 @@ class HandleLocale
      */
     public function handle(Request $request, Closure $next): Response
     {
+        $supportedLocales = config('app.supported_locales');
         $preferredLocale = $request->user()?->preferred_locale;
+        $cookieLocale = $request->cookie('locale');
 
-        $isSupported = is_string($preferredLocale) && in_array($preferredLocale, config('app.supported_locales'), true);
-
-        $locale = $isSupported ? $preferredLocale : config('app.locale');
+        if (is_string($preferredLocale) && in_array($preferredLocale, $supportedLocales, true)) {
+            $locale = $preferredLocale;
+        } elseif (is_string($cookieLocale) && in_array($cookieLocale, $supportedLocales, true)) {
+            $locale = $cookieLocale;
+        } else {
+            $locale = config('app.locale');
+        }
 
         app()->setLocale($locale);
 

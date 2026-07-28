@@ -10,18 +10,27 @@ use Illuminate\Validation\Rule;
 class LocaleController extends Controller
 {
     /**
-     * Update the user's preferred locale.
+     * Update the current locale.
      */
     public function update(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'preferred_locale' => ['required', 'string', Rule::in(config('app.supported_locales'))],
+            'locale' => ['required', 'string', Rule::in(config('app.supported_locales'))],
         ]);
 
-        $request->user()->update($validated);
+        $locale = $validated['locale'];
 
-        app()->setLocale($validated['preferred_locale']);
+        $request->user()?->update([
+            'preferred_locale' => $locale,
+        ]);
 
-        return back();
+        app()->setLocale($locale);
+
+        return back()->withCookie(cookie(
+            name: 'locale',
+            value: $locale,
+            minutes: 60 * 24 * 365,
+            sameSite: 'lax',
+        ));
     }
 }

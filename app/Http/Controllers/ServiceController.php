@@ -16,7 +16,7 @@ class ServiceController extends Controller
         $vendor = $request->user()->vendor;
 
         if (! $vendor) {
-            return to_route('vendor.onboarding');
+            return to_route('onboarding');
         }
 
         $validated = $this->validateService($request);
@@ -28,8 +28,6 @@ class ServiceController extends Controller
                 'slug' => $slug,
                 'category' => $validated['category'],
                 'description' => $validated['description'] ?? null,
-                'price_in_minor' => $validated['price_in_minor'],
-                'unit' => $validated['unit'] ?? null,
                 'is_public' => $validated['is_public'] ?? false,
             ]);
 
@@ -38,6 +36,14 @@ class ServiceController extends Controller
                     'name' => $validated['custom_category'],
                 ]);
             }
+
+            $service->pricingOptions()->create([
+                'name' => $validated['name'],
+                'description' => null,
+                'price_in_minor' => $validated['price_in_minor'],
+                'unit' => $validated['unit'],
+                'is_public' => $validated['is_public'] ?? false,
+            ]);
         });
 
         return to_route('overview');
@@ -48,12 +54,12 @@ class ServiceController extends Controller
         $vendor = $request->user()->vendor;
 
         if (! $vendor) {
-            return to_route('vendor.onboarding');
+            return to_route('onboarding');
         }
 
         abort_unless($service->vendor_id === $vendor->id, 404);
 
-        $validated = $this->validateService($request);
+        $validated = $this->validateServiceUpdate($request);
         $slug = $this->makeSlug($vendor, $validated['name'], $service);
 
         DB::transaction(function () use ($service, $validated, $slug) {
@@ -62,8 +68,6 @@ class ServiceController extends Controller
                 'slug' => $slug,
                 'category' => $validated['category'],
                 'description' => $validated['description'] ?? null,
-                'price_in_minor' => $validated['price_in_minor'],
-                'unit' => $validated['unit'] ?? null,
                 'is_public' => $validated['is_public'] ?? false,
             ]);
 
@@ -71,11 +75,46 @@ class ServiceController extends Controller
                 $service->customCategory()->updateOrCreate([], [
                     'name' => $validated['custom_category'],
                 ]);
-
-                return;
+            } else {
+                $service->customCategory()->delete();
             }
 
-            $service->customCategory()->delete();
+            $pricingOptions = $service->pricingOptions()->get()->keyBy('id');
+            $submittedPricingOptionIds = collect($validated['pricing_options'])
+                ->pluck('id')
+                ->filter()
+                ->values();
+
+            foreach ($submittedPricingOptionIds as $pricingOptionId) {
+                abort_unless($pricingOptions->has($pricingOptionId), 404);
+            }
+
+            if ($submittedPricingOptionIds->isEmpty()) {
+                $service->pricingOptions()->delete();
+            } else {
+                $service->pricingOptions()
+                    ->whereNotIn('id', $submittedPricingOptionIds)
+                    ->delete();
+            }
+
+            foreach ($validated['pricing_options'] as $sortOrder => $pricingOptionData) {
+                $pricingOptionAttributes = [
+                    'name' => $validated['name'],
+                    'price_in_minor' => $pricingOptionData['price_in_minor'],
+                    'unit' => $pricingOptionData['unit'],
+                    'sort_order' => $sortOrder,
+                    'is_public' => $validated['is_public'] ?? false,
+                ];
+
+                if ($pricingOptionData['id']) {
+                    $pricingOptions->get($pricingOptionData['id'])->update($pricingOptionAttributes);
+                } else {
+                    $service->pricingOptions()->create([
+                        ...$pricingOptionAttributes,
+                        'description' => null,
+                    ]);
+                }
+            }
         });
 
         return to_route('overview');
@@ -86,7 +125,7 @@ class ServiceController extends Controller
         $vendor = $request->user()->vendor;
 
         if (! $vendor) {
-            return to_route('vendor.onboarding');
+            return to_route('onboarding');
         }
 
         abort_unless($service->vendor_id === $vendor->id, 404);
@@ -110,7 +149,22 @@ class ServiceController extends Controller
             'custom_category' => ['nullable', 'required_if:category,other', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:2000'],
             'price_in_minor' => ['required', 'integer', 'min:0', 'max:4294967295'],
-            'unit' => ['nullable', 'string', Rule::in(config('service_units'))],
+            'unit' => ['required', 'string', Rule::in(config('service_units'))],
+            'is_public' => ['boolean'],
+        ]);
+    }
+
+    private function validateServiceUpdate(Request $request): array
+    {
+        return $request->validate([
+            'name' => ['required', 'string', 'max:120'],
+            'category' => ['required', 'string', Rule::in(config('service_categories'))],
+            'custom_category' => ['nullable', 'required_if:category,other', 'string', 'max:120'],
+            'description' => ['nullable', 'string', 'max:2000'],
+            'pricing_options' => ['required', 'array', 'min:1'],
+            'pricing_options.*.id' => ['nullable', 'integer', 'distinct'],
+            'pricing_options.*.price_in_minor' => ['required', 'integer', 'min:0', 'max:4294967295'],
+            'pricing_options.*.unit' => ['required', 'string', Rule::in(config('service_units'))],
             'is_public' => ['boolean'],
         ]);
     }

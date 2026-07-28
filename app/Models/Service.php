@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Service extends Model
@@ -17,8 +18,6 @@ class Service extends Model
         'slug',
         'category',
         'description',
-        'price_in_minor',
-        'unit',
         'is_public',
     ];
 
@@ -37,5 +36,10 @@ class Service extends Model
     public function customCategory(): HasOne
     {
         return $this->hasOne(ServiceCustomCategory::class);
+    }
+
+    public function pricingOptions(): HasMany
+    {
+        return $this->hasMany(ServicePricingOption::class)->orderBy('sort_order');
     }
 }

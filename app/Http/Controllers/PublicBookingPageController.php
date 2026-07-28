@@ -51,6 +51,7 @@ class PublicBookingPageController extends Controller
         $seo = $this->seo($vendor, $service);
 
         return Inertia::render('PublicBookingPage', [
+            'copy' => __('public-booking'),
             'vendor' => [
                 'id' => $vendor->id,
                 'name' => $vendor->name,
@@ -89,11 +90,24 @@ class PublicBookingPageController extends Controller
     private function seo(Vendor $vendor, ?Service $service = null): array
     {
         $title = $service
-            ? "{$service->name} by {$vendor->name}"
-            : "{$vendor->name} services in {$vendor->location}";
+            ? __('public-booking.seo_service_title', [
+                'service' => $service->name,
+                'vendor' => $vendor->name,
+            ])
+            : __('public-booking.seo_vendor_title', [
+                'vendor' => $vendor->name,
+                'location' => $vendor->location,
+            ]);
         $description = $service
-            ? ($service->description ?: "{$service->name} from {$vendor->name} in {$vendor->location}.")
-            : ($vendor->short_description ?: 'Explore public services from '.$vendor->name.' in '.$vendor->location.'.');
+            ? ($service->description ?: __('public-booking.seo_service_description', [
+                'service' => $service->name,
+                'vendor' => $vendor->name,
+                'location' => $vendor->location,
+            ]))
+            : ($vendor->short_description ?: __('public-booking.seo_vendor_description', [
+                'vendor' => $vendor->name,
+                'location' => $vendor->location,
+            ]));
         $canonical = $service
             ? route('public.booking.service.show', [$vendor->slug, $service->slug])
             : route('public.booking.show', $vendor->slug);

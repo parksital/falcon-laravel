@@ -8,10 +8,21 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuLabel,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import PublicLayout from '@/layouts/public/public-layout';
 import { index as indexRoute, login, register } from '@/routes';
+import { update as updateLocale } from '@/routes/locale';
 import { type SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
+import { GlobeIcon } from '@phosphor-icons/react';
 
 type Service = {
     id: number;
@@ -72,6 +83,38 @@ export default function IndexPage({ services, locale, copy }: IndexPageProps) {
                         <nav className="ml-auto hidden items-center gap-6 text-xs text-muted-foreground sm:flex">
 
                         </nav>
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button type="button" variant="outline" size="sm">
+                                    <GlobeIcon data-icon="inline-start" />
+                                    {locale === 'nl' ? layoutCopy.language_dutch : layoutCopy.language_english}
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuGroup>
+                                    <DropdownMenuLabel>{layoutCopy.language}</DropdownMenuLabel>
+                                    <DropdownMenuRadioGroup
+                                        value={locale}
+                                        onValueChange={(nextLocale) => {
+                                            if (nextLocale !== locale) {
+                                                router.patch(updateLocale.url(), { locale: nextLocale }, {
+                                                    preserveScroll: true,
+                                                    preserveState: true,
+                                                });
+                                            }
+                                        }}
+                                    >
+                                        <DropdownMenuRadioItem value="en">
+                                            {layoutCopy.language_english}
+                                        </DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="nl">
+                                            {layoutCopy.language_dutch}
+                                        </DropdownMenuRadioItem>
+                                    </DropdownMenuRadioGroup>
+                                </DropdownMenuGroup>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
 
                         <Button variant="ghost" className="hidden sm:inline-flex" onClick={() => router.visit(login())}>
                             {copy.nav_login}

@@ -22,8 +22,9 @@ return [
     'services_empty' => 'No services have been added yet.',
     'services_table_name' => 'Name',
     'services_table_category' => 'Category',
-    'services_table_price' => 'Price',
+    'services_table_price' => 'Pricing',
     'services_table_status' => 'Status',
+    'services_no_pricing_options' => 'No pricing options',
 
     'service_step' => 'Step :step of :total',
     'service_add_title' => 'Add service',
@@ -37,9 +38,11 @@ return [
     'service_field_description' => 'Description',
     'service_field_price_in_minor' => 'Price in cents',
     'service_field_price_placeholder' => '0',
-    'service_field_unit' => 'Charge per',
-    'service_field_unit_placeholder' => 'Select unit',
+    'service_field_unit' => 'Per',
+    'service_field_unit_placeholder' => 'Select',
 
+    'service_pricing_label' => 'Pricing',
+    'service_pricing_description' => 'Add one or more prices for this service.',
     'service_unit_description' => 'Choose what this price applies to, like event, hour, or person.',
 
     'service_preview_by' => 'By',
@@ -54,6 +57,8 @@ return [
     'service_action_continue' => 'Continue',
     'service_action_save_service' => 'Save service',
     'service_action_save_changes' => 'Save changes',
+    'service_action_add_price' => 'Add price',
+    'service_action_delete_price' => 'Delete price',
 
     'cancel_service_title' => 'Cancel service?',
     'cancel_service_description' => 'Any details you entered for this service will be lost.',

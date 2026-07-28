@@ -22,8 +22,9 @@ return [
     'services_empty' => 'Er zijn nog geen services toegevoegd.',
     'services_table_name' => 'Naam',
     'services_table_category' => 'Categorie',
-    'services_table_price' => 'Prijs',
+    'services_table_price' => 'Prijzen',
     'services_table_status' => 'Status',
+    'services_no_pricing_options' => 'Geen prijsopties',
 
     'service_step' => 'Stap :step van :total',
     'service_add_title' => 'Service toevoegen',
@@ -37,9 +38,11 @@ return [
     'service_field_description' => 'Beschrijving',
     'service_field_price_in_minor' => 'Prijs in centen',
     'service_field_price_placeholder' => '0',
-    'service_field_unit' => 'Prijs per',
-    'service_field_unit_placeholder' => 'Selecteer eenheid',
+    'service_field_unit' => 'per',
+    'service_field_unit_placeholder' => 'Selecteer',
 
+    'service_pricing_label' => 'Prijzen',
+    'service_pricing_description' => 'Voeg een of meer prijzen toe voor deze service.',
     'service_unit_description' => 'Kies waar deze prijs voor geldt, zoals evenement, uur of persoon.',
 
     'service_preview_by' => 'Door',
@@ -54,6 +57,8 @@ return [
     'service_action_continue' => 'Verder',
     'service_action_save_service' => 'Service opslaan',
     'service_action_save_changes' => 'Wijzigingen opslaan',
+    'service_action_add_price' => 'Prijs toevoegen',
+    'service_action_delete_price' => 'Prijs verwijderen',
 
     'cancel_service_title' => 'Service annuleren?',
     'cancel_service_description' => 'Alle gegevens die je voor deze service hebt ingevuld gaan verloren.',

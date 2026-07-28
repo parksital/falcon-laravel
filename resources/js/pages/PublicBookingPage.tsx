@@ -7,8 +7,20 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuLabel,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import PublicLayout from '@/layouts/public/public-layout';
-import { Head, router } from '@inertiajs/react';
+import { update as updateLocale } from '@/routes/locale';
+import { SharedData } from '@/types';
+import { Head, router, usePage } from '@inertiajs/react';
+import { GlobeIcon } from '@phosphor-icons/react';
 
 type Vendor = {
     id: number;
@@ -33,6 +45,7 @@ type Service = {
 };
 
 type PublicBookingPageProps = {
+    copy: Record<string, string>;
     vendor: Vendor;
     services: Service[];
     featuredServiceSlug: string | null;
@@ -44,6 +57,13 @@ type PublicBookingPageProps = {
     };
 };
 
+function interpolate(value: string, replacements: Record<string, string>) {
+    return Object.entries(replacements).reduce(
+        (result, [key, replacement]) => result.replace(`:${key}`, replacement),
+        value,
+    );
+}
+
 function formatPriceInMinor(priceInMinor: number | null, locale: string) {
     if (priceInMinor === null) return null;
 
@@ -53,7 +73,9 @@ function formatPriceInMinor(priceInMinor: number | null, locale: string) {
     }).format(priceInMinor / 100);
 }
 
-export default function PublicBookingPage({ vendor, services, featuredServiceSlug, locale, seo }: PublicBookingPageProps) {
+export default function PublicBookingPage({ copy, vendor, services, featuredServiceSlug, locale, seo }: PublicBookingPageProps) {
+    const { layoutCopy } = usePage<SharedData>().props;
+
     return (
         <PublicLayout>
             <Head title={seo.title}>
@@ -68,9 +90,43 @@ export default function PublicBookingPage({ vendor, services, featuredServiceSlu
                             <p className="text-sm text-muted-foreground">{vendor.location}</p>
                             <h1 className="text-3xl font-semibold text-foreground">{vendor.name}</h1>
                         </div>
-                        <Button variant="outline" onClick={() => router.visit('/index')}>
-                            Browse services
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button type="button" variant="outline" size="sm">
+                                        <GlobeIcon data-icon="inline-start" />
+                                        {locale === 'nl' ? layoutCopy.language_dutch : layoutCopy.language_english}
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuGroup>
+                                        <DropdownMenuLabel>{layoutCopy.language}</DropdownMenuLabel>
+                                        <DropdownMenuRadioGroup
+                                            value={locale}
+                                            onValueChange={(nextLocale) => {
+                                                if (nextLocale !== locale) {
+                                                    router.patch(updateLocale.url(), { locale: nextLocale }, {
+                                                        preserveScroll: true,
+                                                        preserveState: true,
+                                                    });
+                                                }
+                                            }}
+                                        >
+                                            <DropdownMenuRadioItem value="en">
+                                                {layoutCopy.language_english}
+                                            </DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="nl">
+                                                {layoutCopy.language_dutch}
+                                            </DropdownMenuRadioItem>
+                                        </DropdownMenuRadioGroup>
+                                    </DropdownMenuGroup>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+
+                            <Button variant="outline" onClick={() => router.visit('/index')}>
+                                {copy.browse_services}
+                            </Button>
+                        </div>
                     </div>
                     {vendor.short_description ? (
                         <p className="max-w-2xl text-sm text-muted-foreground">{vendor.short_description}</p>
@@ -80,7 +136,7 @@ export default function PublicBookingPage({ vendor, services, featuredServiceSlu
                 {services.length > 0 ? (
                     <section className="space-y-3">
                         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                            Services
+                            {copy.services_heading}
                         </h2>
                         <div className="grid gap-3 sm:grid-cols-2">
                             {services.map((service) => (
@@ -100,11 +156,13 @@ export default function PublicBookingPage({ vendor, services, featuredServiceSlu
                                         {formatPriceInMinor(service.price_in_minor, locale) ? (
                                             <p className="font-medium">
                                                 {formatPriceInMinor(service.price_in_minor, locale)}
-                                                {service.unit_label ? ` per ${service.unit_label}` : null}
+                                                {service.unit_label ? ` ${interpolate(copy.per_unit, {
+                                                    unit: service.unit_label,
+                                                })}` : null}
                                             </p>
                                         ) : null}
                                         <Button variant="outline" onClick={() => router.visit(service.url)}>
-                                            View service
+                                            {copy.view_service}
                                         </Button>
                                     </CardContent>
                                 </Card>

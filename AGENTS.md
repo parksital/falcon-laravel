@@ -2,6 +2,12 @@
 
 Before changing code in this repository, read and follow these project rules.
 
+## Testing
+
+- Do not add or update tests unless the user explicitly asks for tests.
+  This project is pre-customer and accepts temporary breakage while product
+  flows are still changing quickly.
+
 ## Code Style
 
 - Do not extract simple one-off route or active-state checks into variables.

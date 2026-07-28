@@ -3,9 +3,9 @@
 return [
     'catering' => 'Catering',
     'photography' => 'Photography',
-    'photobooths' => 'Photo Booth',
     'videography' => 'Videography',
-    'florist' => 'Florist',
+    'photobooths' => 'Photo Booth',
+    'florist' => 'Flowers',
     'decor' => 'Decor',
     'other' => 'Other',
 ];

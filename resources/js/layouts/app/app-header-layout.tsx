@@ -58,8 +58,8 @@ export default function AppHeaderLayout({ children }: PropsWithChildren) {
         router.post(logout.url(), {}, { preserveState: false, replace: true });
     };
 
-    const handleLocaleChange = (preferredLocale: string) => {
-        router.patch(updateLocale.url(), { preferred_locale: preferredLocale }, { preserveScroll: true });
+    const handleLocaleChange = (locale: string) => {
+        router.patch(updateLocale.url(), { locale }, { preserveScroll: true });
     };
 
     return (

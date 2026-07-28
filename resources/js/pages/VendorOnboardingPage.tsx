@@ -1,89 +1,69 @@
-import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
+import {
+    Field,
+    FieldError,
+    FieldGroup,
+    FieldLabel,
+} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import AuthSplitLayout from '@/layouts/auth/auth-split-layout';
-import { store } from '@/routes/vendor';
-import { Form, Head } from '@inertiajs/react';
+import { store } from '@/routes/onboarding/vendor';
+import { Head, useForm } from '@inertiajs/react';
 import { CheckIcon } from '@phosphor-icons/react';
 
 interface VendorOnboardingPageProps {
-    vendor: {
-        business_name: string;
-        location: string;
-    };
-    copy: {
-        title: string;
-        heading: string;
-        description: string;
-        business_name_label: string;
-        business_name_placeholder: string;
-        location_label: string;
-        location_placeholder: string;
-        submit: string;
-    };
+    copy: Record<string, string>;
 }
 
-export default function VendorOnboardingPage({
-    vendor,
-    copy,
-}: VendorOnboardingPageProps) {
+export default function VendorOnboardingPage({ copy }: VendorOnboardingPageProps) {
+    const form = useForm({
+        business_name: '',
+    });
+    const { data, errors, processing } = form;
+
     return (
         <AuthSplitLayout>
             <Head title={copy.title} />
 
-            <main className="mx-auto flex min-h-dvh w-full max-w-[350px] flex-col justify-center space-y-6">
-                <div className="flex flex-col items-center gap-2 text-center">
-                    <h1 className="text-xl font-medium">{copy.heading}</h1>
-                    <p className="text-sm text-balance text-muted-foreground">
-                        {copy.description}
-                    </p>
-                </div>
+            <main className="relative flex min-h-dvh w-full items-center justify-center px-6 py-8 lg:px-8">
+                <section className="flex w-full max-w-xl flex-col items-start gap-6">
+                    <div className="flex flex-col gap-2">
+                        <h1 className="text-xl font-medium">{copy.heading}</h1>
+                    </div>
 
-                <Form
-                    {...store.form()}
-                    disableWhileProcessing
-                    className="flex flex-col gap-6"
-                >
-                    {({ processing, errors }) => (
-                        <>
-                            <div className="grid gap-2">
-                                <Label htmlFor="business-name">{copy.business_name_label}</Label>
+                    <form
+                        onSubmit={(event) => {
+                            event.preventDefault();
+                            form.submit(store());
+                        }}
+                        inert={processing ? true : undefined}
+                        className="flex w-full flex-col gap-6"
+                    >
+                        <FieldGroup>
+                            <Field data-invalid={errors.business_name ? true : undefined}>
+                                <FieldLabel htmlFor="business-name">{copy.business_name_label}</FieldLabel>
                                 <Input
                                     id="business-name"
-                                    name="business_name"
-                                    type="text"
-                                    autoFocus
-                                    required
-                                    maxLength={120}
+                                    value={data.business_name}
+                                    onChange={(event) => form.setData('business_name', event.target.value)}
                                     placeholder={copy.business_name_placeholder}
-                                    defaultValue={vendor.business_name}
-                                />
-                                <InputError message={errors.business_name} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="location">{copy.location_label}</Label>
-                                <Input
-                                    id="location"
-                                    name="location"
-                                    type="text"
-                                    required
                                     maxLength={120}
-                                    placeholder={copy.location_placeholder}
-                                    defaultValue={vendor.location}
+                                    aria-invalid={Boolean(errors.business_name)}
+                                    autoFocus
                                 />
-                                <InputError message={errors.location} />
-                            </div>
+                                <FieldError>{errors.business_name}</FieldError>
+                            </Field>
+                        </FieldGroup>
 
-                            <Button type="submit" className="w-full" disabled={processing}>
-                                {processing ? <Spinner /> : <CheckIcon />}
+                        <div className="flex justify-end">
+                            <Button type="submit" disabled={!data.business_name.trim() || processing}>
+                                {processing ? <Spinner /> : <CheckIcon data-icon="inline-start" />}
                                 {copy.submit}
                             </Button>
-                        </>
-                    )}
-                </Form>
+                        </div>
+                    </form>
+                </section>
             </main>
         </AuthSplitLayout>
     );

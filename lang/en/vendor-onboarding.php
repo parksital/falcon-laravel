@@ -1,12 +1,10 @@
 <?php
 
 return [
-    'title' => 'Onboarding',
-    'heading' => 'Welcome',
-    'description' => 'Add the basics for your vendor profile.',
+    'title' => 'Add your business',
+    'heading' => "Let's get started",
+    'description' => "You'll add your first service next.",
     'business_name_label' => 'Business name',
-    'business_name_placeholder' => 'Required',
-    'location_label' => 'City',
-    'location_placeholder' => 'Where are you based?',
+    'business_name_placeholder' => 'What is your business called?',
     'submit' => 'Continue',
 ];

@@ -11,20 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('services', function (Blueprint $table) {
+        Schema::create('service_pricing_options', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('vendor_id')
+            $table->foreignId('service_id')
                 ->constrained()
                 ->cascadeOnDelete();
             $table->string('name');
-            $table->string('slug');
-            $table->string('category')->index();
             $table->text('description')->nullable();
+            $table->unsignedInteger('price_in_minor');
+            $table->string('unit');
+            $table->unsignedSmallInteger('sort_order')->default(0);
             $table->boolean('is_public')->default(false)->index();
             $table->timestamps();
 
-            $table->unique(['vendor_id', 'slug']);
-            $table->index(['vendor_id', 'category']);
+            $table->index(['service_id', 'sort_order']);
+            $table->index(['service_id', 'is_public']);
         });
     }
 
@@ -33,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('services');
+        Schema::dropIfExists('service_pricing_options');
     }
 };

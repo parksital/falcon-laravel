@@ -1,9 +1,9 @@
 <?php
 
 return [
-    'package' => 'Pakket',
-    'hour' => 'Uur',
-    'person' => 'Persoon',
-    'day' => 'Dag',
-    'event' => 'Evenement',
+    'package' => 'pakket',
+    'hour' => 'uur',
+    'person' => 'persoon',
+    'day' => 'dag',
+    'event' => 'evenement',
 ];
