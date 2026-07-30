@@ -1,0 +1,30 @@
+<?php
+
+return [
+    'title' => 'Add service',
+    'heading' => 'Add service',
+    'description' => 'Your service will remain private until you publish it.',
+    'basic_information_label' => 'Basic information',
+    'basic_information_description' => 'Add the main details customers need to understand your service.',
+    'service_name_label' => 'Name (required)',
+    'service_name_placeholder' => 'What would you like to call this service?',
+    'service_description_label' => 'Description',
+    'service_description_placeholder' => 'Describe what is included.',
+    'category_label' => 'Category (required)',
+    'category_placeholder' => 'Select a category',
+    'custom_category_label' => 'Other category',
+    'custom_category_input_label'=> 'Let us know',
+    'price_section_label' => 'Pricing',
+    'price_section_description' => 'Add the price customers will see for this service.',
+    'pricing_option_legend' => 'Pricing option :number',
+    'pricing_option_name_label' => 'Name',
+    'pricing_option_description_label' => 'Description',
+    'pricing_option_description_placeholder' => 'Describe what this option includes.',
+    'price_label' => 'Price (in cents)',
+    'price_placeholder' => '20000',
+    'unit_label' => 'Price per',
+    'unit_placeholder' => 'Select a unit',
+    'submit' => 'Add service',
+
+    'preview_by_vendor' => 'By :business_name',
+];

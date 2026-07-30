@@ -43,11 +43,6 @@ export default function AppHeaderLayout({ children }: PropsWithChildren) {
             ? auth.user.preferred_locale
             : page.props.locale;
 
-    const currentLocaleLabel =
-        currentLocale === 'nl'
-            ? layoutCopy.language_dutch
-            : layoutCopy.language_english;
-
     const getInitials = useInitials();
 
     const cleanup = useMobileNavigation();

@@ -1,0 +1,30 @@
+<?php
+
+return [
+    'title' => 'Service toevoegen',
+    'heading' => 'Service toevoegen',
+    'description' => 'Je service blijft privé totdat je hem publiceert.',
+    'basic_information_label' => 'Basisinformatie',
+    'basic_information_description' => 'Voeg de belangrijkste informatie over je service toe.',
+    'service_name_label' => 'Naam (vereist)',
+    'service_name_placeholder' => 'Hoe wil je deze service noemen?',
+    'service_description_label' => 'Beschrijving',
+    'service_description_placeholder' => 'Beschrijf wat er is inbegrepen.',
+    'category_label' => 'Categorie (vereist)',
+    'category_placeholder' => 'Selecteer een categorie',
+    'custom_category_label' => 'Overige categorie',
+    'custom_category_input_label'=> 'Namelijk',
+    'price_section_label' => 'Prijs',
+    'price_section_description' => 'Voeg de prijs toe die klanten voor deze service zien.',
+    'pricing_option_legend' => 'Prijsoptie :number',
+    'pricing_option_name_label' => 'Naam',
+    'pricing_option_description_label' => 'Beschrijving',
+    'pricing_option_description_placeholder' => 'Beschrijf wat deze optie bevat.',
+    'price_label' => 'Prijs (in centen)',
+    'price_placeholder' => '20000',
+    'unit_label' => 'Prijs per',
+    'unit_placeholder' => 'Kies een eenheid',
+    'submit' => 'Service toevoegen',
+
+    'preview_by_vendor' => 'Door :business_name',
+];

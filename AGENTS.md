@@ -7,6 +7,10 @@ Before changing code in this repository, read and follow these project rules.
 - Do not add or update tests unless the user explicitly asks for tests.
   This project is pre-customer and accepts temporary breakage while product
   flows are still changing quickly.
+- Do not automatically start the app or open it in a browser after every
+  change. Prefer static checks or a build when appropriate. Only perform
+  runtime browser verification when the user explicitly asks for it or when
+  the behavior cannot be verified confidently without running the app.
 
 ## Code Style
 

@@ -15,6 +15,8 @@ import {
     Field,
     FieldContent,
     FieldDescription,
+    FieldError,
+    FieldGroup,
     FieldLabel,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
@@ -32,6 +34,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import {
     Table,
     TableBody,
@@ -53,11 +56,11 @@ import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import {
     destroy as destroyService,
-    store as storeService,
     update as updateService,
 } from '@/routes/services';
-import { Head, useForm } from '@inertiajs/react';
-import { PlusIcon, TrashIcon } from '@phosphor-icons/react';
+import { Head, router, useForm } from '@inertiajs/react';
+import { create } from '@/routes/services';
+import { PlusIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 
 interface OverviewPageProps {
@@ -77,15 +80,7 @@ interface OverviewPageProps {
         category_label: string;
         custom_category: string | null;
         description: string | null;
-        pricing_options: {
-            id: number;
-            name: string;
-            description: string | null;
-            price_in_minor: number;
-            unit: string;
-            unit_label: string;
-            is_public: boolean;
-        }[];
+        pricing_options_label: string,
         is_public: boolean;
     }[];
     serviceCategories: {
@@ -97,47 +92,6 @@ interface OverviewPageProps {
         label: string;
     }[];
     copy: Record<string, string>;
-}
-
-function interpolate(
-    value: string,
-    replacements: Record<string, string>,
-) {
-    return Object.entries(replacements).reduce(
-        (result, [key, replacement]) => result.replace(`:${key}`, replacement),
-        value,
-    );
-}
-
-function getServiceCategoryLabel(
-    serviceCategories: OverviewPageProps['serviceCategories'],
-    category: string,
-    customCategory: string | null,
-    copy: OverviewPageProps['copy'],
-) {
-    if (category === 'other') {
-        return (
-            customCategory ||
-            serviceCategories.find(
-                (serviceCategory) => serviceCategory.value === category,
-            )?.label ||
-            copy.other
-        );
-    }
-
-    return (
-        serviceCategories.find((serviceCategory) => serviceCategory.value === category)?.label || copy.not_set
-    );
-}
-
-function getServiceUnitLabel(
-    serviceUnits: OverviewPageProps['serviceUnits'],
-    copy: OverviewPageProps['copy'],
-    unit: string | null,
-) {
-    if (!unit) return copy.not_set;
-
-    return serviceUnits.find((serviceUnit) => serviceUnit.value === unit)?.label || unit;
 }
 
 function formatPriceInMinor(
@@ -160,29 +114,10 @@ function formatPriceInMinorDescription(priceInMinor: string) {
     return formatPriceInMinorValue(priceInMinor || '0');
 }
 
-const serviceFormDefaults = {
-    name: '',
-    category: '',
-    custom_category: '',
-    description: '',
-    price_in_minor: '',
-    unit: '',
-    is_public: false,
-};
-
 type EditPricingOption = {
     id: number | null;
     price_in_minor: string;
     unit: string;
-};
-
-const editServiceFormDefaults = {
-    name: '',
-    category: '',
-    custom_category: '',
-    description: '',
-    pricing_options: [] as EditPricingOption[],
-    is_public: false,
 };
 
 export default function OverviewPage({
@@ -192,19 +127,37 @@ export default function OverviewPage({
     serviceUnits,
     copy,
 }: OverviewPageProps) {
-    const [isAddServiceOpen, setIsAddServiceOpen] = useState(false);
-    const [isCancelAddServiceOpen, setIsCancelAddServiceOpen] = useState(false);
-    const [addServiceStep, setAddServiceStep] = useState(1);
     const [isEditServiceOpen, setIsEditServiceOpen] = useState(false);
     const [isDeleteServiceOpen, setIsDeleteServiceOpen] = useState(false);
     const [editingServiceId, setEditingServiceId] = useState<number | null>(null);
-    const addForm = useForm(serviceFormDefaults);
-    const editForm = useForm(editServiceFormDefaults);
+
+    const addForm = useForm({
+        name: '',
+        category: '',
+        custom_category: '',
+        description: '',
+        price_in_minor: '',
+        unit: '',
+        is_public: false,
+    });
+
+    const editForm = useForm({
+        name: '',
+        category: '',
+        custom_category: '',
+        description: '',
+        pricing_options: [] as EditPricingOption[],
+        is_public: false,
+    });
+
     const deleteForm = useForm({
         confirmation_name: '',
     });
+
     const editingService = services.find((service) => service.id === editingServiceId);
     const editFormErrors = editForm.errors as Record<string, string | undefined>;
+
+    console.log(vendor);
 
     return (
         <AppLayout>
@@ -215,7 +168,7 @@ export default function OverviewPage({
                     <h1 className="flex gap-2 text-2xl font-semibold">
                         <span>{copy.overview_heading}</span>
                         <span className="text-muted-foreground">·</span>
-                        <span>{vendor.title}</span>
+                        <span>{vendor.name}</span>
                     </h1>
 
                     <Card>
@@ -257,19 +210,14 @@ export default function OverviewPage({
                         <h2 className="text-2xl font-semibold">{copy.services_heading}</h2>
 
                         <Button
-                            onClick={() => {
-                                setAddServiceStep(1);
-                                addForm.reset();
-                                addForm.clearErrors();
-                                setIsAddServiceOpen(true);
-                            }}
+                            onClick={() => {router.visit(create())}}
                         >
                             <PlusIcon />
                             {copy.services_add}
                         </Button>
                     </div>
 
-                    <Table>
+                    <Table className='border'>
                         <TableHeader>
                             <TableRow>
                                 <TableHead>{copy.services_table_name}</TableHead>
@@ -285,30 +233,7 @@ export default function OverviewPage({
                                         key={service.id}
                                         className="cursor-pointer"
                                         onClick={() => {
-                                            const serviceData = {
-                                                name: service.name,
-                                                category: service.category,
-                                                custom_category: service.custom_category ?? '',
-                                                description: service.description ?? '',
-                                                pricing_options: service.pricing_options.length > 0
-                                                    ? service.pricing_options.map((pricingOption) => ({
-                                                        id: pricingOption.id,
-                                                        price_in_minor: String(pricingOption.price_in_minor),
-                                                        unit: pricingOption.unit,
-                                                    }))
-                                                    : [{
-                                                        id: null,
-                                                        price_in_minor: '',
-                                                        unit: '',
-                                                    }],
-                                                is_public: service.is_public,
-                                            };
-
-                                            setEditingServiceId(service.id);
-                                            editForm.setData(serviceData);
-                                            editForm.setDefaults(serviceData);
-                                            editForm.clearErrors();
-                                            setIsEditServiceOpen(true);
+                                            // router.visit()
                                         }}
                                     >
                                         <TableCell className="font-medium">{service.name}</TableCell>
@@ -316,23 +241,9 @@ export default function OverviewPage({
                                             <Badge variant="secondary">{service.category_label}</Badge>
                                         </TableCell>
                                         <TableCell>
-                                            {service.pricing_options.length > 0 ? (
-                                                <div className="flex flex-col gap-3">
-                                                    {service.pricing_options.map((pricingOption) => (
-                                                        <div key={pricingOption.id} className="flex flex-col gap-1">
-                                                            <p className="font-medium">
-                                                                {formatPriceInMinor(pricingOption.price_in_minor, copy.not_set)}
-                                                                {` / ${pricingOption.unit_label}`}
-                                                            </p>
-                                                            {pricingOption.description ? (
-                                                                <p className="text-muted-foreground">
-                                                                    {pricingOption.description}
-                                                                </p>
-                                                            ) : null}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            ) : copy.services_no_pricing_options}
+                                            <p className="font-medium">
+                                                {service.pricing_options_label}
+                                            </p>
                                         </TableCell>
                                         <TableCell>
                                             <Badge variant={service.is_public ? 'default' : 'secondary'}>
@@ -355,335 +266,6 @@ export default function OverviewPage({
                     </Table>
                 </section>
             </main>
-
-            <Dialog open={isAddServiceOpen}>
-                <DialogContent showCloseButton={false}>
-                    <form
-                        className="flex flex-col gap-4"
-                        onSubmit={(event) => {
-                            event.preventDefault();
-
-                            if (addServiceStep < 3) {
-                                setAddServiceStep(addServiceStep + 1);
-                                return;
-                            }
-
-                            addForm.post(storeService().url, {
-                                preserveScroll: true,
-                                onBefore: () => {
-                                    addForm.clearErrors();
-                                },
-                                onError: (errors) => {
-                                    if (errors.name || errors.category || errors.custom_category || errors.description) {
-                                        setAddServiceStep(1);
-                                        return;
-                                    }
-
-                                    if (errors.price_in_minor || errors.unit) {
-                                        setAddServiceStep(2);
-                                    }
-                                },
-                                onSuccess: () => {
-                                    setIsAddServiceOpen(false);
-                                    setAddServiceStep(1);
-                                    addForm.reset();
-                                    addForm.clearErrors();
-                                },
-                            });
-                        }}
-                    >
-                        <DialogHeader>
-                            <DialogTitle>{copy.service_add_title}</DialogTitle>
-                            <DialogDescription>
-                                {interpolate(copy.service_step, {
-                                    step: String(addServiceStep),
-                                    total: '3',
-                                })}
-                            </DialogDescription>
-                        </DialogHeader>
-
-                        {addServiceStep === 1 ? (
-                            <div className="flex flex-col gap-4">
-                                <div className="grid gap-2">
-                                    <Label htmlFor="service-name">{copy.service_field_name}</Label>
-                                    <Input
-                                        id="service-name"
-                                        name="name"
-                                        required
-                                        value={addForm.data.name}
-                                        onChange={(event) =>
-                                            addForm.setData('name', event.target.value)
-                                        }
-                                    />
-                                    <InputError message={addForm.errors.name} />
-                                </div>
-
-                                <div className="grid gap-2">
-                                    <Label htmlFor="service-category">
-                                        {copy.service_field_category}
-                                    </Label>
-                                    <Select
-                                        name="category"
-                                        required
-                                        value={addForm.data.category}
-                                        onValueChange={(value) =>
-                                            addForm.setData('category', value)
-                                        }
-                                    >
-                                        <SelectTrigger
-                                            id="service-category"
-                                            className="w-full"
-                                        >
-                                            <SelectValue placeholder={copy.service_field_category_placeholder} />
-                                        </SelectTrigger>
-                                        <SelectContent position="popper">
-                                            <SelectGroup>
-                                                {serviceCategories.map((serviceCategory) => (
-                                                    <SelectItem key={serviceCategory.value} value={serviceCategory.value}>
-                                                        {serviceCategory.label}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectGroup>
-                                        </SelectContent>
-                                    </Select>
-                                    <InputError message={addForm.errors.category} />
-                                </div>
-
-                                {addForm.data.category === 'other' ? (
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="service-custom-category">
-                                            {copy.service_field_custom_category}
-                                        </Label>
-                                        <Input
-                                            id="service-custom-category"
-                                            name="custom_category"
-                                            required
-                                            value={addForm.data.custom_category}
-                                            onChange={(event) =>
-                                                addForm.setData('custom_category', event.target.value)
-                                            }
-                                        />
-                                        <InputError message={addForm.errors.custom_category} />
-                                    </div>
-                                ) : null}
-
-                                <div className="grid gap-2">
-                                    <Label htmlFor="service-description">
-                                        {copy.service_field_description}
-                                    </Label>
-                                    <Textarea
-                                        id="service-description"
-                                        name="description"
-                                        value={addForm.data.description}
-                                        onChange={(event) =>
-                                            addForm.setData('description', event.target.value)
-                                        }
-                                    />
-                                    <InputError message={addForm.errors.description} />
-                                </div>
-                            </div>
-                        ) : null}
-
-                        {addServiceStep === 2 ? (
-                            <div className="flex flex-col gap-4">
-                                <Field>
-                                    <FieldLabel htmlFor="service-price">
-                                        {copy.service_field_price_in_minor}
-                                    </FieldLabel>
-                                    <InputGroup>
-                                        <InputGroupInput
-                                            id="service-price"
-                                            name="price_in_minor"
-                                            inputMode="numeric"
-                                            type="text"
-                                            required
-                                            placeholder={copy.service_field_price_placeholder}
-                                            value={addForm.data.price_in_minor}
-                                            onChange={(event) => addForm.setData('price_in_minor', event.target.value.replace(/\D/g, ''))}
-                                        />
-
-                                        <InputGroupAddon align="inline-end">{formatPriceInMinorDescription(addForm.data.price_in_minor)}</InputGroupAddon>
-
-                                    </InputGroup>
-                                    <InputError message={addForm.errors.price_in_minor} />
-                                </Field>
-
-                                <Field>
-                                    <FieldLabel htmlFor="service-unit">
-                                        {copy.service_field_unit}
-                                    </FieldLabel>
-                                    <Select
-                                        name="unit"
-                                        value={addForm.data.unit}
-                                        onValueChange={(value) =>
-                                            addForm.setData('unit', value)
-                                        }
-                                    >
-                                        <SelectTrigger
-                                            id="service-unit"
-                                            className="w-full"
-                                        >
-                                            <SelectValue placeholder={copy.service_field_unit_placeholder} />
-                                        </SelectTrigger>
-                                        <SelectContent position="popper">
-                                            <SelectGroup>
-                                                {serviceUnits.map((serviceUnit) => (
-                                                    <SelectItem key={serviceUnit.value} value={serviceUnit.value}>
-                                                        {serviceUnit.label}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectGroup>
-                                        </SelectContent>
-                                    </Select>
-                                    <FieldDescription>
-                                        {copy.service_unit_description}
-                                    </FieldDescription>
-                                    <InputError message={addForm.errors.unit} />
-                                </Field>
-
-                            </div>
-                        ) : null}
-
-                        {addServiceStep === 3 ? (
-                            <Card>
-                                <CardContent className="grid gap-4">
-                                    <div className="grid gap-1">
-                                        <Badge variant="default">
-                                            {getServiceCategoryLabel(
-                                                serviceCategories,
-                                                addForm.data.category,
-                                                addForm.data.custom_category,
-                                                copy,
-                                            )}
-                                        </Badge>
-
-                                        <h2 className="text-xl">
-                                            {addForm.data.name}
-                                        </h2>
-
-                                        <p>
-                                            {copy.service_preview_by} <strong>{vendor.title}</strong>
-                                        </p>
-
-                                        <p className="font-medium">
-                                            {addForm.data.description}
-                                        </p>
-                                    </div>
-
-
-                                    <div className='flex justify-between items-start gap-2'>
-
-                                        <div className="grid gap-1">
-                                            <p className="text-muted-foreground">
-                                                {copy.service_preview_price}
-                                            </p>
-                                            <p className="font-medium">{formatPriceInMinor(addForm.data.price_in_minor, copy.not_set)}</p>
-                                        </div>
-
-                                        <div className="grid gap-1">
-                                            <p className="text-muted-foreground">{copy.service_preview_per}</p>
-                                            <p className="font-medium capitalize">
-                                                {getServiceUnitLabel(serviceUnits, copy, addForm.data.unit)}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ) : null}
-
-                        {addServiceStep === 3 ? (
-                            <Field orientation="horizontal">
-                                <Checkbox
-                                    id="service-is-public"
-                                    name="is_public"
-                                    checked={addForm.data.is_public}
-                                    onCheckedChange={(checked) =>
-                                        addForm.setData('is_public', checked === true)
-                                    }
-                                />
-                                <FieldContent>
-                                    <FieldLabel htmlFor="service-is-public">
-                                        {copy.service_make_public_label}
-                                    </FieldLabel>
-                                    <FieldDescription>
-                                        {copy.service_make_public_description}
-                                    </FieldDescription>
-                                </FieldContent>
-                            </Field>
-                        ) : null}
-
-                        <DialogFooter>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => {
-                                    setIsCancelAddServiceOpen(true);
-                                }}
-                            >
-                                {copy.service_action_cancel}
-                            </Button>
-                            {addServiceStep > 1 ? (
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => {
-                                        setAddServiceStep(
-                                            addServiceStep - 1,
-                                        );
-                                    }}
-                                >
-                                    {copy.service_action_back}
-                                </Button>
-                            ) : null}
-                            <Button type="submit" disabled={addForm.processing}>
-                                {addServiceStep < 3
-                                    ? copy.service_action_continue
-                                    : addForm.processing
-                                        ? <Spinner />
-                                        : copy.service_action_save_service}
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </Dialog>
-
-            <Dialog
-                open={isCancelAddServiceOpen}
-                onOpenChange={setIsCancelAddServiceOpen}
-            >
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>{copy.cancel_service_title}</DialogTitle>
-                        <DialogDescription>
-                            {copy.cancel_service_description}
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <DialogFooter>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => {
-                                setIsCancelAddServiceOpen(false);
-                            }}
-                        >
-                            {copy.cancel_service_keep_editing}
-                        </Button>
-                        <Button
-                            type="button"
-                            onClick={() => {
-                                setIsCancelAddServiceOpen(false);
-                                setIsAddServiceOpen(false);
-                                setAddServiceStep(1);
-                                addForm.reset();
-                                addForm.clearErrors();
-                            }}
-                        >
-                            {copy.cancel_service_confirm}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
 
             <Sheet open={isEditServiceOpen}>
                 <SheetContent showCloseButton={false} className="sm:max-w-2xl">
@@ -716,90 +298,99 @@ export default function OverviewPage({
                         </SheetHeader>
 
                         <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="edit-service-name">{copy.service_field_name}</Label>
-                                <Input
-                                    id="edit-service-name"
-                                    name="name"
-                                    required
-                                    value={editForm.data.name}
-                                    onChange={(event) => editForm.setData('name', event.target.value)}
-                                />
-                                <InputError message={editForm.errors.name} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="edit-service-category">{copy.service_field_category}</Label>
-                                <Select
-                                    name="category"
-                                    required
-                                    value={editForm.data.category}
-                                    onValueChange={(value) => editForm.setData('category', value)}
-                                >
-                                    <SelectTrigger
-                                        id="edit-service-category"
-                                        className="w-full"
-                                    >
-                                        <SelectValue placeholder={copy.service_field_category_placeholder} />
-                                    </SelectTrigger>
-                                    <SelectContent position="popper">
-                                        <SelectGroup>
-                                            {serviceCategories.map((serviceCategory) => (
-                                                <SelectItem key={serviceCategory.value} value={serviceCategory.value}>
-                                                    {serviceCategory.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                                <InputError message={editForm.errors.category} />
-                            </div>
-
-                            {editForm.data.category === 'other' ? (
-                                <div className="grid gap-2">
-                                    <Label htmlFor="edit-service-custom-category">
-                                        {copy.service_field_custom_category}
-                                    </Label>
+                            <FieldGroup>
+                                <Field data-invalid={editForm.errors.name ? true : undefined}>
+                                    <FieldLabel htmlFor="edit-service-name">{copy.service_field_name}</FieldLabel>
                                     <Input
-                                        id="edit-service-custom-category"
-                                        name="custom_category"
+                                        id="edit-service-name"
+                                        name="name"
                                         required
-                                        value={editForm.data.custom_category}
-                                        onChange={(event) => editForm.setData('custom_category', event.target.value)}
+                                        maxLength={120}
+                                        placeholder={copy.service_field_name_placeholder}
+                                        aria-invalid={Boolean(editForm.errors.name)}
+                                        value={editForm.data.name}
+                                        onChange={(event) => editForm.setData('name', event.target.value)}
                                     />
-                                    <InputError message={editForm.errors.custom_category} />
-                                </div>
-                            ) : null}
+                                    <FieldError>{editForm.errors.name}</FieldError>
+                                </Field>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="edit-service-description">{copy.service_field_description}</Label>
-                                <Textarea
-                                    id="edit-service-description"
-                                    name="description"
-                                    value={editForm.data.description}
-                                    onChange={(event) => editForm.setData('description', event.target.value)}
-                                />
-                                <InputError message={editForm.errors.description} />
-                            </div>
+                                <Field data-invalid={editForm.errors.category ? true : undefined}>
+                                    <FieldLabel htmlFor="edit-service-category">{copy.service_field_category}</FieldLabel>
+                                    <Select
+                                        name="category"
+                                        required
+                                        value={editForm.data.category}
+                                        onValueChange={(value) => editForm.setData('category', value)}
+                                    >
+                                        <SelectTrigger
+                                            id="edit-service-category"
+                                            className="w-full"
+                                            aria-invalid={Boolean(editForm.errors.category)}
+                                        >
+                                            <SelectValue placeholder={copy.service_field_category_placeholder} />
+                                        </SelectTrigger>
+                                        <SelectContent position="popper">
+                                            <SelectGroup>
+                                                {serviceCategories.map((serviceCategory) => (
+                                                    <SelectItem key={serviceCategory.value} value={serviceCategory.value}>
+                                                        {serviceCategory.label}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+                                    <FieldError>{editForm.errors.category}</FieldError>
+                                </Field>
+
+                                {editForm.data.category === 'other' ? (
+                                    <Field data-invalid={editForm.errors.custom_category ? true : undefined}>
+                                        <FieldLabel htmlFor="edit-service-custom-category">
+                                            {copy.service_field_custom_category}
+                                        </FieldLabel>
+                                        <Input
+                                            id="edit-service-custom-category"
+                                            name="custom_category"
+                                            required
+                                            maxLength={120}
+                                            aria-invalid={Boolean(editForm.errors.custom_category)}
+                                            value={editForm.data.custom_category}
+                                            onChange={(event) => editForm.setData('custom_category', event.target.value)}
+                                        />
+                                        <FieldError>{editForm.errors.custom_category}</FieldError>
+                                    </Field>
+                                ) : null}
+
+                                <Field data-invalid={editForm.errors.description ? true : undefined}>
+                                    <FieldLabel htmlFor="edit-service-description">{copy.service_field_description}</FieldLabel>
+                                    <Textarea
+                                        id="edit-service-description"
+                                        name="description"
+                                        maxLength={2000}
+                                        placeholder={copy.service_field_description_placeholder}
+                                        aria-invalid={Boolean(editForm.errors.description)}
+                                        value={editForm.data.description}
+                                        onChange={(event) => editForm.setData('description', event.target.value)}
+                                    />
+                                    <FieldError>{editForm.errors.description}</FieldError>
+                                </Field>
+                            </FieldGroup>
 
                             <Field>
                                 <FieldLabel>{copy.service_pricing_label}</FieldLabel>
-                                <FieldDescription>{copy.service_pricing_description}</FieldDescription>
 
-                                <div className="grid grid-cols-[minmax(0,1fr)_8rem_2rem] gap-2">
+                                <div className="grid grid-cols-[minmax(0,1fr)_8rem] gap-2">
                                     <FieldLabel>
                                         {copy.service_field_price_in_minor}
                                     </FieldLabel>
 
                                     <FieldLabel>{copy.service_field_unit}</FieldLabel>
-                                    <span aria-hidden="true" />
                                 </div>
 
                                 <div className="flex flex-col gap-2">
                                     {editForm.data.pricing_options.map((pricingOption, index) => (
                                         <div
                                             key={pricingOption.id ?? `new-${index}`}
-                                            className="grid grid-cols-[minmax(0,1fr)_8rem_2rem] gap-2"
+                                            className="grid grid-cols-[minmax(0,1fr)_8rem] gap-2"
                                         >
                                             <Field data-invalid={editFormErrors[`pricing_options.${index}.price_in_minor`] ? true : undefined}>
                                                 <InputGroup>
@@ -859,43 +450,9 @@ export default function OverviewPage({
                                                 </Select>
                                                 <InputError message={editFormErrors[`pricing_options.${index}.unit`]} />
                                             </Field>
-
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="icon"
-                                                disabled={editForm.data.pricing_options.length === 1}
-                                                aria-label={copy.service_action_delete_price}
-                                                onClick={() => {
-                                                    editForm.setData(
-                                                        'pricing_options',
-                                                        editForm.data.pricing_options.filter((_, optionIndex) => optionIndex !== index),
-                                                    );
-                                                }}
-                                            >
-                                                <TrashIcon data-icon="inline-start" />
-                                            </Button>
                                         </div>
                                     ))}
                                 </div>
-
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => {
-                                        editForm.setData('pricing_options', [
-                                            ...editForm.data.pricing_options,
-                                            {
-                                                id: null,
-                                                price_in_minor: '',
-                                                unit: '',
-                                            },
-                                        ]);
-                                    }}
-                                >
-                                    <PlusIcon data-icon="inline-start" />
-                                    {copy.service_action_add_price}
-                                </Button>
                             </Field>
 
                             <Field orientation="horizontal">
@@ -907,28 +464,33 @@ export default function OverviewPage({
                                 />
                                 <FieldContent>
                                     <FieldLabel htmlFor="edit-service-is-public">
-                                        {copy.service_make_public_label}
+                                        {copy.service_edit_visibility_label}
                                     </FieldLabel>
                                     <FieldDescription>
-                                        {copy.service_make_public_description}
+                                        {editForm.data.is_public
+                                            ? copy.service_edit_public_description
+                                            : copy.service_edit_private_description}
                                     </FieldDescription>
                                 </FieldContent>
                             </Field>
 
-                            <div className="flex flex-col gap-3 border-t pt-4">
-                                <h3 className="font-medium">{copy.danger_zone_heading}</h3>
+                            <Separator />
+
+                            <Field>
+                                <FieldLabel>{copy.danger_zone_heading}</FieldLabel>
+                                <FieldDescription>{copy.service_edit_danger_description}</FieldDescription>
                                 <Button
-                                type="button"
-                                variant="destructive"
-                                onClick={() => {
-                                    deleteForm.reset();
-                                    deleteForm.clearErrors();
-                                    setIsDeleteServiceOpen(true);
-                                }}
-                            >
+                                    type="button"
+                                    variant="destructive"
+                                    onClick={() => {
+                                        deleteForm.reset();
+                                        deleteForm.clearErrors();
+                                        setIsDeleteServiceOpen(true);
+                                    }}
+                                >
                                     {copy.danger_zone_delete_service}
                                 </Button>
-                            </div>
+                            </Field>
                         </div>
 
                         <SheetFooter>
@@ -942,7 +504,7 @@ export default function OverviewPage({
                                     editForm.clearErrors();
                                 }}
                             >
-                                {copy.service_action_cancel}
+                                {copy.service_edit_discard_changes}
                             </Button>
                             <Button type="submit" disabled={!editForm.isDirty || editForm.processing}>
                                 {editForm.processing ? <Spinner /> : copy.service_action_save_changes}

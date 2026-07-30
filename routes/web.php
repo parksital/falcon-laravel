@@ -167,10 +167,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return to_route('onboarding');
         }
 
-        $vendor = $request->user()->vendor()->with([
-            'services.customCategory',
-            'services.pricingOptions',
-        ])->first();
+        $vendor = $request->user()->vendor()->first();
+
+        $services = Service::query()
+            ->where('vendor_id', $vendor->id)
+            ->withCount('pricingOptions')
+            ->get();
+
         $serviceCategoryLabels = collect(config('service_categories'))
             ->mapWithKeys(function (string $value) {
                 $translation = __("config-service-categories.{$value}");
@@ -180,6 +183,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ];
             })
             ->all();
+
         $serviceUnitLabels = collect(config('service_units'))
             ->mapWithKeys(function (string $value) {
                 $translation = __("config-service-units.{$value}");
@@ -192,39 +196,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         return Inertia::render('OverviewPage', [
             'vendor' => [
-                'id' => $vendor->id,
-                'title' => $vendor->name,
-                'slug' => $vendor->slug,
-                'location' => $vendor->location,
-                'short_description' => $vendor->short_description,
+                ...$vendor->toArray(),
                 'is_public' => (bool) $vendor->is_public,
                 'created_at' => $vendor->created_at?->locale(app()->getLocale())->translatedFormat(__('overview.date_format')),
             ],
-            'services' => $vendor->services
+            'services' => $services
                 ->map(fn ($service) => [
-                    'id' => $service->id,
-                    'name' => $service->name,
-                    'category' => $service->category,
-                    'category_label' => $service->category === 'other'
-                        ? ($service->customCategory?->name ?? $serviceCategoryLabels['other'] ?? $service->category)
-                        : $serviceCategoryLabels[$service->category] ?? $service->category,
-                    'custom_category' => $service->customCategory?->name,
+                    ...$service->toArray(),
+                    'category_label' => $serviceCategoryLabels[$service->category] ?? $service->category,
+                    'pricing_options_label' => trans_choice(
+                        "overview.services_table_pricing_value",
+                        $service->pricing_options_count,
+                        ['value' => $service->pricing_options_count]
+                    ),
                     'description' => $service->description,
-                    'pricing_options' => $service->pricingOptions
-                        ->map(fn ($pricingOption) => [
-                            'id' => $pricingOption->id,
-                            'name' => $pricingOption->name,
-                            'description' => $pricingOption->description,
-                            'price_in_minor' => $pricingOption->price_in_minor,
-                            'unit' => $pricingOption->unit,
-                            'unit_label' => $serviceUnitLabels[$pricingOption->unit] ?? $pricingOption->unit,
-                            'is_public' => (bool) $pricingOption->is_public,
-                        ])
-                        ->values()
-                        ->all(),
                     'is_public' => (bool) $service->is_public,
-                ])
-                ->all(),
+                ]),
             'serviceCategories' => collect(config('service_categories'))
                 ->map(fn (string $value) => [
                     'value' => $value,
@@ -244,6 +231,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('overview');
 
     Route::redirect('/vendor/profile', '/overview')->name('vendor.profile');
+
+    Route::get('/services/create', [ServiceController::class, 'create'])->name('services.create');
+    Route::get('/services/{service}', function (Request $request, Service $service) {
+        $vendor = $request->user()->vendor;
+
+        if (! $vendor) {
+            return to_route('onboarding');
+        }
+
+        abort_unless($service->vendor_id === $vendor->id, 404);
+
+        return Inertia::render('ServiceDetailsPage');
+    })->name('services.show');
 
     Route::post('/services', [ServiceController::class, 'store'])->name('services.store');
     Route::patch('/services/{service}', [ServiceController::class, 'update'])->name('services.update');

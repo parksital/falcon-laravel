@@ -5,7 +5,5 @@ return [
     'photography',
     'photobooths',
     'videography',
-    'florist',
-    'decor',
     'other',
 ];

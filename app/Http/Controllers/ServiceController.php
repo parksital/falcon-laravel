@@ -8,9 +8,60 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Inertia\Inertia;
 
 class ServiceController extends Controller
 {
+    public function create(Request $request)
+    {
+        $vendor = $request->user()
+            ->vendor()
+            ->first(['id', 'name']);
+
+        if (! $vendor) {
+            return to_route('onboarding');
+        }
+
+        $serviceCategoryLabels = collect(config('service_categories'))
+            ->mapWithKeys(function (string $value) {
+                $translation = __("config-service-categories.{$value}");
+
+                return [
+                    $value => $translation === "config-service-categories.{$value}" ? $value : $translation,
+                ];
+            })
+            ->all();
+
+        $serviceUnitLabels = collect(config('service_units'))
+            ->mapWithKeys(function (string $value) {
+                $translation = __("config-service-units.{$value}");
+
+                return [
+                    $value => $translation === "config-service-units.{$value}" ? $value : $translation,
+                ];
+            })
+            ->all();
+
+        return Inertia::render('CreateServicePage', [
+            'vendor' => $vendor,
+            'serviceCategories' => collect(config('service_categories'))
+                ->map(fn (string $value) => [
+                    'value' => $value,
+                    'label' => $serviceCategoryLabels[$value] ?? $value,
+                ])
+                ->values()
+                ->all(),
+            'serviceUnits' => collect(config('service_units'))
+                ->map(fn (string $value) => [
+                    'value' => $value,
+                    'label' => $serviceUnitLabels[$value] ?? $value,
+                ])
+                ->values()
+                ->all(),
+            'copy' => __('create-service'),
+        ]);
+    }
+
     public function store(Request $request)
     {
         $vendor = $request->user()->vendor;
@@ -37,13 +88,16 @@ class ServiceController extends Controller
                 ]);
             }
 
-            $service->pricingOptions()->create([
-                'name' => $validated['name'],
-                'description' => null,
-                'price_in_minor' => $validated['price_in_minor'],
-                'unit' => $validated['unit'],
-                'is_public' => $validated['is_public'] ?? false,
-            ]);
+            foreach ($validated['pricing_options'] as $sortOrder => $pricingOptionData) {
+                $service->pricingOptions()->create([
+                    'name' => $pricingOptionData['name'],
+                    'description' => $pricingOptionData['description'] ?? null,
+                    'price_in_minor' => $pricingOptionData['price_in_minor'],
+                    'unit' => $pricingOptionData['unit'],
+                    'sort_order' => $sortOrder,
+                    'is_public' => $validated['is_public'] ?? false,
+                ]);
+            }
         });
 
         return to_route('overview');
@@ -98,21 +152,25 @@ class ServiceController extends Controller
             }
 
             foreach ($validated['pricing_options'] as $sortOrder => $pricingOptionData) {
+                $pricingOption = ($pricingOptionData['id'] ?? null)
+                    ? $pricingOptions->get($pricingOptionData['id'])
+                    : null;
+
                 $pricingOptionAttributes = [
-                    'name' => $validated['name'],
+                    'name' => $pricingOptionData['name'] ?? $pricingOption?->name ?? $validated['name'],
+                    'description' => array_key_exists('description', $pricingOptionData)
+                        ? $pricingOptionData['description']
+                        : $pricingOption?->description,
                     'price_in_minor' => $pricingOptionData['price_in_minor'],
                     'unit' => $pricingOptionData['unit'],
                     'sort_order' => $sortOrder,
                     'is_public' => $validated['is_public'] ?? false,
                 ];
 
-                if ($pricingOptionData['id']) {
-                    $pricingOptions->get($pricingOptionData['id'])->update($pricingOptionAttributes);
+                if ($pricingOption) {
+                    $pricingOption->update($pricingOptionAttributes);
                 } else {
-                    $service->pricingOptions()->create([
-                        ...$pricingOptionAttributes,
-                        'description' => null,
-                    ]);
+                    $service->pricingOptions()->create($pricingOptionAttributes);
                 }
             }
         });
@@ -148,8 +206,11 @@ class ServiceController extends Controller
             'category' => ['required', 'string', Rule::in(config('service_categories'))],
             'custom_category' => ['nullable', 'required_if:category,other', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:2000'],
-            'price_in_minor' => ['required', 'integer', 'min:0', 'max:4294967295'],
-            'unit' => ['required', 'string', Rule::in(config('service_units'))],
+            'pricing_options' => ['required', 'array', 'min:1', 'max:1'],
+            'pricing_options.*.name' => ['required', 'string', 'max:120'],
+            'pricing_options.*.description' => ['nullable', 'string', 'max:2000'],
+            'pricing_options.*.price_in_minor' => ['required', 'integer', 'min:0', 'max:4294967295'],
+            'pricing_options.*.unit' => ['required', 'string', Rule::in(config('service_units'))],
             'is_public' => ['boolean'],
         ]);
     }
@@ -161,8 +222,10 @@ class ServiceController extends Controller
             'category' => ['required', 'string', Rule::in(config('service_categories'))],
             'custom_category' => ['nullable', 'required_if:category,other', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:2000'],
-            'pricing_options' => ['required', 'array', 'min:1'],
+            'pricing_options' => ['required', 'array', 'min:1', 'max:1'],
             'pricing_options.*.id' => ['nullable', 'integer', 'distinct'],
+            'pricing_options.*.name' => ['nullable', 'string', 'max:120'],
+            'pricing_options.*.description' => ['nullable', 'string', 'max:2000'],
             'pricing_options.*.price_in_minor' => ['required', 'integer', 'min:0', 'max:4294967295'],
             'pricing_options.*.unit' => ['required', 'string', Rule::in(config('service_units'))],
             'is_public' => ['boolean'],
