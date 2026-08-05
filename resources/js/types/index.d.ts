@@ -27,6 +27,7 @@ export interface SharedData {
     locale: string;
     quote: { message: string; author: string };
     auth: Auth;
+    flash: { success?: string | null };
     layoutCopy: Record<string, string>;
     sidebarOpen: boolean;
     [key: string]: unknown;

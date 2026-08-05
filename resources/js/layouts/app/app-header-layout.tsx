@@ -23,6 +23,7 @@ import {
     SheetTitle,
     SheetTrigger,
 } from '@/components/ui/sheet';
+import { Toaster } from '@/components/ui/sonner';
 import { UserInfo } from '@/components/user-info';
 import { useInitials } from '@/hooks/use-initials';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
@@ -32,11 +33,12 @@ import { update as updateLocale } from '@/routes/locale';
 import { SharedData } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
 import { ListIcon, SignOutIcon } from '@phosphor-icons/react';
-import type { PropsWithChildren } from 'react';
+import { toast } from 'sonner';
+import { useEffect, type PropsWithChildren } from 'react';
 
 export default function AppHeaderLayout({ children }: PropsWithChildren) {
     const page = usePage<SharedData>();
-    const { auth, layoutCopy, name } = page.props;
+    const { auth, flash, layoutCopy, name } = page.props;
     const currentPath = page.url.split('?')[0];
     const currentLocale =
         auth.user.preferred_locale === 'en' || auth.user.preferred_locale === 'nl'
@@ -46,6 +48,12 @@ export default function AppHeaderLayout({ children }: PropsWithChildren) {
     const getInitials = useInitials();
 
     const cleanup = useMobileNavigation();
+
+    useEffect(() => {
+        if (flash.success) {
+            toast.success(flash.success, { id: 'flash-success' });
+        }
+    }, [flash.success]);
 
     const handleLogout = () => {
         cleanup();
@@ -203,6 +211,7 @@ export default function AppHeaderLayout({ children }: PropsWithChildren) {
             </div>
 
             <AppContent>{children}</AppContent>
+            <Toaster />
         </AppShell>
     );
 }

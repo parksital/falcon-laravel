@@ -6,6 +6,12 @@
       "sourceType": "github",
       "skillPath": "skills/shadcn/SKILL.md",
       "computedHash": "d81caa0f86aabab65b25e302d454f23a3328760386ed9078345584c0d5c8058e"
+    },
+    "ux-writing": {
+      "source": "content-designer/ux-writing-skill",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "7a9be24c109c69070451aaa30f75417825cb6b85435c775ad58185c52449cbfc"
     }
   }
 }

@@ -72,7 +72,7 @@ class PublicBookingPageController extends Controller
                     'description' => $service->description,
                     'price_in_minor' => $service->price_in_minor,
                     'unit' => $service->unit,
-                    'unit_label' => $service->unit ? ($this->serviceUnitLabels()[$service->unit] ?? $service->unit) : null,
+                    'unit_label' => $service->unit ? ($this->pricingStructureLabels()[$service->unit] ?? $service->unit) : null,
                     'url' => route('public.booking.service.show', [$vendor->slug, $service->slug]),
                 ])
                 ->values()
@@ -179,9 +179,11 @@ class PublicBookingPageController extends Controller
             ->all();
     }
 
-    private function serviceUnitLabels(): array
+    private function pricingStructureLabels(): array
     {
-        return collect(config('service_units'))
+        return collect(config('service_pricing_structures'))
+            ->flatten()
+            ->unique()
             ->mapWithKeys(function (string $value) {
                 $translation = __("config-service-units.{$value}");
 

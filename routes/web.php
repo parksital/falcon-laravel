@@ -1,11 +1,11 @@
 <?php
 
+use App\Http\Controllers\PublicBookingPageController;
+use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\Settings\LocaleController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\TwoFactorAuthenticationController;
-use App\Http\Controllers\PublicBookingPageController;
-use App\Http\Controllers\ServiceController;
 use App\Models\Service;
 use App\Models\Vendor;
 use Illuminate\Http\Request;
@@ -25,7 +25,9 @@ Route::get('/index', function () {
             ];
         })
         ->all();
-    $serviceUnitLabels = collect(config('service_units'))
+    $pricingStructureLabels = collect(config('service_pricing_structures'))
+        ->flatten()
+        ->unique()
         ->mapWithKeys(function (string $value) {
             $translation = __("config-service-units.{$value}");
 
@@ -84,7 +86,7 @@ Route::get('/index', function () {
                 'description' => $service->description,
                 'price_in_minor' => $service->price_in_minor,
                 'unit' => $service->unit,
-                'unit_label' => $service->unit ? ($serviceUnitLabels[$service->unit] ?? $service->unit) : null,
+                'unit_label' => $service->unit ? ($pricingStructureLabels[$service->unit] ?? $service->unit) : null,
                 'vendor' => [
                     'name' => $service->vendor?->name,
                     'location' => $service->vendor?->location,
@@ -184,16 +186,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             })
             ->all();
 
-        $serviceUnitLabels = collect(config('service_units'))
-            ->mapWithKeys(function (string $value) {
-                $translation = __("config-service-units.{$value}");
-
-                return [
-                    $value => $translation === "config-service-units.{$value}" ? $value : $translation,
-                ];
-            })
-            ->all();
-
         return Inertia::render('OverviewPage', [
             'vendor' => [
                 ...$vendor->toArray(),
@@ -205,7 +197,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
                     ...$service->toArray(),
                     'category_label' => $serviceCategoryLabels[$service->category] ?? $service->category,
                     'pricing_options_label' => trans_choice(
-                        "overview.services_table_pricing_value",
+                        'overview.services_table_pricing_value',
                         $service->pricing_options_count,
                         ['value' => $service->pricing_options_count]
                     ),
@@ -219,12 +211,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ])
                 ->values()
                 ->all(),
-            'serviceUnits' => collect(config('service_units'))
-                ->map(fn (string $value) => [
-                    'value' => $value,
-                    'label' => $serviceUnitLabels[$value] ?? $value,
+            'pricingStructuresByCategory' => collect(config('service_categories'))
+                ->mapWithKeys(fn (string $category) => [
+                    $category => collect(config("service_pricing_structures.{$category}", config('service_pricing_structures.default')))
+                        ->map(fn (string $value) => [
+                            'value' => $value,
+                            'label' => __("config-service-units.{$value}"),
+                        ])
+                        ->values()
+                        ->all(),
                 ])
-                ->values()
                 ->all(),
             'copy' => __('overview'),
         ]);
@@ -341,15 +337,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ];
             })
             ->all();
-        $serviceUnitLabels = collect(config('service_units'))
-            ->mapWithKeys(function (string $value) {
-                $translation = __("config-service-units.{$value}");
-
-                return [
-                    $value => $translation === "config-service-units.{$value}" ? $value : $translation,
-                ];
-            })
-            ->all();
 
         return Inertia::render('ServiceOnboardingPage', [
             'vendor' => [
@@ -362,12 +349,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ])
                 ->values()
                 ->all(),
-            'serviceUnits' => collect(config('service_units'))
-                ->map(fn (string $value) => [
-                    'value' => $value,
-                    'label' => $serviceUnitLabels[$value] ?? $value,
+            'pricingStructuresByCategory' => collect(config('service_categories'))
+                ->mapWithKeys(fn (string $category) => [
+                    $category => collect(config("service_pricing_structures.{$category}", config('service_pricing_structures.default')))
+                        ->map(fn (string $value) => [
+                            'value' => $value,
+                            'label' => __("config-service-units.{$value}"),
+                        ])
+                        ->values()
+                        ->all(),
                 ])
-                ->values()
                 ->all(),
             'copy' => __('service-onboarding'),
         ]);
@@ -384,13 +375,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return to_route('overview');
         }
 
+        $serviceCategory = $request->string('service_category')->toString();
+
         $validated = $request->validate([
             'service_name' => ['required', 'string', 'max:120'],
             'service_category' => ['required', 'string', Rule::in(config('service_categories'))],
             'service_custom_category' => ['nullable', 'required_if:service_category,other', 'string', 'max:120'],
             'service_description' => ['nullable', 'string', 'max:2000'],
             'service_price_in_minor' => ['required', 'integer', 'min:0', 'max:4294967295'],
-            'service_unit' => ['required', 'string', Rule::in(config('service_units'))],
+            'service_unit' => [
+                'required',
+                'string',
+                Rule::in(config("service_pricing_structures.{$serviceCategory}", config('service_pricing_structures.default'))),
+            ],
         ]);
 
         DB::transaction(function () use ($validated, $vendor) {

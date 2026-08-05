@@ -51,10 +51,10 @@ interface ServiceOnboardingPageProps {
         value: string;
         label: string;
     }[];
-    serviceUnits: {
+    pricingStructuresByCategory: Record<string, {
         value: string;
         label: string;
-    }[];
+    }[]>;
     copy: Record<string, string>;
 }
 
@@ -72,7 +72,7 @@ function formatPriceInMinorDescription(priceInMinor: string) {
 export default function ServiceOnboardingPage({
     vendor,
     serviceCategories,
-    serviceUnits,
+    pricingStructuresByCategory,
     copy,
 }: ServiceOnboardingPageProps) {
     const form = useForm({
@@ -86,7 +86,8 @@ export default function ServiceOnboardingPage({
     const { layoutCopy, locale } = usePage<SharedData>().props;
     const { data, errors, processing } = form;
     const selectedCategory = serviceCategories.find((category) => category.value === data.service_category);
-    const selectedUnit = serviceUnits.find((unit) => unit.value === data.service_unit);
+    const pricingStructures = pricingStructuresByCategory[data.service_category] || [];
+    const selectedUnit = pricingStructures.find((pricingStructure) => pricingStructure.value === data.service_unit);
     const serviceCategoryLabel = data.service_category === 'other'
         ? data.service_custom_category || selectedCategory?.label
         : selectedCategory?.label;
@@ -157,13 +158,14 @@ export default function ServiceOnboardingPage({
                             <FieldLabel>{copy.category_label}</FieldLabel>
                             <Select
                                 value={data.service_category}
-                                onValueChange={(value) => {
-                                    form.setData('service_category', value);
-
-                                    if (value !== 'other') {
-                                        form.setData('service_custom_category', '');
-                                    }
-                                }}
+                                onValueChange={(value) => form.setData({
+                                    ...data,
+                                    service_category: value,
+                                    service_custom_category: value === 'other' ? data.service_custom_category : '',
+                                    service_unit: pricingStructuresByCategory[value]?.some((pricingStructure) => pricingStructure.value === data.service_unit)
+                                        ? data.service_unit
+                                        : pricingStructuresByCategory[value]?.[0]?.value || '',
+                                })}
                             >
                                 <SelectTrigger className="w-full" aria-invalid={Boolean(errors.service_category)}>
                                     <SelectValue placeholder={copy.category_placeholder} />
@@ -255,9 +257,9 @@ export default function ServiceOnboardingPage({
                                         </SelectTrigger>
                                         <SelectContent position="popper">
                                             <SelectGroup>
-                                                {serviceUnits.map((unit) => (
-                                                    <SelectItem key={unit.value} value={unit.value}>
-                                                        {unit.label}
+                                                {pricingStructures.map((pricingStructure) => (
+                                                    <SelectItem key={pricingStructure.value} value={pricingStructure.value}>
+                                                        {pricingStructure.label}
                                                     </SelectItem>
                                                 ))}
                                             </SelectGroup>

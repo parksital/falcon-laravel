@@ -1,9 +1,12 @@
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     Field,
     FieldError,
     FieldGroup,
     FieldLabel,
+    FieldLegend,
     FieldSet,
 } from '@/components/ui/field';
 import {
@@ -20,146 +23,261 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
-import AppLayout from '@/layouts/app-layout';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import EmptyLayout from '@/layouts/empty-layout';
+import { overview } from '@/routes';
 import { store } from '@/routes/services';
-import { Head, useForm } from '@inertiajs/react';
-import { CheckIcon } from '@phosphor-icons/react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { SharedData } from '@/types';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { ArrowLeftIcon, CheckIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
+import { Fragment } from 'react';
 
 interface PricingOptionForm {
     name: string;
     description: string;
-    price_in_minor: string;
+    price: string;
     unit: string;
+}
+
+interface CreateServiceForm {
+    name: string;
+    category: string;
+    custom_category: string;
+    description: string;
+    pricing_structure: string;
+    pricing_options: PricingOptionForm[];
+}
+
+interface SelectOption {
+    value: string;
+    label: string;
+}
+
+interface PricingStructureOption extends SelectOption {
+    unitLabel: string;
 }
 
 interface CreateServicePageProps {
     vendor: {
         name: string;
     };
-    serviceCategories: {
-        value: string;
-        label: string;
-    }[];
-    serviceUnits: {
-        value: string;
-        label: string;
-    }[];
+    serviceCategories: SelectOption[];
+    pricingStructuresByCategory: Record<string, PricingStructureOption[]>;
     copy: Record<string, string>;
 }
 
-function formatPriceInMinor(priceInMinor: string) {
-    return `€${new Intl.NumberFormat('nl-NL', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    }).format(Number(priceInMinor || '0') / 100)}`;
+function createPricingOption(unit = '', name = ''): PricingOptionForm {
+    return {
+        name,
+        description: '',
+        price: '',
+        unit,
+    };
+}
+
+function normalizePrice(value: string) {
+    const cleanedValue = value.replace(/[^\d.,]/g, '');
+    const decimalSeparatorIndex = cleanedValue.search(/[.,]/);
+
+    if (decimalSeparatorIndex === -1) {
+        return cleanedValue;
+    }
+
+    return `${cleanedValue.slice(0, decimalSeparatorIndex) || '0'}${cleanedValue[decimalSeparatorIndex]}${cleanedValue.slice(decimalSeparatorIndex + 1).replace(/\D/g, '').slice(0, 2)}`;
+}
+
+function priceInMinor(price: string) {
+    if (! price.trim()) {
+        return '';
+    }
+
+    return Math.round(Number(price.replace(',', '.')) * 100);
+}
+
+function formatPrice(price: string, locale: string) {
+    return new Intl.NumberFormat(locale === 'nl' ? 'nl-NL' : 'en-NL', {
+        style: 'currency',
+        currency: 'EUR',
+    }).format(Number(price.replace(',', '.') || '0'));
 }
 
 export default function CreateServicePage({
     vendor,
     serviceCategories,
-    serviceUnits,
+    pricingStructuresByCategory,
     copy,
 }: CreateServicePageProps) {
-    const { data, setData, errors, processing, submit } = useForm({
-        name: '',
+    const { locale } = usePage<SharedData>().props;
+
+    function defaultPackageName(index: number) {
+        return copy.package_legend.replace(':number', String(index + 1));
+    }
+
+    function defaultServiceName(category: string, customCategory: string) {
+        const categoryName = category === 'other'
+            ? customCategory
+            : serviceCategories.find((serviceCategory) => serviceCategory.value === category)?.label || '';
+
+        return copy.service_name_placeholder
+            .replace(':service_name', categoryName || copy.service_name_placeholder_fallback)
+            .replace(':vendor', vendor.name);
+    }
+
+    const defaultPricingStructure = pricingStructuresByCategory[serviceCategories[0]?.value]?.[0]?.value || '';
+    const { data, setData, errors, processing, submit, transform } = useForm<CreateServiceForm>({
+        name: defaultServiceName('', ''),
         category: '',
         custom_category: '',
         description: '',
-        pricing_options: [
-            {
-                name: '',
-                description: '',
-                price_in_minor: '',
-                unit: '',
-            },
-        ],
+        pricing_structure: defaultPricingStructure,
+        pricing_options: [createPricingOption(
+            defaultPricingStructure,
+            defaultPricingStructure === 'package' ? defaultPackageName(0) : '',
+        )],
     });
 
     const selectedCategory = serviceCategories.find((category) => category.value === data.category);
+    const suggestedServiceName = data.category === 'other' ? data.custom_category : selectedCategory?.label || '';
+    const generatedServiceName = defaultServiceName(data.category, data.custom_category);
+    const pricingStructures = pricingStructuresByCategory[data.category]
+        || pricingStructuresByCategory[serviceCategories[0]?.value]
+        || [];
+    const selectedPricingStructure = pricingStructures.find((structure) => structure.value === data.pricing_structure);
 
-    const pricingOption = data.pricing_options[0];
-    const selectedPricingUnit = serviceUnits.find((unit) => unit.value === pricingOption.unit);
-    const pricingOptionNameError = pricingOptionError('name');
-    const pricingOptionDescriptionError = pricingOptionError('description');
-    const pricingOptionPriceError = pricingOptionError('price_in_minor');
-    const pricingOptionUnitError = pricingOptionError('unit');
-
-    function pricingOptionError(field: keyof PricingOptionForm) {
-        return errors[`pricing_options.0.${field}` as keyof typeof errors];
+    function pricingOptionError(index: number, field: 'name' | 'description' | 'price_in_minor') {
+        return errors[`pricing_options.${index}.${field}` as keyof typeof errors];
     }
 
-    function updatePricingOption(field: keyof PricingOptionForm, value: string) {
+    function changeCategory(category: string) {
+        const customCategory = category === 'other' ? data.custom_category : '';
+        const pricingStructure = pricingStructuresByCategory[category]?.some((option) => option.value === data.pricing_structure)
+            ? data.pricing_structure
+            : pricingStructuresByCategory[category]?.[0]?.value || '';
+
+        setData({
+            ...data,
+            name: ! data.name || data.name === generatedServiceName
+                ? defaultServiceName(category, customCategory)
+                : data.name,
+            category,
+            custom_category: customCategory,
+            pricing_structure: pricingStructure,
+            pricing_options: pricingStructure === data.pricing_structure
+                ? data.pricing_options
+                : [createPricingOption(
+                    pricingStructure,
+                    pricingStructure === 'package' ? defaultPackageName(0) : '',
+                )],
+        });
+    }
+
+    function changeCustomCategory(customCategory: string) {
+        setData({
+            ...data,
+            name: ! data.name || data.name === generatedServiceName
+                ? defaultServiceName('other', customCategory)
+                : data.name,
+            custom_category: customCategory,
+        });
+    }
+
+    function changePricingStructure(pricingStructure: string) {
+        if (! pricingStructure) {
+            return;
+        }
+
+        setData({
+            ...data,
+            pricing_structure: pricingStructure,
+            pricing_options: [createPricingOption(
+                pricingStructure,
+                pricingStructure === 'package' ? defaultPackageName(0) : '',
+            )],
+        });
+    }
+
+    function updatePricingOption(index: number, field: keyof PricingOptionForm, value: string) {
+        setData('pricing_options', data.pricing_options.map((pricingOption, pricingOptionIndex) =>
+            pricingOptionIndex === index ? { ...pricingOption, [field]: value } : pricingOption,
+        ));
+    }
+
+    function addPackage() {
+        if (data.pricing_options.length >= 3) {
+            return;
+        }
+
         setData('pricing_options', [
-            {
-                ...pricingOption,
-                [field]: value,
-            },
+            ...data.pricing_options,
+            createPricingOption('package', defaultPackageName(data.pricing_options.length)),
         ]);
     }
 
+    function removePackage(index: number) {
+        if (data.pricing_options.length === 1) {
+            return;
+        }
+
+        setData('pricing_options', data.pricing_options
+            .map((pricingOption, pricingOptionIndex) => ({ pricingOption, pricingOptionIndex }))
+            .filter(({ pricingOptionIndex }) => pricingOptionIndex !== index)
+            .map(({ pricingOption, pricingOptionIndex }, nextIndex) => ({
+                ...pricingOption,
+                name: pricingOption.name === defaultPackageName(pricingOptionIndex)
+                    ? defaultPackageName(nextIndex)
+                    : pricingOption.name,
+            })));
+    }
+
     return (
-        <AppLayout>
+        <EmptyLayout>
             <Head title={copy.title} />
 
-            <main className="min-h-0 overflow-hidden flex flex-1">
-                <section className="min-h-0 h-full overflow-y-auto flex flex-1 flex-col p-6">
-                    <div className="flex flex-col gap-2">
-                        <h1 className="text-2xl font-semibold">{copy.heading}</h1>
-                        <p className="text-sm text-muted-foreground">{copy.description}</p>
+            <main className="flex h-dvh overflow-hidden">
+                <section
+                    className="min-h-0 h-full overflow-y-auto flex flex-1 flex-col p-6 [overflow-anchor:none]"
+                >
+                    <div className="mx-auto flex w-full max-w-lg flex-col items-start gap-2">
+                        <Button type="button" variant="link" asChild>
+                            <Link href={overview()}>
+                                <ArrowLeftIcon data-icon="inline-start" />
+                                {copy.exit}
+                            </Link>
+                        </Button>
+
+                        <h1 className="text-2xl font-semibold">{copy.heading.replace(':vendor', vendor.name)}</h1>
                     </div>
 
                     <form
-                        className="mt-6 flex max-w-lg flex-col gap-6"
+                        className="mx-auto mt-6 flex w-full max-w-lg flex-col gap-6"
                         inert={processing ? true : undefined}
                         onSubmit={(event) => {
                             event.preventDefault();
+                            transform((formData) => ({
+                                ...formData,
+                                pricing_options: formData.pricing_options.map((pricingOption) => ({
+                                    name: pricingOption.name,
+                                    description: pricingOption.description,
+                                    price_in_minor: priceInMinor(pricingOption.price),
+                                    unit: pricingOption.unit,
+                                })),
+                            }));
                             submit(store());
                         }}
                     >
                         <Card>
                             <CardHeader>
-                                <div>
-                                    <CardTitle>
-                                        {copy.basic_information_label}
-                                    </CardTitle>
-
-                                    <CardDescription>
-                                        {copy.basic_information_description}
-                                    </CardDescription>
-                                </div>
+                                <CardTitle>{copy.category_section_label}</CardTitle>
                             </CardHeader>
 
                             <CardContent>
                                 <FieldGroup>
-                                    <Field>
-                                        <FieldLabel htmlFor="service-name">{copy.service_name_label}</FieldLabel>
-                                        <Input
-                                            id="service-name"
-                                            value={data.name}
-                                            onChange={(event) => setData('name', event.target.value)}
-                                            maxLength={120}
-                                            placeholder={copy.service_name_placeholder}
-                                            aria-invalid={Boolean(errors.name)}
-                                        />
-                                        <FieldError>{errors.name}</FieldError>
-                                    </Field>
-
-                                    <Field>
+                                    <Field data-invalid={errors.category ? true : undefined}>
                                         <FieldLabel>{copy.category_label}</FieldLabel>
-                                        <Select
-                                            value={data.category}
-                                            onValueChange={(value) => {
-                                                setData('category', value);
-
-                                                if (value !== 'other') {
-                                                    setData('custom_category', '');
-                                                }
-                                            }}
-                                        >
+                                        <Select value={data.category} onValueChange={changeCategory}>
                                             <SelectTrigger className="w-full" aria-invalid={Boolean(errors.category)}>
                                                 <SelectValue placeholder={copy.category_placeholder} />
                                             </SelectTrigger>
@@ -178,19 +296,41 @@ export default function CreateServicePage({
 
                                     {data.category === 'other' ? (
                                         <Field data-invalid={errors.custom_category ? true : undefined}>
-                                            <FieldLabel htmlFor="service-custom-category">
-                                                {copy.custom_category_input_label}
-                                            </FieldLabel>
+                                            <FieldLabel htmlFor="service-custom-category">{copy.custom_category_input_label}</FieldLabel>
                                             <Input
                                                 id="service-custom-category"
                                                 value={data.custom_category}
-                                                onChange={(event) => setData('custom_category', event.target.value)}
+                                                onChange={(event) => changeCustomCategory(event.target.value)}
                                                 maxLength={120}
+                                                placeholder={copy.custom_category_placeholder}
                                                 aria-invalid={Boolean(errors.custom_category)}
                                             />
                                             <FieldError>{errors.custom_category}</FieldError>
                                         </Field>
                                     ) : null}
+                                </FieldGroup>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>{copy.service_section_label}</CardTitle>
+                            </CardHeader>
+
+                            <CardContent>
+                                <FieldGroup>
+                                    <Field data-invalid={errors.name ? true : undefined}>
+                                        <FieldLabel htmlFor="service-name">{copy.service_name_label}</FieldLabel>
+                                        <Input
+                                            id="service-name"
+                                            value={data.name}
+                                            onChange={(event) => setData('name', event.target.value)}
+                                            maxLength={120}
+                                            placeholder={generatedServiceName}
+                                            aria-invalid={Boolean(errors.name)}
+                                        />
+                                        <FieldError>{errors.name}</FieldError>
+                                    </Field>
 
                                     <Field data-invalid={errors.description ? true : undefined}>
                                         <FieldLabel htmlFor="service-description">{copy.service_description_label}</FieldLabel>
@@ -199,7 +339,12 @@ export default function CreateServicePage({
                                             value={data.description}
                                             onChange={(event) => setData('description', event.target.value)}
                                             maxLength={2000}
-                                            placeholder={copy.service_description_placeholder}
+                                            placeholder={copy.service_description_placeholder.replace(
+                                                ':service',
+                                                data.name && data.name !== generatedServiceName
+                                                    ? data.name
+                                                    : suggestedServiceName || copy.service_description_fallback,
+                                            )}
                                             aria-invalid={Boolean(errors.description)}
                                         />
                                         <FieldError>{errors.description}</FieldError>
@@ -209,145 +354,231 @@ export default function CreateServicePage({
                         </Card>
 
                         <Card>
-
-                            <CardHeader className="flex flex-row items-start gap-2">
-                                <div className='mr-auto'>
-                                    <CardTitle>{copy.price_section_label}</CardTitle>
-                                    <CardDescription>{copy.price_section_description}</CardDescription>
-                                </div>
-
+                            <CardHeader>
+                                <CardTitle>{copy.pricing_section_label}</CardTitle>
                             </CardHeader>
 
                             <CardContent>
-                                <FieldGroup>
-                                    <FieldSet>
-                                        <Field data-invalid={pricingOptionNameError ? true : undefined}>
-                                            <FieldLabel htmlFor="pricing-option-name">{copy.pricing_option_name_label}</FieldLabel>
-                                            <Input
-                                                id="pricing-option-name"
-                                                value={pricingOption.name}
-                                                onChange={(event) => updatePricingOption('name', event.target.value)}
-                                                maxLength={120}
-                                                placeholder={copy.pricing_option_legend.replace(':number', '1')}
-                                                aria-invalid={Boolean(pricingOptionNameError)}
-                                            />
-                                            <FieldError>{pricingOptionNameError}</FieldError>
-                                        </Field>
-
-                                        <Field data-invalid={pricingOptionDescriptionError ? true : undefined}>
-                                            <FieldLabel htmlFor="pricing-option-description">{copy.pricing_option_description_label}</FieldLabel>
-                                            <Textarea
-                                                id="pricing-option-description"
-                                                value={pricingOption.description}
-                                                onChange={(event) => updatePricingOption('description', event.target.value)}
-                                                maxLength={2000}
-                                                placeholder={copy.pricing_option_description_placeholder}
-                                                aria-invalid={Boolean(pricingOptionDescriptionError)}
-                                            />
-                                            <FieldError>{pricingOptionDescriptionError}</FieldError>
-                                        </Field>
-
-                                        <FieldGroup className="gap-2">
-                                            <FieldGroup className="grid grid-cols-[minmax(0,1fr)_12rem] gap-2">
-                                                <FieldLabel>{copy.price_label}</FieldLabel>
-                                                <FieldLabel>{copy.unit_label}</FieldLabel>
-                                            </FieldGroup>
-
-                                            <FieldGroup className="grid grid-cols-[minmax(0,1fr)_12rem] gap-2">
-                                                <Field data-invalid={pricingOptionPriceError ? true : undefined}>
-                                                    <InputGroup>
-                                                        <InputGroupInput
-                                                            id="pricing-option-price"
-                                                            inputMode="numeric"
-                                                            type="text"
-                                                            placeholder={copy.price_placeholder}
-                                                            value={pricingOption.price_in_minor}
-                                                            onChange={(event) => updatePricingOption('price_in_minor', event.target.value.replace(/\D/g, ''))}
-                                                            aria-invalid={Boolean(pricingOptionPriceError)}
-                                                        />
-                                                        <InputGroupAddon className="text-muted-foreground" align="inline-end">
-                                                            {formatPriceInMinor(pricingOption.price_in_minor)}
-                                                        </InputGroupAddon>
-                                                    </InputGroup>
-                                                    <FieldError>{pricingOptionPriceError}</FieldError>
-                                                </Field>
-
-                                                <Field data-invalid={pricingOptionUnitError ? true : undefined}>
-                                                    <Select value={pricingOption.unit} onValueChange={(value) => updatePricingOption('unit', value)}>
-                                                        <SelectTrigger id="pricing-option-unit" className="w-full" aria-invalid={Boolean(pricingOptionUnitError)}>
-                                                            <SelectValue placeholder={copy.unit_placeholder} />
-                                                        </SelectTrigger>
-                                                        <SelectContent position="popper">
-                                                            <SelectGroup>
-                                                                {serviceUnits.map((unit) => (
-                                                                    <SelectItem key={unit.value} value={unit.value}>
-                                                                        {unit.label}
-                                                                    </SelectItem>
-                                                                ))}
-                                                            </SelectGroup>
-                                                        </SelectContent>
-                                                    </Select>
-                                                    <FieldError>{pricingOptionUnitError}</FieldError>
-                                                </Field>
-                                            </FieldGroup>
-                                        </FieldGroup>
-                                    </FieldSet>
-                                </FieldGroup>
+                                <Field data-invalid={errors.pricing_structure ? true : undefined}>
+                                    <FieldLabel>{copy.price_section_label}</FieldLabel>
+                                    <ToggleGroup
+                                        className="grid w-full grid-cols-1 sm:grid-cols-3"
+                                        type="single"
+                                        variant="outline"
+                                        value={data.pricing_structure}
+                                        onValueChange={changePricingStructure}
+                                        aria-label={copy.pricing_structure_label}
+                                    >
+                                        {pricingStructures.map((pricingStructure) => (
+                                            <ToggleGroupItem
+                                                className="justify-start"
+                                                key={pricingStructure.value}
+                                                value={pricingStructure.value}
+                                                aria-label={pricingStructure.label}
+                                            >
+                                                {pricingStructure.label}
+                                            </ToggleGroupItem>
+                                        ))}
+                                    </ToggleGroup>
+                                    <FieldError>{errors.pricing_structure}</FieldError>
+                                </Field>
                             </CardContent>
-
                         </Card>
 
-                        <div className="flex justify-end">
-                            <Button type="submit" disabled={processing}>
-                                {processing ? <Spinner data-icon="inline-start" /> : <CheckIcon data-icon="inline-start" />}
-                                {copy.submit}
-                            </Button>
+                        {data.pricing_structure === 'package' ? (
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>{copy.package_section_label}</CardTitle>
+                                    <CardDescription>{copy.package_section_description}</CardDescription>
+                                </CardHeader>
+
+                                <CardContent>
+                                    <FieldGroup>
+                                        {data.pricing_options.map((pricingOption, index) => (
+                                            <Fragment key={index}>
+                                                {index > 0 ? <Separator /> : null}
+
+                                                <FieldSet>
+                                                    <FieldLegend className="sr-only">{copy.package_legend.replace(':number', String(index + 1))}</FieldLegend>
+
+                                                    <Field data-invalid={pricingOptionError(index, 'name') ? true : undefined}>
+                                                        <FieldLabel htmlFor={`package-name-${index}`}>{copy.package_name_label}</FieldLabel>
+                                                        <Input
+                                                            id={`package-name-${index}`}
+                                                            value={pricingOption.name}
+                                                            onChange={(event) => updatePricingOption(index, 'name', event.target.value)}
+                                                            maxLength={120}
+                                                            aria-invalid={Boolean(pricingOptionError(index, 'name'))}
+                                                        />
+                                                        <FieldError>{pricingOptionError(index, 'name')}</FieldError>
+                                                    </Field>
+
+                                                    <Field data-invalid={pricingOptionError(index, 'price_in_minor') ? true : undefined}>
+                                                        <FieldLabel htmlFor={`package-price-${index}`}>{copy.package_price_label}</FieldLabel>
+                                                        <InputGroup>
+                                                            <InputGroupAddon className="text-muted-foreground" align="inline-start">
+                                                                €
+                                                            </InputGroupAddon>
+                                                            <InputGroupInput
+                                                                id={`package-price-${index}`}
+                                                                inputMode="decimal"
+                                                                type="text"
+                                                                placeholder={copy.price_placeholder}
+                                                                value={pricingOption.price}
+                                                                onChange={(event) => updatePricingOption(index, 'price', normalizePrice(event.target.value))}
+                                                                aria-invalid={Boolean(pricingOptionError(index, 'price_in_minor'))}
+                                                            />
+                                                        </InputGroup>
+                                                        <FieldError>{pricingOptionError(index, 'price_in_minor')}</FieldError>
+                                                    </Field>
+
+                                                    <Field data-invalid={pricingOptionError(index, 'description') ? true : undefined}>
+                                                        <FieldLabel htmlFor={`package-included-${index}`}>{copy.package_included_label}</FieldLabel>
+                                                        <Textarea
+                                                            id={`package-included-${index}`}
+                                                            value={pricingOption.description}
+                                                            onChange={(event) => updatePricingOption(index, 'description', event.target.value)}
+                                                            maxLength={2000}
+                                                            aria-invalid={Boolean(pricingOptionError(index, 'description'))}
+                                                        />
+                                                        <FieldError>{pricingOptionError(index, 'description')}</FieldError>
+                                                    </Field>
+
+                                                    {data.pricing_options.length > 1 ? (
+                                                        <div className="flex justify-end">
+                                                            <Button type="button" variant="destructive" size="sm" onClick={() => removePackage(index)}>
+                                                                <TrashIcon data-icon="inline-start" />
+                                                                {copy.remove_package}
+                                                            </Button>
+                                                        </div>
+                                                    ) : null}
+                                                </FieldSet>
+                                            </Fragment>
+                                        ))}
+                                    </FieldGroup>
+                                </CardContent>
+
+                                <CardFooter>
+                                    <Button type="button" variant="outline" onClick={addPackage} disabled={data.pricing_options.length >= 3}>
+                                        <PlusIcon data-icon="inline-start" />
+                                        {copy.add_package}
+                                    </Button>
+                                </CardFooter>
+                            </Card>
+                        ) : data.pricing_structure ? (
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>{copy[`rate_section_${data.pricing_structure}_label`]}</CardTitle>
+                                </CardHeader>
+
+                                <CardContent>
+                                    <FieldGroup>
+                                        <Field data-invalid={pricingOptionError(0, 'price_in_minor') ? true : undefined}>
+                                            <FieldLabel htmlFor="service-rate">
+                                                {copy[`rate_price_${data.pricing_structure}_label`]}
+                                            </FieldLabel>
+                                            <InputGroup>
+                                                <InputGroupAddon className="text-muted-foreground" align="inline-start">
+                                                    €
+                                                </InputGroupAddon>
+                                                <InputGroupInput
+                                                    id="service-rate"
+                                                    inputMode="decimal"
+                                                    type="text"
+                                                    placeholder={copy.price_placeholder}
+                                                    value={data.pricing_options[0].price}
+                                                    onChange={(event) => updatePricingOption(0, 'price', normalizePrice(event.target.value))}
+                                                    aria-invalid={Boolean(pricingOptionError(0, 'price_in_minor'))}
+                                                />
+                                            </InputGroup>
+                                            <FieldError>{pricingOptionError(0, 'price_in_minor')}</FieldError>
+                                        </Field>
+
+                                        <Field data-invalid={pricingOptionError(0, 'description') ? true : undefined}>
+                                            <FieldLabel htmlFor="service-rate-included">{copy.rate_included_label}</FieldLabel>
+                                            <Textarea
+                                                id="service-rate-included"
+                                                value={data.pricing_options[0].description}
+                                                onChange={(event) => updatePricingOption(0, 'description', event.target.value)}
+                                                maxLength={2000}
+                                                aria-invalid={Boolean(pricingOptionError(0, 'description'))}
+                                            />
+                                            <FieldError>{pricingOptionError(0, 'description')}</FieldError>
+                                        </Field>
+                                    </FieldGroup>
+                                </CardContent>
+                            </Card>
+                        ) : null}
+
+                        <div className="flex items-center gap-4">
+                            {data.pricing_structure ? (
+                                <p className="text-xs text-muted-foreground">{copy.privacy_notice}</p>
+                            ) : null}
+
+                            <div className="ml-auto flex items-center gap-2">
+                                <Button type="button" variant="outline" asChild>
+                                    <Link href={overview()}>{copy.cancel}</Link>
+                                </Button>
+
+                                {data.pricing_structure ? (
+                                    <Button type="submit" disabled={processing}>
+                                        {processing ? <Spinner data-icon="inline-start" /> : <CheckIcon data-icon="inline-start" />}
+                                        {copy.submit}
+                                    </Button>
+                                ) : null}
+                            </div>
                         </div>
                     </form>
                 </section>
 
-                <section className='overflow-y-hidden flex-1 border-x border-sidebar-border/80 bg-muted/30'>
-                    <Card className="mt-12 max-w-lg mx-auto">
-                        <CardContent className="flex flex-col gap-0">
-                            <Badge variant="secondary">
-                                {selectedCategory?.label || copy.category_label}
-                            </Badge>
+                <section
+                    className="min-h-0 overflow-y-auto flex-1 border-x border-sidebar-border/80 bg-muted/30 p-12"
+                    style={{ overflowAnchor: 'none' }}
+                >
+                    <div className="mx-auto flex max-w-lg flex-col gap-3">
+                        <div>
+                            <p className="text-sm font-medium">{copy.preview_label}</p>
+                        </div>
 
-                            {data.name && (
-                                <h1 className='mt-2 text-2xl font-thin font-mono'>{data.name}</h1>
-                            )}
+                        <Card>
+                            <CardHeader>
+                                <Badge variant="secondary">{selectedCategory?.label || copy.category_section_label}</Badge>
+                                {data.name ? <CardTitle className="text-2xl">{data.name}</CardTitle> : null}
+                                {data.description ? <CardDescription className="whitespace-pre-line">{data.description}</CardDescription> : null}
+                            </CardHeader>
 
-                            {data.description && (
-                                <p className='text-sm text-muted-foreground whitespace-pre-line'>{data.description}</p>
-                            )}
+                            {data.pricing_structure ? (
+                                <CardContent className="flex flex-col gap-4">
+                                    {data.pricing_options.map((pricingOption, index) => (
+                                        <Fragment key={index}>
+                                            {index > 0 ? <Separator /> : null}
 
-                            {pricingOption.name || pricingOption.description || pricingOption.price_in_minor || selectedPricingUnit ? (
-                                <div className="mt-4 flex flex-col gap-1">
-                                    {pricingOption.name ? (
-                                        <p className="text-sm font-medium">{pricingOption.name}</p>
-                                    ) : null}
+                                            <div className="flex flex-col gap-1">
+                                                {data.pricing_structure === 'package' && pricingOption.name ? (
+                                                    <p className="text-sm font-medium">{pricingOption.name}</p>
+                                                ) : null}
 
-                                    {pricingOption.description ? (
-                                        <p className="text-sm text-muted-foreground whitespace-pre-line">{pricingOption.description}</p>
-                                    ) : null}
+                                                {pricingOption.description ? (
+                                                    <p className="text-sm text-muted-foreground whitespace-pre-line">{pricingOption.description}</p>
+                                                ) : null}
 
-                                    {(pricingOption.price_in_minor || selectedPricingUnit) ? (
-                                        <p className="text-sm">
-                                            {formatPriceInMinor(pricingOption.price_in_minor)}
-                                            {selectedPricingUnit ? ` / ${selectedPricingUnit.label}` : null}
-                                        </p>
-                                    ) : null}
-                                </div>
+                                                {pricingOption.price ? (
+                                                    <p className="text-sm">
+                                                        {formatPrice(pricingOption.price, locale)}
+                                                        {data.pricing_structure !== 'package' ? ` ${copy.per_unit.replace(':unit', selectedPricingStructure?.unitLabel || '')}` : null}
+                                                    </p>
+                                                ) : null}
+                                            </div>
+                                        </Fragment>
+                                    ))}
+                                </CardContent>
                             ) : null}
 
-                        </CardContent>
-
-                        <CardFooter>
-                            {copy.preview_by_vendor.replace(":business_name", vendor.name)}
-                        </CardFooter>
-                    </Card>
+                            <CardFooter>{copy.preview_by_vendor.replace(':business_name', vendor.name)}</CardFooter>
+                        </Card>
+                    </div>
                 </section>
             </main>
-        </AppLayout>
+        </EmptyLayout>
     );
 }

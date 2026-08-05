@@ -63,16 +63,18 @@ import { create } from '@/routes/services';
 import { PlusIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 
+interface Vendor {
+    id: number;
+    name: string;
+    slug: string;
+    location: string;
+    short_description: string | null;
+    is_public: boolean;
+    created_at: string | null;
+}
+
 interface OverviewPageProps {
-    vendor: {
-        id: number;
-        title: string;
-        slug: string;
-        location: string;
-        short_description: string | null;
-        is_public: boolean;
-        created_at: string | null;
-    };
+    vendor: Vendor;
     services: {
         id: number;
         name: string;
@@ -87,20 +89,11 @@ interface OverviewPageProps {
         value: string;
         label: string;
     }[];
-    serviceUnits: {
+    pricingStructuresByCategory: Record<string, {
         value: string;
         label: string;
-    }[];
+    }[]>;
     copy: Record<string, string>;
-}
-
-function formatPriceInMinor(
-    priceInMinor: string | number | null,
-    notSetLabel: string,
-) {
-    if (priceInMinor === null || priceInMinor === '') return notSetLabel;
-
-    return formatPriceInMinorValue(String(priceInMinor));
 }
 
 function formatPriceInMinorValue(priceInMinor: string) {
@@ -124,22 +117,12 @@ export default function OverviewPage({
     vendor,
     services,
     serviceCategories,
-    serviceUnits,
+    pricingStructuresByCategory,
     copy,
 }: OverviewPageProps) {
     const [isEditServiceOpen, setIsEditServiceOpen] = useState(false);
     const [isDeleteServiceOpen, setIsDeleteServiceOpen] = useState(false);
     const [editingServiceId, setEditingServiceId] = useState<number | null>(null);
-
-    const addForm = useForm({
-        name: '',
-        category: '',
-        custom_category: '',
-        description: '',
-        price_in_minor: '',
-        unit: '',
-        is_public: false,
-    });
 
     const editForm = useForm({
         name: '',
@@ -156,6 +139,7 @@ export default function OverviewPage({
 
     const editingService = services.find((service) => service.id === editingServiceId);
     const editFormErrors = editForm.errors as Record<string, string | undefined>;
+    const editPricingStructures = pricingStructuresByCategory[editForm.data.category] || [];
 
     console.log(vendor);
 
@@ -320,7 +304,17 @@ export default function OverviewPage({
                                         name="category"
                                         required
                                         value={editForm.data.category}
-                                        onValueChange={(value) => editForm.setData('category', value)}
+                                        onValueChange={(value) => editForm.setData({
+                                            ...editForm.data,
+                                            category: value,
+                                            custom_category: value === 'other' ? editForm.data.custom_category : '',
+                                            pricing_options: editForm.data.pricing_options.map((pricingOption) => ({
+                                                ...pricingOption,
+                                                unit: pricingStructuresByCategory[value]?.some((pricingStructure) => pricingStructure.value === pricingOption.unit)
+                                                    ? pricingOption.unit
+                                                    : pricingStructuresByCategory[value]?.[0]?.value || '',
+                                            })),
+                                        })}
                                     >
                                         <SelectTrigger
                                             id="edit-service-category"
@@ -440,9 +434,9 @@ export default function OverviewPage({
                                                     </SelectTrigger>
                                                     <SelectContent position="popper">
                                                         <SelectGroup>
-                                                            {serviceUnits.map((serviceUnit) => (
-                                                                <SelectItem key={serviceUnit.value} value={serviceUnit.value}>
-                                                                    {serviceUnit.label}
+                                                            {editPricingStructures.map((pricingStructure) => (
+                                                                <SelectItem key={pricingStructure.value} value={pricingStructure.value}>
+                                                                    {pricingStructure.label}
                                                                 </SelectItem>
                                                             ))}
                                                         </SelectGroup>
