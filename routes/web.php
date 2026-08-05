@@ -9,10 +9,8 @@ use App\Http\Controllers\Settings\TwoFactorAuthenticationController;
 use App\Models\Service;
 use App\Models\Vendor;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 Route::get('/index', function () {
@@ -141,10 +139,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return to_route('onboarding');
         }
 
-        if (! $request->user()->vendor->services()->exists()) {
-            return to_route('onboarding');
-        }
-
         return to_route('overview');
     })->name('home');
 
@@ -153,19 +147,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return to_route('onboarding');
         }
 
-        if (! $request->user()->vendor->services()->exists()) {
-            return to_route('onboarding');
-        }
-
         return to_route('overview');
     })->name('dashboard');
 
     Route::get('/overview', function (Request $request) {
         if (! $request->user()->vendor()->exists()) {
-            return to_route('onboarding');
-        }
-
-        if (! $request->user()->vendor->services()->exists()) {
             return to_route('onboarding');
         }
 
@@ -268,10 +254,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return to_route('onboarding.vendor.show');
         }
 
-        if (! $request->user()->vendor->services()->exists()) {
-            return to_route('onboarding.service.show');
-        }
-
         return to_route('overview');
     })->name('onboarding');
 
@@ -314,122 +296,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'location' => '',
         ]);
 
-        return to_route('onboarding.service.show');
+        return to_route('services.create');
     })->name('onboarding.vendor.store');
-
-    Route::get('/onboarding/service', function (Request $request) {
-        $vendor = $request->user()->vendor;
-
-        if (! $vendor) {
-            return to_route('onboarding.vendor.show');
-        }
-
-        if ($vendor->services()->exists()) {
-            return to_route('overview');
-        }
-
-        $serviceCategoryLabels = collect(config('service_categories'))
-            ->mapWithKeys(function (string $value) {
-                $translation = __("config-service-categories.{$value}");
-
-                return [
-                    $value => $translation === "config-service-categories.{$value}" ? $value : $translation,
-                ];
-            })
-            ->all();
-
-        return Inertia::render('ServiceOnboardingPage', [
-            'vendor' => [
-                'name' => $vendor->name,
-            ],
-            'serviceCategories' => collect(config('service_categories'))
-                ->map(fn (string $value) => [
-                    'value' => $value,
-                    'label' => $serviceCategoryLabels[$value] ?? $value,
-                ])
-                ->values()
-                ->all(),
-            'pricingStructuresByCategory' => collect(config('service_categories'))
-                ->mapWithKeys(fn (string $category) => [
-                    $category => collect(config("service_pricing_structures.{$category}", config('service_pricing_structures.default')))
-                        ->map(fn (string $value) => [
-                            'value' => $value,
-                            'label' => __("config-service-units.{$value}"),
-                        ])
-                        ->values()
-                        ->all(),
-                ])
-                ->all(),
-            'copy' => __('service-onboarding'),
-        ]);
-    })->name('onboarding.service.show');
-
-    Route::post('/onboarding/service', function (Request $request) {
-        $vendor = $request->user()->vendor;
-
-        if (! $vendor) {
-            return to_route('onboarding.vendor.show');
-        }
-
-        if ($vendor->services()->exists()) {
-            return to_route('overview');
-        }
-
-        $serviceCategory = $request->string('service_category')->toString();
-
-        $validated = $request->validate([
-            'service_name' => ['required', 'string', 'max:120'],
-            'service_category' => ['required', 'string', Rule::in(config('service_categories'))],
-            'service_custom_category' => ['nullable', 'required_if:service_category,other', 'string', 'max:120'],
-            'service_description' => ['nullable', 'string', 'max:2000'],
-            'service_price_in_minor' => ['required', 'integer', 'min:0', 'max:4294967295'],
-            'service_unit' => [
-                'required',
-                'string',
-                Rule::in(config("service_pricing_structures.{$serviceCategory}", config('service_pricing_structures.default'))),
-            ],
-        ]);
-
-        DB::transaction(function () use ($validated, $vendor) {
-            $baseSlug = Str::slug($validated['service_name']) ?: 'service';
-            $slug = $baseSlug;
-            $suffix = 1;
-
-            while (
-                $vendor->services()
-                    ->where('slug', $slug)
-                    ->exists()
-            ) {
-                $slug = $baseSlug.'-'.$suffix;
-                $suffix++;
-            }
-
-            $service = $vendor->services()->create([
-                'name' => $validated['service_name'],
-                'slug' => $slug,
-                'category' => $validated['service_category'],
-                'description' => $validated['service_description'] ?? null,
-            ]);
-
-            if ($validated['service_category'] === 'other') {
-                $service->customCategory()->create([
-                    'name' => $validated['service_custom_category'],
-                ]);
-            }
-
-            DB::table('service_pricing_options')->insert([
-                'service_id' => $service->id,
-                'name' => $validated['service_name'],
-                'description' => null,
-                'price_in_minor' => $validated['service_price_in_minor'],
-                'unit' => $validated['service_unit'],
-                'sort_order' => 0,
-                'is_public' => false,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        });
-
-        return to_route('overview');
-    })->name('onboarding.service.store');
 });
