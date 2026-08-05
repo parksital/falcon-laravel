@@ -43,7 +43,7 @@ return [
     'rate_included_label' => 'What’s included in this rate? (optional)',
     'price_placeholder' => '0.00',
     'per_unit' => 'per :unit',
-    'exit' => 'Exit',
+    'back' => 'Back',
     'cancel' => 'Cancel',
     'submit' => 'Save service',
     'saved' => 'Service saved',

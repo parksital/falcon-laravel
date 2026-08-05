@@ -43,7 +43,7 @@ return [
     'rate_included_label' => 'Wat is inbegrepen in dit tarief? (optioneel)',
     'price_placeholder' => '0,00',
     'per_unit' => 'per :unit',
-    'exit' => 'Afsluiten',
+    'back' => 'Terug',
     'cancel' => 'Annuleren',
     'submit' => 'Service opslaan',
     'saved' => 'Service opgeslagen',

@@ -244,7 +244,7 @@ export default function CreateServicePage({
                         <Button type="button" variant="link" asChild>
                             <Link href={overview()}>
                                 <ArrowLeftIcon data-icon="inline-start" />
-                                {copy.exit}
+                                {copy.back}
                             </Link>
                         </Button>
 
