@@ -7,5 +7,5 @@ return [
     'photobooths' => 'Photo Booth',
     'florist' => 'Bloemen',
     'decor' => 'Decor',
-    'other' => 'Overige',
+    'other' => 'Anders',
 ];

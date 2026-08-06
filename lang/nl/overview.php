@@ -8,7 +8,7 @@ return [
     'not_available' => 'Niet beschikbaar',
     'public_status' => 'Openbaar',
     'draft_status' => 'Concept',
-    'other' => 'Overige',
+    'other' => 'Anders',
 
     'overview_heading' => 'Overzicht',
     'overview_slug' => 'Slug',

@@ -18,7 +18,16 @@ class UserSeeder extends Seeder
                 'name' => 'Huurmaar',
                 'password' => 'password',
                 'email_verified_at' => now(),
-            ]
+            ],
+        );
+
+        User::firstOrCreate(
+            ['email' => 'info@pastadellanonna.nl'],
+            [
+                'name' => 'Pasta Della Nonna',
+                'password' => 'password',
+                'email_verified_at' => now(),
+            ],
         );
     }
 }
