@@ -31,7 +31,7 @@
         }
     </style>
 
-    <title inertia>{{ $seo['title'] ?? config('app.name', 'Laravel') }}</title>
+    <title data-inertia>{{ $seo['title'] ?? config('app.name', 'Laravel') }}</title>
 
     @isset($seo)
         @if (! empty($seo['description']))

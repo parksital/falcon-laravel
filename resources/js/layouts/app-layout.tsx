@@ -1,4 +1,6 @@
-import AppLayoutTemplate from '@/layouts/app/app-header-layout';
+import DesktopDashboardLayout from '@/layouts/app/desktop-dashboard-layout';
+import MobileDashboardLayout from '@/layouts/app/mobile-dashboard-layout';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import { type BreadcrumbItem } from '@/types';
 import { type ReactNode } from 'react';
 
@@ -7,6 +9,12 @@ interface AppLayoutProps {
     breadcrumbs?: BreadcrumbItem[];
 }
 
-export default ({ children }: AppLayoutProps) => (
-    <AppLayoutTemplate>{children}</AppLayoutTemplate>
-);
+export default function AppLayout({ children, breadcrumbs }: AppLayoutProps) {
+    const isMobile = useMediaQuery('(max-width: 640px)');
+
+    return isMobile ? (
+        <MobileDashboardLayout breadcrumbs={breadcrumbs}>{children}</MobileDashboardLayout>
+    ) : (
+        <DesktopDashboardLayout breadcrumbs={breadcrumbs}>{children}</DesktopDashboardLayout>
+    );
+}

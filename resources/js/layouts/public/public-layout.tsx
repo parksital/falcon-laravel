@@ -1,15 +1,18 @@
-import { AppShell } from '@/components/app-shell';
+import { useMediaQuery } from '@/hooks/use-media-query';
+import DesktopPublicLayout from '@/layouts/public/desktop-public-layout';
+import MobilePublicLayout from '@/layouts/public/mobile-public-layout';
+import { type ReactNode } from 'react';
 
 type PublicLayoutProps = {
-    children: React.ReactNode;
+    children: ReactNode;
 };
 
 export default function PublicLayout({ children }: PublicLayoutProps) {
-    return (
-        <AppShell>
-            <div className="min-h-screen w-full bg-background text-foreground">
-                {children}
-            </div>
-        </AppShell>
+    const isMobile = useMediaQuery('(max-width: 640px)');
+
+    return isMobile ? (
+        <MobilePublicLayout>{children}</MobilePublicLayout>
+    ) : (
+        <DesktopPublicLayout>{children}</DesktopPublicLayout>
     );
 }

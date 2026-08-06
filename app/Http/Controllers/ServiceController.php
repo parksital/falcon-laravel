@@ -61,6 +61,37 @@ class ServiceController extends Controller
         ]);
     }
 
+    public function show(Request $request, Service $service)
+    {
+        $vendor = $request->user()->vendor;
+
+        if (! $vendor) {
+            return to_route('onboarding');
+        }
+
+        abort_unless($service->vendor_id === $vendor->id, 404);
+
+        $service->loadMissing('customCategory');
+        $categoryLabel = $service->category === 'other'
+            ? $service->customCategory?->name
+            : __("config-service-categories.{$service->category}");
+
+        if ($categoryLabel === "config-service-categories.{$service->category}") {
+            $categoryLabel = $service->category;
+        }
+
+        return Inertia::render('ServiceDetailsPage', [
+            'vendor' => $vendor->only('name'),
+            'service' => [
+                'id' => $service->id,
+                'name' => $service->name,
+                'description' => $service->description,
+                'category_label' => $categoryLabel ?: $service->category,
+            ],
+            'copy' => __('service-details'),
+        ]);
+    }
+
     public function store(StoreServiceRequest $request)
     {
         $vendor = $request->user()->vendor;

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\PublicBookingPageController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\VendorController;
 use App\Http\Controllers\Settings\LocaleController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
@@ -23,6 +24,7 @@ Route::get('/index', function () {
             ];
         })
         ->all();
+
     $pricingStructureLabels = collect(config('service_pricing_structures'))
         ->flatten()
         ->unique()
@@ -110,8 +112,16 @@ Route::get('/index', function () {
     ]]);
 })->name('index');
 
-Route::get('/book/{slug}', [PublicBookingPageController::class, 'showVendor'])->name('public.booking.show');
-Route::get('/book/{vendorSlug}/services/{serviceSlug}', [PublicBookingPageController::class, 'showService'])->name('public.booking.service.show');
+Route::get('/book/{vendorSlug}/services/{serviceSlug}', fn (string $vendorSlug, string $serviceSlug) => redirect()->route(
+    'public.booking.service.show',
+    ['vendorSlug' => $vendorSlug, 'serviceSlug' => $serviceSlug],
+    301,
+));
+Route::get('/book/{vendorSlug}', fn (string $vendorSlug) => redirect()->route(
+    'public.booking.show',
+    ['vendorSlug' => $vendorSlug],
+    301,
+));
 Route::patch('locale', [LocaleController::class, 'update'])->name('locale.update');
 
 Route::middleware('auth')->group(function () {
@@ -176,7 +186,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'vendor' => [
                 ...$vendor->toArray(),
                 'is_public' => (bool) $vendor->is_public,
-                'created_at' => $vendor->created_at?->locale(app()->getLocale())->translatedFormat(__('overview.date_format')),
+                'public_url' => route('public.booking.show', $vendor->slug),
             ],
             'services' => $services
                 ->map(fn ($service) => [
@@ -213,19 +223,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('overview');
 
     Route::redirect('/vendor/profile', '/overview')->name('vendor.profile');
+    Route::patch('/vendor', [VendorController::class, 'update'])->name('vendor.update');
 
     Route::get('/services/create', [ServiceController::class, 'create'])->name('services.create');
-    Route::get('/services/{service}', function (Request $request, Service $service) {
-        $vendor = $request->user()->vendor;
-
-        if (! $vendor) {
-            return to_route('onboarding');
-        }
-
-        abort_unless($service->vendor_id === $vendor->id, 404);
-
-        return Inertia::render('ServiceDetailsPage');
-    })->name('services.show');
+    Route::get('/services/{service}', [ServiceController::class, 'show'])->name('services.show');
 
     Route::post('/services', [ServiceController::class, 'store'])->name('services.store');
     Route::patch('/services/{service}', [ServiceController::class, 'update'])->name('services.update');
@@ -281,7 +282,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         $suffix = 1;
 
         while (
-            Vendor::query()
+            in_array($slug, config('reserved_vendor_slugs'), true)
+            || Vendor::query()
                 ->where('slug', $slug)
                 ->exists()
         ) {
@@ -299,3 +301,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return to_route('services.create');
     })->name('onboarding.vendor.store');
 });
+
+Route::get('/{vendorSlug}/services/{serviceSlug}', [PublicBookingPageController::class, 'showService'])
+    ->where([
+        'vendorSlug' => '[a-z0-9]+(?:-[a-z0-9]+)*',
+        'serviceSlug' => '[a-z0-9]+(?:-[a-z0-9]+)*',
+    ])
+    ->name('public.booking.service.show');
+
+Route::get('/{vendorSlug}', [PublicBookingPageController::class, 'showVendor'])
+    ->where('vendorSlug', '[a-z0-9]+(?:-[a-z0-9]+)*')
+    ->name('public.booking.show');

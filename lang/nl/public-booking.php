@@ -1,8 +1,11 @@
 <?php
 
 return [
-    'browse_services' => 'Bekijk services',
     'services_heading' => 'Services',
+    'services_empty_title' => 'Nog niets te boeken',
+    'services_empty_description' => ':vendor heeft op dit moment geen services beschikbaar.',
+    'joined' => 'Lid sinds :formatted_date',
+    'joined_date_format' => 'j F Y',
     'per_unit' => 'per :unit',
     'view_service' => 'Bekijk service',
     'seo_service_title' => ':service van :vendor',

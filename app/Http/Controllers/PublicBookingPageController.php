@@ -10,10 +10,10 @@ use Inertia\Response;
 
 class PublicBookingPageController extends Controller
 {
-    public function showVendor(string $slug): Response
+    public function showVendor(string $vendorSlug): Response
     {
         $vendor = Vendor::query()
-            ->where('slug', $slug)
+            ->where('slug', $vendorSlug)
             ->where('is_public', true)
             ->with(['services' => function ($query) {
                 $query
@@ -58,6 +58,7 @@ class PublicBookingPageController extends Controller
                 'slug' => $vendor->slug,
                 'location' => $vendor->location,
                 'short_description' => $vendor->short_description,
+                'joined_at' => $vendor->created_at?->locale(app()->getLocale())->translatedFormat(__('public-booking.joined_date_format')),
                 'url' => route('public.booking.show', $vendor->slug),
             ],
             'services' => $vendor->services

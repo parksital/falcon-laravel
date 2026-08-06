@@ -1,7 +1,22 @@
+import {
+    show as showService,
+    destroy as destroyService,
+    update as updateService,
+} from '@/routes/services';
+import { update as updateVendor } from '@/routes/vendor';
+import { overview } from '@/routes';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import {
+    Card,
+    CardAction,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
     Dialog,
@@ -53,24 +68,32 @@ import {
 } from '@/components/ui/sheet';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
-import AppLayout from '@/layouts/app-layout';
 import {
-    destroy as destroyService,
-    update as updateService,
-} from '@/routes/services';
-import { Head, router, useForm } from '@inertiajs/react';
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
+import AppLayout from '@/layouts/app-layout';
+import { Head, router, setLayoutProps, useForm } from '@inertiajs/react';
 import { create } from '@/routes/services';
-import { PlusIcon } from '@phosphor-icons/react';
-import { useState } from 'react';
+import {
+    ArrowSquareOutIcon,
+    CopyIcon,
+    PencilSimpleIcon,
+    PlusIcon,
+} from '@phosphor-icons/react';
+import { toast } from 'sonner';
+import { type ReactNode, useState } from 'react';
+import { type BreadcrumbItem } from '@/types';
 
 interface Vendor {
     id: number;
     name: string;
     slug: string;
-    location: string;
     short_description: string | null;
     is_public: boolean;
-    created_at: string | null;
+    public_url: string;
 }
 
 interface OverviewPageProps {
@@ -113,16 +136,32 @@ type EditPricingOption = {
     unit: string;
 };
 
-export default function OverviewPage({
+type OverviewPageComponent = ((props: OverviewPageProps) => ReactNode) & {
+    layout?: typeof AppLayout;
+};
+
+const OverviewPage: OverviewPageComponent = function OverviewPage({
     vendor,
     services,
     serviceCategories,
     pricingStructuresByCategory,
     copy,
 }: OverviewPageProps) {
+    setLayoutProps<{ breadcrumbs: BreadcrumbItem[] }>({
+        breadcrumbs: [{ title: vendor.name, href: overview.url() }],
+    });
+
+    const [isEditVendorOpen, setIsEditVendorOpen] = useState(false);
+    const [isDiscardVendorChangesOpen, setIsDiscardVendorChangesOpen] = useState(false);
     const [isEditServiceOpen, setIsEditServiceOpen] = useState(false);
     const [isDeleteServiceOpen, setIsDeleteServiceOpen] = useState(false);
     const [editingServiceId, setEditingServiceId] = useState<number | null>(null);
+
+    const vendorForm = useForm({
+        name: vendor.name,
+        short_description: vendor.short_description ?? '',
+        is_public: vendor.is_public,
+    });
 
     const editForm = useForm({
         name: '',
@@ -141,115 +180,301 @@ export default function OverviewPage({
     const editFormErrors = editForm.errors as Record<string, string | undefined>;
     const editPricingStructures = pricingStructuresByCategory[editForm.data.category] || [];
 
-    console.log(vendor);
+    async function copyBookingPageUrl() {
+        try {
+            await navigator.clipboard.writeText(vendor.public_url);
+            toast.success(copy.overview_booking_page_copied);
+        } catch {
+            toast.error(copy.overview_booking_page_copy_failed);
+        }
+    }
+
+    function openVendorEditor() {
+        const vendorDetails = {
+            name: vendor.name,
+            short_description: vendor.short_description ?? '',
+            is_public: vendor.is_public,
+        };
+
+        vendorForm.setDefaults(vendorDetails);
+        vendorForm.setData(vendorDetails);
+        vendorForm.clearErrors();
+        setIsEditVendorOpen(true);
+    }
+
+    function requestCloseVendorEditor() {
+        if (vendorForm.isDirty) {
+            setIsDiscardVendorChangesOpen(true);
+            return;
+        }
+
+        setIsEditVendorOpen(false);
+        vendorForm.resetAndClearErrors();
+    }
+
+    function discardVendorChanges() {
+        setIsDiscardVendorChangesOpen(false);
+        setIsEditVendorOpen(false);
+        vendorForm.resetAndClearErrors();
+    }
 
     return (
-        <AppLayout>
+        <>
             <Head title={copy.title} />
 
-            <main className="container mx-auto flex h-full w-full flex-1 flex-col gap-10 p-6">
-                <section className="flex flex-col gap-3">
-                    <h1 className="flex gap-2 text-2xl font-semibold">
-                        <span>{copy.overview_heading}</span>
-                        <span className="text-muted-foreground">·</span>
-                        <span>{vendor.name}</span>
-                    </h1>
+            <main className="container mx-auto flex h-full w-full flex-1 flex-col gap-6 p-6">
+                <div className="grid items-start gap-6 lg:grid-cols-[minmax(16rem,1fr)_minmax(0,2fr)]">
+                    <div className="flex flex-col gap-3">
+                        <h1 className="text-2xl font-semibold">{copy.overview_heading}</h1>
 
-                    <Card>
-                        <CardContent className="grid grid-cols-5 gap-4">
-                            <div className="grid gap-1">
-                                <p className="text-muted-foreground">{copy.overview_slug}</p>
-                                <p className="font-medium">/{vendor.slug}</p>
-                            </div>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>{vendor.name}</CardTitle>
+                                <CardDescription>
+                                    {vendor.short_description || copy.overview_description_empty}
+                                </CardDescription>
+                                <CardAction>
+                                    <Badge variant={vendor.is_public ? 'secondary' : 'outline'}>
+                                        {vendor.is_public
+                                            ? copy.overview_published_status
+                                            : copy.overview_unpublished_status}
+                                    </Badge>
+                                </CardAction>
+                            </CardHeader>
 
-                            <div className="grid gap-1">
-                                <p className="text-muted-foreground">{copy.overview_location}</p>
-                                <p className="font-medium">{vendor.location}</p>
-                            </div>
+                            <CardContent>
+                                <div className="flex min-w-0 items-start gap-1">
+                                    <div className="flex min-w-0 flex-1 flex-col gap-1">
+                                        <p className="text-muted-foreground">{copy.overview_booking_page}</p>
+                                        <p className="break-all font-medium">{vendor.public_url}</p>
+                                        {!vendor.is_public ? (
+                                            <p className="text-muted-foreground">
+                                                {copy.overview_booking_page_unpublished}
+                                            </p>
+                                        ) : null}
+                                    </div>
 
-                            <div className="grid gap-1">
-                                <p className="text-muted-foreground">{copy.overview_status}</p>
-                                <Badge variant={vendor.is_public ? 'default' : 'secondary'}>
-                                    {vendor.is_public ? copy.public_status : copy.draft_status}
-                                </Badge>
-                            </div>
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon-sm"
+                                                    aria-label={copy.overview_copy_booking_page}
+                                                    onClick={copyBookingPageUrl}
+                                                >
+                                                    <CopyIcon data-icon="inline-start" />
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent side="top">
+                                                {copy.overview_copy_booking_page}
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                </div>
+                            </CardContent>
 
-                            <div className="grid gap-1">
-                                <p className="text-muted-foreground">{copy.overview_created_at}</p>
-                                <p className="font-medium">
-                                    {vendor.created_at ?? copy.not_available}
-                                </p>
-                            </div>
+                            <CardFooter className="flex-wrap gap-2">
+                                <Button variant="outline" size="sm" onClick={openVendorEditor}>
+                                    <PencilSimpleIcon data-icon="inline-start" />
+                                    {copy.vendor_edit_action}
+                                </Button>
 
-                            <div className="grid gap-1 sm:col-span-3">
-                                <p className="text-muted-foreground">{copy.overview_short_description}</p>
-                                <p className="font-medium">{vendor.short_description ?? copy.not_set}</p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </section>
-
-                <section className="flex flex-col gap-3">
-                    <div className="flex items-center justify-between">
-                        <h2 className="text-2xl font-semibold">{copy.services_heading}</h2>
-
-                        <Button
-                            onClick={() => {router.visit(create())}}
-                        >
-                            <PlusIcon />
-                            {copy.services_add}
-                        </Button>
+                                {vendor.is_public ? (
+                                    <Button variant="outline" size="sm" asChild>
+                                        <a href={vendor.public_url} target="_blank" rel="noreferrer">
+                                            <ArrowSquareOutIcon data-icon="inline-start" />
+                                            {copy.overview_view_booking_page}
+                                        </a>
+                                    </Button>
+                                ) : (
+                                    <Button variant="outline" size="sm" disabled>
+                                        <ArrowSquareOutIcon data-icon="inline-start" />
+                                        {copy.overview_view_booking_page}
+                                    </Button>
+                                )}
+                            </CardFooter>
+                        </Card>
                     </div>
 
-                    <Table className='border'>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>{copy.services_table_name}</TableHead>
-                                <TableHead>{copy.services_table_category}</TableHead>
-                                <TableHead>{copy.services_table_price}</TableHead>
-                                <TableHead>{copy.services_table_status}</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {services.length > 0 ? (
-                                services.map((service) => (
-                                    <TableRow
-                                        key={service.id}
-                                        className="cursor-pointer"
-                                        onClick={() => {
-                                            // router.visit()
-                                        }}
-                                    >
-                                        <TableCell className="font-medium">{service.name}</TableCell>
-                                        <TableCell>
-                                            <Badge variant="secondary">{service.category_label}</Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            <p className="font-medium">
-                                                {service.pricing_options_label}
-                                            </p>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant={service.is_public ? 'default' : 'secondary'}>
-                                                {service.is_public ? copy.public_status : copy.draft_status}
-                                            </Badge>
+                    <section className="flex min-w-0 flex-col gap-3">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-2xl font-semibold">{copy.services_heading}</h2>
+
+                            <Button onClick={() => router.visit(create())}>
+                                <PlusIcon data-icon="inline-start" />
+                                {copy.services_add}
+                            </Button>
+                        </div>
+
+                        <Table className="border">
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>{copy.services_table_name}</TableHead>
+                                    <TableHead>{copy.services_table_category}</TableHead>
+                                    <TableHead>{copy.services_table_price}</TableHead>
+                                    <TableHead>{copy.services_table_status}</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {services.length > 0 ? (
+                                    services.map((service) => (
+                                        <TableRow
+                                            key={service.id}
+                                            className="cursor-pointer"
+                                            onClick={() => {
+                                                router.visit(showService.url(service.id));
+                                            }}
+                                        >
+                                            <TableCell className="font-medium">{service.name}</TableCell>
+                                            <TableCell>
+                                                <Badge variant="secondary">{service.category_label}</Badge>
+                                            </TableCell>
+                                            <TableCell>
+                                                <p className="font-medium">
+                                                    {service.pricing_options_label}
+                                                </p>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant={service.is_public ? 'default' : 'secondary'}>
+                                                    {service.is_public ? copy.public_status : copy.draft_status}
+                                                </Badge>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell
+                                            colSpan={4}
+                                            className="text-center text-muted-foreground"
+                                        >
+                                            {copy.services_empty}
                                         </TableCell>
                                     </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell
-                                        colSpan={4}
-                                        className="text-center text-muted-foreground"
-                                    >
-                                        {copy.services_empty}
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </section>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </section>
+                </div>
             </main>
+
+            <Sheet
+                open={isEditVendorOpen}
+                onOpenChange={(open) => {
+                    if (!open) requestCloseVendorEditor();
+                }}
+            >
+                <SheetContent showCloseButton={false} className="sm:max-w-lg">
+                    <form
+                        className="flex min-h-0 flex-1 flex-col"
+                        onSubmit={(event) => {
+                            event.preventDefault();
+
+                            vendorForm.patch(updateVendor.url(), {
+                                preserveScroll: true,
+                                onSuccess: () => {
+                                    setIsEditVendorOpen(false);
+                                    vendorForm.setDefaults();
+                                    vendorForm.clearErrors();
+                                },
+                            });
+                        }}
+                    >
+                        <SheetHeader>
+                            <SheetTitle>{copy.vendor_edit_title}</SheetTitle>
+                            <SheetDescription>{copy.vendor_edit_description}</SheetDescription>
+                        </SheetHeader>
+
+                        <div className="flex flex-1 flex-col overflow-y-auto p-4">
+                            <FieldGroup>
+                                <Field data-invalid={vendorForm.errors.name ? true : undefined}>
+                                    <FieldLabel htmlFor="vendor-name">{copy.vendor_field_name}</FieldLabel>
+                                    <Input
+                                        id="vendor-name"
+                                        name="name"
+                                        required
+                                        maxLength={120}
+                                        aria-invalid={Boolean(vendorForm.errors.name)}
+                                        value={vendorForm.data.name}
+                                        onChange={(event) => vendorForm.setData('name', event.target.value)}
+                                    />
+                                    <FieldError>{vendorForm.errors.name}</FieldError>
+                                </Field>
+
+                                <Field data-invalid={vendorForm.errors.short_description ? true : undefined}>
+                                    <FieldLabel htmlFor="vendor-description">
+                                        {copy.vendor_field_description}
+                                    </FieldLabel>
+                                    <Textarea
+                                        id="vendor-description"
+                                        name="short_description"
+                                        maxLength={2000}
+                                        aria-invalid={Boolean(vendorForm.errors.short_description)}
+                                        value={vendorForm.data.short_description}
+                                        onChange={(event) => vendorForm.setData('short_description', event.target.value)}
+                                    />
+                                    <FieldDescription>{copy.vendor_field_description_help}</FieldDescription>
+                                    <FieldError>{vendorForm.errors.short_description}</FieldError>
+                                </Field>
+
+                                <Field orientation="horizontal">
+                                    <Checkbox
+                                        id="vendor-is-public"
+                                        name="is_public"
+                                        checked={vendorForm.data.is_public}
+                                        onCheckedChange={(checked) => vendorForm.setData('is_public', checked === true)}
+                                    />
+                                    <FieldContent>
+                                        <FieldLabel htmlFor="vendor-is-public">{copy.vendor_publish_label}</FieldLabel>
+                                        <FieldDescription>
+                                            {vendorForm.data.is_public
+                                                ? copy.vendor_published_description
+                                                : copy.vendor_unpublished_description}
+                                        </FieldDescription>
+                                    </FieldContent>
+                                </Field>
+                            </FieldGroup>
+                        </div>
+
+                        <SheetFooter>
+                            <Button type="button" variant="outline" onClick={requestCloseVendorEditor}>
+                                {copy.vendor_edit_cancel}
+                            </Button>
+                            <Button type="submit" disabled={!vendorForm.isDirty || vendorForm.processing}>
+                                {vendorForm.processing ? <Spinner data-icon="inline-start" /> : null}
+                                {copy.vendor_edit_save}
+                            </Button>
+                        </SheetFooter>
+                    </form>
+                </SheetContent>
+            </Sheet>
+
+            <Dialog open={isDiscardVendorChangesOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{copy.vendor_discard_title}</DialogTitle>
+                        <DialogDescription>{copy.vendor_discard_description}</DialogDescription>
+                    </DialogHeader>
+
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setIsDiscardVendorChangesOpen(false);
+                            }}
+                        >
+                            {copy.vendor_discard_keep_editing}
+                        </Button>
+                        <Button type="button" variant="destructive" onClick={discardVendorChanges}>
+                            {copy.vendor_discard_confirm}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             <Sheet open={isEditServiceOpen}>
                 <SheetContent showCloseButton={false} className="sm:max-w-2xl">
@@ -584,6 +809,10 @@ export default function OverviewPage({
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </AppLayout>
+        </>
     );
-}
+};
+
+OverviewPage.layout = AppLayout;
+
+export default OverviewPage;
