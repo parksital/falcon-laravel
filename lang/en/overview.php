@@ -2,7 +2,7 @@
 
 return [
     'title' => 'Overview',
-    'date_format' => 'F j, Y',
+    'joined_date_format' => 'F j, Y',
 
     'not_set' => 'Not set',
     'not_available' => 'Not available',
@@ -13,10 +13,8 @@ return [
     'overview_heading' => 'Overview',
     'overview_published_status' => 'Published',
     'overview_unpublished_status' => 'Not published',
-    'overview_description_empty' => 'No description yet.',
-    'overview_booking_page' => 'Booking page',
-    'overview_booking_page_unpublished' => 'Available after publishing.',
-    'overview_view_booking_page' => 'View booking page',
+    'overview_joined' => 'Joined :formatted_date',
+    'overview_booking_page_url' => 'Booking page URL',
     'overview_copy_booking_page' => 'Copy link',
     'overview_booking_page_copied' => 'Booking page link copied.',
     'overview_booking_page_copy_failed' => "Couldn't copy the booking page link. Try again.",
@@ -25,8 +23,8 @@ return [
     'vendor_edit_title' => 'Edit vendor details',
     'vendor_edit_description' => 'Update what customers see on your booking page.',
     'vendor_field_name' => 'Business name',
-    'vendor_field_description' => 'Description',
-    'vendor_field_description_help' => 'This appears on your booking page.',
+    'vendor_field_about' => 'About',
+    'vendor_field_about_help' => 'Tell customers what you offer and what they can expect.',
     'vendor_publish_label' => 'Publish booking page',
     'vendor_published_description' => 'Customers can view your booking page.',
     'vendor_unpublished_description' => 'Your booking page and services will be hidden.',

@@ -10,7 +10,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Card,
-    CardAction,
     CardContent,
     CardDescription,
     CardFooter,
@@ -38,6 +37,7 @@ import { Input } from '@/components/ui/input';
 import {
     InputGroup,
     InputGroupAddon,
+    InputGroupButton,
     InputGroupInput,
 } from '@/components/ui/input-group';
 import { Label } from '@/components/ui/label';
@@ -78,7 +78,6 @@ import AppLayout from '@/layouts/app-layout';
 import { Head, router, setLayoutProps, useForm } from '@inertiajs/react';
 import { create } from '@/routes/services';
 import {
-    ArrowSquareOutIcon,
     CopyIcon,
     PencilSimpleIcon,
     PlusIcon,
@@ -93,6 +92,7 @@ interface Vendor {
     slug: string;
     short_description: string | null;
     is_public: boolean;
+    joined_at: string | null;
     public_url: string;
 }
 
@@ -230,49 +230,53 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                         <Card>
                             <CardHeader>
                                 <CardTitle>{vendor.name}</CardTitle>
-                                <CardDescription>
-                                    {vendor.short_description || copy.overview_description_empty}
-                                </CardDescription>
-                                <CardAction>
-                                    <Badge variant={vendor.is_public ? 'secondary' : 'outline'}>
-                                        {vendor.is_public
-                                            ? copy.overview_published_status
-                                            : copy.overview_unpublished_status}
-                                    </Badge>
-                                </CardAction>
+
+                                {vendor.short_description ? (
+                                    <CardDescription>{vendor.short_description}</CardDescription>
+                                ) : null}
+                                {vendor.joined_at ? (
+                                    <CardDescription>
+                                        {copy.overview_joined.replace(':formatted_date', vendor.joined_at)}
+                                    </CardDescription>
+                                ) : null}
                             </CardHeader>
 
                             <CardContent>
-                                <div className="flex min-w-0 items-start gap-1">
-                                    <div className="flex min-w-0 flex-1 flex-col gap-1">
-                                        <p className="text-muted-foreground">{copy.overview_booking_page}</p>
-                                        <p className="break-all font-medium">{vendor.public_url}</p>
-                                        {!vendor.is_public ? (
-                                            <p className="text-muted-foreground">
-                                                {copy.overview_booking_page_unpublished}
-                                            </p>
-                                        ) : null}
-                                    </div>
+                                <Field>
+                                    <FieldLabel htmlFor="vendor-booking-page-url" className="w-full">
+                                        {copy.overview_booking_page_url}
+                                        <Badge variant={vendor.is_public ? 'secondary' : 'outline'} className="ml-auto">
+                                            {vendor.is_public
+                                                ? copy.overview_published_status
+                                                : copy.overview_unpublished_status}
+                                        </Badge>
+                                    </FieldLabel>
 
-                                    <TooltipProvider>
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <Button
-                                                    type="button"
-                                                    variant="ghost"
-                                                    size="icon-sm"
-                                                    aria-label={copy.overview_copy_booking_page}
-                                                    onClick={copyBookingPageUrl}
-                                                >
-                                                    <CopyIcon data-icon="inline-start" />
-                                                </Button>
-                                            </TooltipTrigger>
-                                            <TooltipContent side="top">
-                                                {copy.overview_copy_booking_page}
-                                            </TooltipContent>
-                                        </Tooltip>
-                                    </TooltipProvider>
-                                </div>
+                                    <InputGroup>
+                                        <InputGroupInput
+                                            id="vendor-booking-page-url"
+                                            type="url"
+                                            value={vendor.public_url}
+                                            readOnly
+                                        />
+                                        <InputGroupAddon align="inline-end">
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <InputGroupButton
+                                                            size="icon-xs"
+                                                            aria-label={copy.overview_copy_booking_page}
+                                                            onClick={copyBookingPageUrl}
+                                                        >
+                                                            <CopyIcon/>
+                                                        </InputGroupButton>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent side='right'>{copy.overview_copy_booking_page}</TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                        </InputGroupAddon>
+                                    </InputGroup>
+                                </Field>
                             </CardContent>
 
                             <CardFooter className="flex-wrap gap-2">
@@ -280,20 +284,6 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                                     <PencilSimpleIcon data-icon="inline-start" />
                                     {copy.vendor_edit_action}
                                 </Button>
-
-                                {vendor.is_public ? (
-                                    <Button variant="outline" size="sm" asChild>
-                                        <a href={vendor.public_url} target="_blank" rel="noreferrer">
-                                            <ArrowSquareOutIcon data-icon="inline-start" />
-                                            {copy.overview_view_booking_page}
-                                        </a>
-                                    </Button>
-                                ) : (
-                                    <Button variant="outline" size="sm" disabled>
-                                        <ArrowSquareOutIcon data-icon="inline-start" />
-                                        {copy.overview_view_booking_page}
-                                    </Button>
-                                )}
                             </CardFooter>
                         </Card>
                     </div>
@@ -403,18 +393,18 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                                 </Field>
 
                                 <Field data-invalid={vendorForm.errors.short_description ? true : undefined}>
-                                    <FieldLabel htmlFor="vendor-description">
-                                        {copy.vendor_field_description}
+                                    <FieldLabel htmlFor="vendor-about">
+                                        {copy.vendor_field_about}
                                     </FieldLabel>
                                     <Textarea
-                                        id="vendor-description"
+                                        id="vendor-about"
                                         name="short_description"
                                         maxLength={2000}
                                         aria-invalid={Boolean(vendorForm.errors.short_description)}
                                         value={vendorForm.data.short_description}
                                         onChange={(event) => vendorForm.setData('short_description', event.target.value)}
                                     />
-                                    <FieldDescription>{copy.vendor_field_description_help}</FieldDescription>
+                                    <FieldDescription>{copy.vendor_field_about_help}</FieldDescription>
                                     <FieldError>{vendorForm.errors.short_description}</FieldError>
                                 </Field>
 
@@ -442,7 +432,6 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                                 {copy.vendor_edit_cancel}
                             </Button>
                             <Button type="submit" disabled={!vendorForm.isDirty || vendorForm.processing}>
-                                {vendorForm.processing ? <Spinner data-icon="inline-start" /> : null}
                                 {copy.vendor_edit_save}
                             </Button>
                         </SheetFooter>

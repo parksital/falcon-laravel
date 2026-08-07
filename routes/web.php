@@ -186,6 +186,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'vendor' => [
                 ...$vendor->toArray(),
                 'is_public' => (bool) $vendor->is_public,
+                'joined_at' => $vendor->created_at?->translatedFormat(__('overview.joined_date_format')),
                 'public_url' => route('public.booking.show', $vendor->slug),
             ],
             'services' => $services
