@@ -2,6 +2,7 @@
 
 return [
     'catering' => 'Catering',
+    'foodtrucks' => 'Food Truck',
     'photography' => 'Photography',
     'videography' => 'Videography',
     'photobooths' => 'Photo Booth',
