@@ -6,7 +6,7 @@ return [
 
     'not_set' => 'Niet ingesteld',
     'not_available' => 'Niet beschikbaar',
-    'public_status' => 'Openbaar',
+    'public_status' => 'Live',
     'draft_status' => 'Concept',
     'other' => 'Anders',
 

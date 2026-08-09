@@ -6,7 +6,7 @@ return [
 
     'not_set' => 'Not set',
     'not_available' => 'Not available',
-    'public_status' => 'Public',
+    'public_status' => 'Live',
     'draft_status' => 'Draft',
     'other' => 'Other',
 
