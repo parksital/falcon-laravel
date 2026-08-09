@@ -32,7 +32,7 @@ import { logout, overview } from '@/routes';
 import { update as updateLocale } from '@/routes/locale';
 import { type BreadcrumbItem as BreadcrumbItemType, SharedData } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
-import { SignOutIcon } from '@phosphor-icons/react';
+import { DotIcon, SignOutIcon } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { Fragment, useEffect, type PropsWithChildren } from 'react';
 
@@ -71,23 +71,23 @@ export default function DesktopDashboardLayout({ children, breadcrumbs = [] }: D
     return (
         <AppShell>
             <div className="border-b border-sidebar-border/80">
-                <div className="mx-auto flex flex-col px-4 md:max-w-7xl">
-                    <div className="flex h-16 items-center justify-between">
-                        <Breadcrumb>
+                <div className="mx-auto flex flex-col px-4 max-w-7xl">
+                    <div className="flex h-16 items-center gap-6">
+                        <Link href={overview.url()} className="flex items-center gap-2">
+                            <AppLogoIcon className="size-6 fill-current text-black dark:text-white" />
+                            <span className="font-semibold text-foreground text-xs">
+                                {name}
+                            </span>
+                        </Link>
+
+                        <Breadcrumb className='mr-auto'>
                             <BreadcrumbList className="flex-nowrap gap-2 text-sm">
-                                <BreadcrumbItem>
-                                    <BreadcrumbLink asChild>
-                                        <Link href={overview.url()} className="flex items-center gap-2">
-                                            <AppLogoIcon className="size-6 fill-current text-black dark:text-white" />
-                                            <span className="text-base font-semibold text-foreground">
-                                                {name}
-                                            </span>
-                                        </Link>
-                                    </BreadcrumbLink>
-                                </BreadcrumbItem>
                                 {breadcrumbs.map((item, index) => (
                                     <Fragment key={`${item.title}-${index}`}>
-                                        <BreadcrumbSeparator />
+                                        {index > 0 && (
+                                            <BreadcrumbSeparator/>
+                                        )}
+
                                         <BreadcrumbItem>
                                             <BreadcrumbLink asChild>
                                                 <Button variant="ghost" disabled={index === breadcrumbs.length - 1} asChild>
