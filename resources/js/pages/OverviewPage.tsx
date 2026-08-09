@@ -130,6 +130,20 @@ function formatPriceInMinorDescription(priceInMinor: string) {
     return formatPriceInMinorValue(priceInMinor || '0');
 }
 
+function slugifyTyping(text: string) {
+    return text
+        .toString()
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-_]/g, '')
+        .replace(/--+/g, '-');
+}
+
+function slugify(text: string) {
+    return slugifyTyping(text).replace(/^-+|-+$/g, '');
+}
+
 type EditPricingOption = {
     id: number | null;
     price_in_minor: string;
@@ -159,6 +173,7 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
 
     const vendorForm = useForm({
         name: vendor.name,
+        slug: vendor.slug,
         short_description: vendor.short_description ?? '',
         is_public: vendor.is_public,
     });
@@ -179,6 +194,8 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
     const editingService = services.find((service) => service.id === editingServiceId);
     const editFormErrors = editForm.errors as Record<string, string | undefined>;
     const editPricingStructures = pricingStructuresByCategory[editForm.data.category] || [];
+    const previewSlug = slugify(vendorForm.data.slug);
+    const previewBookingPageUrl = `${vendor.public_url.slice(0, -vendor.slug.length)}${previewSlug}`;
 
     async function copyBookingPageUrl() {
         try {
@@ -192,6 +209,7 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
     function openVendorEditor() {
         const vendorDetails = {
             name: vendor.name,
+            slug: vendor.slug,
             short_description: vendor.short_description ?? '',
             is_public: vendor.is_public,
         };
@@ -361,6 +379,11 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                         onSubmit={(event) => {
                             event.preventDefault();
 
+                            vendorForm.transform((data) => ({
+                                ...data,
+                                slug: slugify(data.slug),
+                            }));
+
                             vendorForm.patch(updateVendor.url(), {
                                 preserveScroll: true,
                                 onSuccess: () => {
@@ -390,6 +413,26 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                                         onChange={(event) => vendorForm.setData('name', event.target.value)}
                                     />
                                     <FieldError>{vendorForm.errors.name}</FieldError>
+                                </Field>
+
+                                <Field data-invalid={vendorForm.errors.slug ? true : undefined}>
+                                    <FieldLabel htmlFor="vendor-slug">{copy.vendor_field_slug}</FieldLabel>
+                                    <InputGroup>
+                                        <InputGroupInput
+                                            id="vendor-slug"
+                                            name="slug"
+                                            required
+                                            maxLength={120}
+                                            aria-invalid={Boolean(vendorForm.errors.slug)}
+                                            value={vendorForm.data.slug}
+                                            onChange={(event) => vendorForm.setData('slug', slugifyTyping(event.target.value))}
+                                            onBlur={() => vendorForm.setData('slug', previewSlug)}
+                                        />
+                                    </InputGroup>
+                                    <FieldDescription>
+                                        {copy.vendor_field_slug_help.replace(':url', previewBookingPageUrl)}
+                                    </FieldDescription>
+                                    <FieldError>{vendorForm.errors.slug}</FieldError>
                                 </Field>
 
                                 <Field data-invalid={vendorForm.errors.short_description ? true : undefined}>

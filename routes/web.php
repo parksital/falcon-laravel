@@ -11,7 +11,7 @@ use App\Models\Service;
 use App\Models\Vendor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 Route::get('/index', function () {
@@ -265,6 +265,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         }
 
         return Inertia::render('VendorOnboardingPage', [
+            'bookingPageBaseUrl' => str_replace('booking-page-url', '', route('public.booking.show', 'booking-page-url')),
             'copy' => __('vendor-onboarding'),
         ]);
     })->name('onboarding.vendor.show');
@@ -276,26 +277,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         $validated = $request->validate([
             'business_name' => ['required', 'string', 'max:120'],
+            'slug' => [
+                'required',
+                'string',
+                'max:120',
+                'regex:/^[a-z0-9_]+(?:-[a-z0-9_]+)*$/',
+                Rule::notIn(config('reserved_vendor_slugs')),
+                Rule::unique('vendors', 'slug'),
+            ],
+        ], [
+            'slug.not_in' => __('vendor-onboarding.booking_page_url_unavailable'),
+            'slug.regex' => __('vendor-onboarding.booking_page_url_format'),
+            'slug.unique' => __('vendor-onboarding.booking_page_url_unavailable'),
         ]);
-
-        $baseSlug = Str::slug($validated['business_name']) ?: 'vendor';
-        $slug = $baseSlug;
-        $suffix = 1;
-
-        while (
-            in_array($slug, config('reserved_vendor_slugs'), true)
-            || Vendor::query()
-                ->where('slug', $slug)
-                ->exists()
-        ) {
-            $slug = $baseSlug.'-'.$suffix;
-            $suffix++;
-        }
 
         Vendor::create([
             'user_id' => $request->user()->id,
             'name' => $validated['business_name'],
-            'slug' => $slug,
+            'slug' => $validated['slug'],
             'location' => '',
         ]);
 
@@ -305,11 +304,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::get('/{vendorSlug}/services/{serviceSlug}', [PublicBookingPageController::class, 'showService'])
     ->where([
-        'vendorSlug' => '[a-z0-9]+(?:-[a-z0-9]+)*',
+        'vendorSlug' => '[a-z0-9_]+(?:-[a-z0-9_]+)*',
         'serviceSlug' => '[a-z0-9]+(?:-[a-z0-9]+)*',
     ])
     ->name('public.booking.service.show');
 
 Route::get('/{vendorSlug}', [PublicBookingPageController::class, 'showVendor'])
-    ->where('vendorSlug', '[a-z0-9]+(?:-[a-z0-9]+)*')
+    ->where('vendorSlug', '[a-z0-9_]+(?:-[a-z0-9_]+)*')
     ->name('public.booking.show');

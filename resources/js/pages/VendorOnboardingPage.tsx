@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import {
     Field,
+    FieldDescription,
     FieldError,
     FieldGroup,
     FieldLabel,
@@ -11,16 +12,36 @@ import AuthSplitLayout from '@/layouts/auth/auth-split-layout';
 import { store } from '@/routes/onboarding/vendor';
 import { Head, useForm } from '@inertiajs/react';
 import { CheckIcon } from '@phosphor-icons/react';
+import { useState } from 'react';
 
 interface VendorOnboardingPageProps {
+    bookingPageBaseUrl: string;
     copy: Record<string, string>;
 }
 
-export default function VendorOnboardingPage({ copy }: VendorOnboardingPageProps) {
+function slugifyTyping(text: string) {
+    return text
+        .toString()
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-_]/g, '')
+        .replace(/--+/g, '-');
+}
+
+function slugify(text: string) {
+    return slugifyTyping(text).replace(/^-+|-+$/g, '');
+}
+
+export default function VendorOnboardingPage({ bookingPageBaseUrl, copy }: VendorOnboardingPageProps) {
+    const [hasEditedSlug, setHasEditedSlug] = useState(false);
     const form = useForm({
         business_name: '',
+        slug: '',
     });
     const { data, errors, processing } = form;
+    const previewSlug = slugify(data.slug);
+    const previewBookingPageUrl = `${bookingPageBaseUrl}${previewSlug}`;
 
     return (
         <AuthSplitLayout>
@@ -35,6 +56,10 @@ export default function VendorOnboardingPage({ copy }: VendorOnboardingPageProps
                     <form
                         onSubmit={(event) => {
                             event.preventDefault();
+                            form.transform((formData) => ({
+                                ...formData,
+                                slug: slugify(formData.slug),
+                            }));
                             form.submit(store());
                         }}
                         inert={processing ? true : undefined}
@@ -46,7 +71,15 @@ export default function VendorOnboardingPage({ copy }: VendorOnboardingPageProps
                                 <Input
                                     id="business-name"
                                     value={data.business_name}
-                                    onChange={(event) => form.setData('business_name', event.target.value)}
+                                    onChange={(event) => {
+                                        const businessName = event.target.value;
+
+                                        form.setData({
+                                            ...data,
+                                            business_name: businessName,
+                                            slug: hasEditedSlug ? data.slug : slugifyTyping(businessName),
+                                        });
+                                    }}
                                     placeholder={copy.business_name_placeholder}
                                     maxLength={120}
                                     aria-invalid={Boolean(errors.business_name)}
@@ -54,10 +87,30 @@ export default function VendorOnboardingPage({ copy }: VendorOnboardingPageProps
                                 />
                                 <FieldError>{errors.business_name}</FieldError>
                             </Field>
+
+                            <Field data-invalid={errors.slug ? true : undefined}>
+                                <FieldLabel htmlFor="booking-page-url">{copy.booking_page_url_label}</FieldLabel>
+                                <Input
+                                    id="booking-page-url"
+                                    value={data.slug}
+                                    onChange={(event) => {
+                                        setHasEditedSlug(true);
+                                        form.setData('slug', slugifyTyping(event.target.value));
+                                    }}
+                                    onBlur={() => form.setData('slug', previewSlug)}
+                                    placeholder={copy.booking_page_url_placeholder}
+                                    maxLength={120}
+                                    aria-invalid={Boolean(errors.slug)}
+                                />
+                                <FieldDescription>
+                                    {copy.booking_page_url_help.replace(':url', previewBookingPageUrl)}
+                                </FieldDescription>
+                                <FieldError>{errors.slug}</FieldError>
+                            </Field>
                         </FieldGroup>
 
                         <div className="flex justify-end">
-                            <Button type="submit" disabled={!data.business_name.trim() || processing}>
+                            <Button type="submit" disabled={!data.business_name.trim() || !previewSlug || processing}>
                                 {processing ? <Spinner /> : <CheckIcon data-icon="inline-start" />}
                                 {copy.submit}
                             </Button>

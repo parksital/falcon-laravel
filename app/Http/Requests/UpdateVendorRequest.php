@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateVendorRequest extends FormRequest
 {
@@ -16,8 +17,29 @@ class UpdateVendorRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:120'],
+            'slug' => [
+                'required',
+                'string',
+                'max:120',
+                'regex:/^[a-z0-9_]+(?:-[a-z0-9_]+)*$/',
+                Rule::notIn(config('reserved_vendor_slugs')),
+                Rule::unique('vendors', 'slug')->ignore($this->user()->vendor?->id),
+            ],
             'short_description' => ['nullable', 'string', 'max:2000'],
             'is_public' => ['boolean'],
+        ];
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'slug.not_in' => __('overview.vendor_slug_reserved'),
+            'slug.regex' => __('overview.vendor_slug_format'),
         ];
     }
 }
