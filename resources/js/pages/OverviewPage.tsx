@@ -91,7 +91,6 @@ interface Vendor {
     name: string;
     slug: string;
     short_description: string | null;
-    is_public: boolean;
     joined_at: string | null;
     public_url: string;
 }
@@ -105,7 +104,6 @@ interface OverviewPageProps {
         category_label: string;
         custom_category: string | null;
         description: string | null;
-        pricing_options_label: string,
         is_public: boolean;
     }[];
     serviceCategories: {
@@ -175,7 +173,6 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
         name: vendor.name,
         slug: vendor.slug,
         short_description: vendor.short_description ?? '',
-        is_public: vendor.is_public,
     });
 
     const editForm = useForm({
@@ -196,6 +193,8 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
     const editPricingStructures = pricingStructuresByCategory[editForm.data.category] || [];
     const previewSlug = slugify(vendorForm.data.slug);
     const previewBookingPageUrl = `${vendor.public_url.slice(0, -vendor.slug.length)}${previewSlug}`;
+    // We'll revisit pricing later.
+    const shouldShowPricingSection = false;
 
     async function copyBookingPageUrl() {
         try {
@@ -211,7 +210,6 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
             name: vendor.name,
             slug: vendor.slug,
             short_description: vendor.short_description ?? '',
-            is_public: vendor.is_public,
         };
 
         vendorForm.setDefaults(vendorDetails);
@@ -263,11 +261,6 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                                 <Field>
                                     <FieldLabel htmlFor="vendor-booking-page-url" className="w-full">
                                         {copy.overview_booking_page_url}
-                                        <Badge variant={vendor.is_public ? 'secondary' : 'outline'} className="ml-auto">
-                                            {vendor.is_public
-                                                ? copy.overview_published_status
-                                                : copy.overview_unpublished_status}
-                                        </Badge>
                                     </FieldLabel>
 
                                     <InputGroup>
@@ -321,7 +314,6 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                                 <TableRow>
                                     <TableHead>{copy.services_table_name}</TableHead>
                                     <TableHead>{copy.services_table_category}</TableHead>
-                                    <TableHead>{copy.services_table_price}</TableHead>
                                     <TableHead>{copy.services_table_status}</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -338,11 +330,6 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                                             <TableCell className="font-medium">{service.name}</TableCell>
                                             <TableCell>
                                                 <Badge variant="secondary">{service.category_label}</Badge>
-                                            </TableCell>
-                                            <TableCell>
-                                                <p className="font-medium">
-                                                    {service.pricing_options_label}
-                                                </p>
                                             </TableCell>
                                             <TableCell>
                                                 <Badge variant={service.is_public ? 'default' : 'secondary'}>
@@ -451,22 +438,6 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                                     <FieldError>{vendorForm.errors.short_description}</FieldError>
                                 </Field>
 
-                                <Field orientation="horizontal">
-                                    <Checkbox
-                                        id="vendor-is-public"
-                                        name="is_public"
-                                        checked={vendorForm.data.is_public}
-                                        onCheckedChange={(checked) => vendorForm.setData('is_public', checked === true)}
-                                    />
-                                    <FieldContent>
-                                        <FieldLabel htmlFor="vendor-is-public">{copy.vendor_publish_label}</FieldLabel>
-                                        <FieldDescription>
-                                            {vendorForm.data.is_public
-                                                ? copy.vendor_published_description
-                                                : copy.vendor_unpublished_description}
-                                        </FieldDescription>
-                                    </FieldContent>
-                                </Field>
                             </FieldGroup>
                         </div>
 
@@ -626,85 +597,87 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                                 </Field>
                             </FieldGroup>
 
-                            <Field>
-                                <FieldLabel>{copy.service_pricing_label}</FieldLabel>
+                            {shouldShowPricingSection ? (
+                                <Field>
+                                    <FieldLabel>{copy.service_pricing_label}</FieldLabel>
 
-                                <div className="grid grid-cols-[minmax(0,1fr)_8rem] gap-2">
-                                    <FieldLabel>
-                                        {copy.service_field_price_in_minor}
-                                    </FieldLabel>
+                                    <div className="grid grid-cols-[minmax(0,1fr)_8rem] gap-2">
+                                        <FieldLabel>
+                                            {copy.service_field_price_in_minor}
+                                        </FieldLabel>
 
-                                    <FieldLabel>{copy.service_field_unit}</FieldLabel>
-                                </div>
+                                        <FieldLabel>{copy.service_field_unit}</FieldLabel>
+                                    </div>
 
-                                <div className="flex flex-col gap-2">
-                                    {editForm.data.pricing_options.map((pricingOption, index) => (
-                                        <div
-                                            key={pricingOption.id ?? `new-${index}`}
-                                            className="grid grid-cols-[minmax(0,1fr)_8rem] gap-2"
-                                        >
-                                            <Field data-invalid={editFormErrors[`pricing_options.${index}.price_in_minor`] ? true : undefined}>
-                                                <InputGroup>
-                                                    <InputGroupInput
-                                                        id={`edit-service-price-${index}`}
-                                                        inputMode="numeric"
-                                                        type="text"
-                                                        required
-                                                        aria-invalid={Boolean(editFormErrors[`pricing_options.${index}.price_in_minor`])}
-                                                        placeholder={copy.service_field_price_placeholder}
-                                                        value={pricingOption.price_in_minor}
-                                                        onChange={(event) => {
+                                    <div className="flex flex-col gap-2">
+                                        {editForm.data.pricing_options.map((pricingOption, index) => (
+                                            <div
+                                                key={pricingOption.id ?? `new-${index}`}
+                                                className="grid grid-cols-[minmax(0,1fr)_8rem] gap-2"
+                                            >
+                                                <Field data-invalid={editFormErrors[`pricing_options.${index}.price_in_minor`] ? true : undefined}>
+                                                    <InputGroup>
+                                                        <InputGroupInput
+                                                            id={`edit-service-price-${index}`}
+                                                            inputMode="numeric"
+                                                            type="text"
+                                                            required
+                                                            aria-invalid={Boolean(editFormErrors[`pricing_options.${index}.price_in_minor`])}
+                                                            placeholder={copy.service_field_price_placeholder}
+                                                            value={pricingOption.price_in_minor}
+                                                            onChange={(event) => {
+                                                                const pricingOptions = editForm.data.pricing_options.map((option, optionIndex) =>
+                                                                    optionIndex === index
+                                                                        ? { ...option, price_in_minor: event.target.value.replace(/\D/g, '') }
+                                                                        : option,
+                                                                );
+
+                                                                editForm.setData('pricing_options', pricingOptions);
+                                                            }}
+                                                        />
+
+                                                        <InputGroupAddon align="inline-end">
+                                                            {formatPriceInMinorDescription(pricingOption.price_in_minor)}
+                                                        </InputGroupAddon>
+                                                    </InputGroup>
+                                                    <InputError message={editFormErrors[`pricing_options.${index}.price_in_minor`]} />
+                                                </Field>
+
+                                                <Field data-invalid={editFormErrors[`pricing_options.${index}.unit`] ? true : undefined}>
+                                                    <Select
+                                                        value={pricingOption.unit}
+                                                        onValueChange={(value) => {
                                                             const pricingOptions = editForm.data.pricing_options.map((option, optionIndex) =>
                                                                 optionIndex === index
-                                                                    ? { ...option, price_in_minor: event.target.value.replace(/\D/g, '') }
+                                                                    ? { ...option, unit: value }
                                                                     : option,
                                                             );
 
                                                             editForm.setData('pricing_options', pricingOptions);
                                                         }}
-                                                    />
-
-                                                    <InputGroupAddon align="inline-end">
-                                                        {formatPriceInMinorDescription(pricingOption.price_in_minor)}
-                                                    </InputGroupAddon>
-                                                </InputGroup>
-                                                <InputError message={editFormErrors[`pricing_options.${index}.price_in_minor`]} />
-                                            </Field>
-
-                                            <Field data-invalid={editFormErrors[`pricing_options.${index}.unit`] ? true : undefined}>
-                                                <Select
-                                                    value={pricingOption.unit}
-                                                    onValueChange={(value) => {
-                                                        const pricingOptions = editForm.data.pricing_options.map((option, optionIndex) =>
-                                                            optionIndex === index
-                                                                ? { ...option, unit: value }
-                                                                : option,
-                                                        );
-
-                                                        editForm.setData('pricing_options', pricingOptions);
-                                                    }}
-                                                >
-                                                    <SelectTrigger
-                                                        aria-invalid={Boolean(editFormErrors[`pricing_options.${index}.unit`])}
                                                     >
-                                                        <SelectValue placeholder={copy.service_field_unit_placeholder} />
-                                                    </SelectTrigger>
-                                                    <SelectContent position="popper">
-                                                        <SelectGroup>
-                                                            {editPricingStructures.map((pricingStructure) => (
-                                                                <SelectItem key={pricingStructure.value} value={pricingStructure.value}>
-                                                                    {pricingStructure.label}
-                                                                </SelectItem>
-                                                            ))}
-                                                        </SelectGroup>
-                                                    </SelectContent>
-                                                </Select>
-                                                <InputError message={editFormErrors[`pricing_options.${index}.unit`]} />
-                                            </Field>
-                                        </div>
-                                    ))}
-                                </div>
-                            </Field>
+                                                        <SelectTrigger
+                                                            aria-invalid={Boolean(editFormErrors[`pricing_options.${index}.unit`])}
+                                                        >
+                                                            <SelectValue placeholder={copy.service_field_unit_placeholder} />
+                                                        </SelectTrigger>
+                                                        <SelectContent position="popper">
+                                                            <SelectGroup>
+                                                                {editPricingStructures.map((pricingStructure) => (
+                                                                    <SelectItem key={pricingStructure.value} value={pricingStructure.value}>
+                                                                        {pricingStructure.label}
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectGroup>
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <InputError message={editFormErrors[`pricing_options.${index}.unit`]} />
+                                                </Field>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </Field>
+                            ) : null}
 
                             <Field orientation="horizontal">
                                 <Checkbox

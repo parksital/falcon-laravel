@@ -39,7 +39,6 @@ Route::get('/index', function () {
     $publicServices = Service::query()
         ->with(['customCategory', 'vendor'])
         ->where('is_public', true)
-        ->whereHas('vendor', fn ($query) => $query->where('is_public', true))
         ->orderBy('name')
         ->get();
     $copy = __('index');
@@ -185,7 +184,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('OverviewPage', [
             'vendor' => [
                 ...$vendor->toArray(),
-                'is_public' => (bool) $vendor->is_public,
                 'joined_at' => $vendor->created_at?->translatedFormat(__('overview.joined_date_format')),
                 'public_url' => route('public.booking.show', $vendor->slug),
             ],
@@ -193,11 +191,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->map(fn ($service) => [
                     ...$service->toArray(),
                     'category_label' => $serviceCategoryLabels[$service->category] ?? $service->category,
-                    'pricing_options_label' => trans_choice(
-                        'overview.services_table_pricing_value',
-                        $service->pricing_options_count,
-                        ['value' => $service->pricing_options_count]
-                    ),
                     'description' => $service->description,
                     'is_public' => (bool) $service->is_public,
                 ]),

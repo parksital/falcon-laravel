@@ -11,8 +11,6 @@ return [
     'other' => 'Other',
 
     'overview_heading' => 'Overview',
-    'overview_published_status' => 'Published',
-    'overview_unpublished_status' => 'Not published',
     'overview_joined' => 'Joined :formatted_date',
     'overview_booking_page_url' => 'Booking page URL',
     'overview_copy_booking_page' => 'Copy link',
@@ -29,9 +27,6 @@ return [
     'vendor_slug_reserved' => 'This booking page address is not available.',
     'vendor_field_about' => 'About',
     'vendor_field_about_help' => 'Tell customers what you offer and what they can expect.',
-    'vendor_publish_label' => 'Publish booking page',
-    'vendor_published_description' => 'Customers can view your booking page.',
-    'vendor_unpublished_description' => 'Your booking page and services will be hidden.',
     'vendor_edit_cancel' => 'Cancel',
     'vendor_edit_save' => 'Save changes',
     'vendor_edit_saved' => 'Vendor details updated.',
@@ -45,14 +40,8 @@ return [
     'services_empty' => 'No services have been added yet.',
     'services_table_name' => 'Name',
     'services_table_category' => 'Category',
-    'services_table_price' => 'Pricing',
     'services_table_status' => 'Status',
-    'services_no_pricing_options' => 'No pricing options',
 
-    'services_table_pricing_value' => '{0} :value No pricing yet|{1} :value Price|[2,*] :value Prices',
-
-    'service_step' => 'Step :step of :total',
-    'service_add_title' => 'Add service',
     'service_edit_title' => 'Edit service',
     'service_edit_description' => 'Manage what customers see, how this service is priced, and whether it is public.',
     'service_edit_visibility_label' => 'Publish service',
@@ -74,25 +63,8 @@ return [
     'service_field_unit_placeholder' => 'Select',
 
     'service_pricing_label' => 'Pricing',
-    'service_unit_description' => 'Choose what this price applies to, like event, hour, or person.',
 
-    'service_preview_by' => 'By',
-    'service_preview_price' => 'Price',
-    'service_preview_per' => 'Per',
-
-    'service_make_public_label' => 'Make public',
-    'service_make_public_description' => 'Show this service on your public vendor page once it has been saved.',
-
-    'service_action_cancel' => 'Cancel',
-    'service_action_back' => 'Back',
-    'service_action_continue' => 'Continue',
-    'service_action_save_service' => 'Save service',
     'service_action_save_changes' => 'Save changes',
-
-    'cancel_service_title' => 'Cancel service?',
-    'cancel_service_description' => 'Any details you entered for this service will be lost.',
-    'cancel_service_keep_editing' => 'Keep editing',
-    'cancel_service_confirm' => 'Cancel service',
 
     'danger_zone_heading' => 'Danger zone',
     'danger_zone_delete_service' => 'Delete service',
@@ -105,5 +77,6 @@ return [
     'delete_service_service_name' => 'Service name',
     'delete_service_keep_service' => 'Keep service',
     'delete_service_confirm' => 'Delete service',
+    'delete_service_deleted' => 'Service deleted.',
     'delete_service_confirmation_mismatch' => 'The service name does not match.',
 ];

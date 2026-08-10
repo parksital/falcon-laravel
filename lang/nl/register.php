@@ -12,7 +12,7 @@ return [
     'password_placeholder' => 'Wachtwoord',
     'password_confirmation_label' => 'Bevestig wachtwoord',
     'password_confirmation_placeholder' => 'Bevestig wachtwoord',
-    'submit' => 'Account aanmaken',
+    'submit' => 'Maak account aan',
     'login_prompt' => 'Heb je al een account?',
-    'login_link' => 'Inloggen',
+    'login_link' => 'Log in',
 ];

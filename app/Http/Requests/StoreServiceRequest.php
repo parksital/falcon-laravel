@@ -23,11 +23,11 @@ class StoreServiceRequest extends FormRequest
             'custom_category' => ['nullable', 'required_if:category,other', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:2000'],
             'pricing_structure' => [
-                'required',
+                'nullable',
                 'string',
                 Rule::in($this->pricingStructuresForCategory($this->string('category')->toString())),
             ],
-            'pricing_options' => ['required', 'array', 'min:1', 'max:'.($pricingStructure === 'package' ? 3 : 1)],
+            'pricing_options' => ['sometimes', 'array', 'max:'.($pricingStructure === 'package' ? 3 : 1)],
             'pricing_options.*.name' => ['nullable', 'required_if:pricing_structure,package', 'string', 'max:120'],
             'pricing_options.*.description' => ['nullable', 'string', 'max:2000'],
             'pricing_options.*.price_in_minor' => ['required', 'integer', 'min:0', 'max:4294967295'],

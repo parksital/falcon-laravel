@@ -8,5 +8,5 @@ return [
     'email_placeholder' => 'naam@voorbeeld.nl',
     'submit' => 'Stuur wachtwoordherstellink',
     'login_prompt' => 'Of ga terug naar',
-    'login_link' => 'inloggen',
+    'login_link' => 'log in',
 ];

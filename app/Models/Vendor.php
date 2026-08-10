@@ -17,7 +17,6 @@ class Vendor extends Model
         'slug',
         'location',
         'short_description',
-        'is_public',
     ];
 
     public function user(): BelongsTo

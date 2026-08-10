@@ -20,7 +20,7 @@ class UpdateServiceRequest extends FormRequest
             'category' => ['required', 'string', Rule::in(config('service_categories'))],
             'custom_category' => ['nullable', 'required_if:category,other', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:2000'],
-            'pricing_options' => ['required', 'array', 'min:1', 'max:1'],
+            'pricing_options' => ['sometimes', 'array', 'min:1', 'max:1'],
             'pricing_options.*.id' => ['nullable', 'integer', 'distinct'],
             'pricing_options.*.name' => ['nullable', 'string', 'max:120'],
             'pricing_options.*.description' => ['nullable', 'string', 'max:2000'],

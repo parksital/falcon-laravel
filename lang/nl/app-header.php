@@ -7,5 +7,5 @@ return [
     'language' => 'Taal',
     'language_english' => 'English',
     'language_dutch' => 'Nederlands',
-    'logout' => 'Uitloggen',
+    'logout' => 'Log uit',
 ];

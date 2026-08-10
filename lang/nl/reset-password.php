@@ -9,5 +9,5 @@ return [
     'password_placeholder' => 'Wachtwoord',
     'password_confirmation_label' => 'Bevestig wachtwoord',
     'password_confirmation_placeholder' => 'Bevestig wachtwoord',
-    'submit' => 'Wachtwoord resetten',
+    'submit' => 'Reset wachtwoord',
 ];

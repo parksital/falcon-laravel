@@ -85,9 +85,21 @@ class ServiceController extends Controller
             'service' => [
                 'id' => $service->id,
                 'name' => $service->name,
+                'category' => $service->category,
+                'custom_category' => $service->customCategory?->name,
                 'description' => $service->description,
                 'category_label' => $categoryLabel ?: $service->category,
+                'is_public' => (bool) $service->is_public,
             ],
+            'serviceCategories' => collect(config('service_categories'))
+                ->map(fn (string $value) => [
+                    'value' => $value,
+                    'label' => __("config-service-categories.{$value}") === "config-service-categories.{$value}"
+                        ? $value
+                        : __("config-service-categories.{$value}"),
+                ])
+                ->values()
+                ->all(),
             'copy' => __('service-details'),
         ]);
     }
@@ -103,7 +115,7 @@ class ServiceController extends Controller
         $validated = $request->validated();
         $slug = $this->makeSlug($vendor, $validated['name']);
 
-        DB::transaction(function () use ($vendor, $validated, $slug) {
+        $service = DB::transaction(function () use ($vendor, $validated, $slug) {
             $service = $vendor->services()->create([
                 'name' => $validated['name'],
                 'slug' => $slug,
@@ -118,7 +130,7 @@ class ServiceController extends Controller
                 ]);
             }
 
-            foreach ($validated['pricing_options'] as $sortOrder => $pricingOptionData) {
+            foreach ($validated['pricing_options'] ?? [] as $sortOrder => $pricingOptionData) {
                 $service->pricingOptions()->create([
                     'name' => $pricingOptionData['name'] ?? $validated['name'],
                     'description' => $pricingOptionData['description'] ?? null,
@@ -128,9 +140,11 @@ class ServiceController extends Controller
                     'is_public' => $validated['is_public'] ?? false,
                 ]);
             }
+
+            return $service;
         });
 
-        return to_route('overview')->with('success', __('create-service.saved'));
+        return to_route('services.show', $service)->with('success', __('create-service.saved'));
     }
 
     public function update(UpdateServiceRequest $request, Service $service)
@@ -163,44 +177,46 @@ class ServiceController extends Controller
                 $service->customCategory()->delete();
             }
 
-            $pricingOptions = $service->pricingOptions()->get()->keyBy('id');
-            $submittedPricingOptionIds = collect($validated['pricing_options'])
-                ->pluck('id')
-                ->filter()
-                ->values();
+            if (array_key_exists('pricing_options', $validated)) {
+                $pricingOptions = $service->pricingOptions()->get()->keyBy('id');
+                $submittedPricingOptionIds = collect($validated['pricing_options'])
+                    ->pluck('id')
+                    ->filter()
+                    ->values();
 
-            foreach ($submittedPricingOptionIds as $pricingOptionId) {
-                abort_unless($pricingOptions->has($pricingOptionId), 404);
-            }
+                foreach ($submittedPricingOptionIds as $pricingOptionId) {
+                    abort_unless($pricingOptions->has($pricingOptionId), 404);
+                }
 
-            if ($submittedPricingOptionIds->isEmpty()) {
-                $service->pricingOptions()->delete();
-            } else {
-                $service->pricingOptions()
-                    ->whereNotIn('id', $submittedPricingOptionIds)
-                    ->delete();
-            }
-
-            foreach ($validated['pricing_options'] as $sortOrder => $pricingOptionData) {
-                $pricingOption = ($pricingOptionData['id'] ?? null)
-                    ? $pricingOptions->get($pricingOptionData['id'])
-                    : null;
-
-                $pricingOptionAttributes = [
-                    'name' => $pricingOptionData['name'] ?? $pricingOption?->name ?? $validated['name'],
-                    'description' => array_key_exists('description', $pricingOptionData)
-                        ? $pricingOptionData['description']
-                        : $pricingOption?->description,
-                    'price_in_minor' => $pricingOptionData['price_in_minor'],
-                    'unit' => $pricingOptionData['unit'],
-                    'sort_order' => $sortOrder,
-                    'is_public' => $validated['is_public'] ?? false,
-                ];
-
-                if ($pricingOption) {
-                    $pricingOption->update($pricingOptionAttributes);
+                if ($submittedPricingOptionIds->isEmpty()) {
+                    $service->pricingOptions()->delete();
                 } else {
-                    $service->pricingOptions()->create($pricingOptionAttributes);
+                    $service->pricingOptions()
+                        ->whereNotIn('id', $submittedPricingOptionIds)
+                        ->delete();
+                }
+
+                foreach ($validated['pricing_options'] as $sortOrder => $pricingOptionData) {
+                    $pricingOption = ($pricingOptionData['id'] ?? null)
+                        ? $pricingOptions->get($pricingOptionData['id'])
+                        : null;
+
+                    $pricingOptionAttributes = [
+                        'name' => $pricingOptionData['name'] ?? $pricingOption?->name ?? $validated['name'],
+                        'description' => array_key_exists('description', $pricingOptionData)
+                            ? $pricingOptionData['description']
+                            : $pricingOption?->description,
+                        'price_in_minor' => $pricingOptionData['price_in_minor'],
+                        'unit' => $pricingOptionData['unit'],
+                        'sort_order' => $sortOrder,
+                        'is_public' => $validated['is_public'] ?? false,
+                    ];
+
+                    if ($pricingOption) {
+                        $pricingOption->update($pricingOptionAttributes);
+                    } else {
+                        $service->pricingOptions()->create($pricingOptionAttributes);
+                    }
                 }
             }
         });
@@ -226,7 +242,7 @@ class ServiceController extends Controller
 
         $service->delete();
 
-        return to_route('overview');
+        return to_route('overview')->with('success', __('overview.delete_service_deleted'));
     }
 
     private function makeSlug(Vendor $vendor, string $name, ?Service $service = null): string

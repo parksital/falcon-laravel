@@ -174,16 +174,16 @@ export default function CreateServicePage({
                                     <FieldLabel htmlFor="service-description">{copy.service_description_label}</FieldLabel>
                                     <Textarea
                                         id="service-description"
+                                        className="field-sizing-fixed"
                                         value={data.description}
-                                        onChange={(event) => setData('description', event.target.value)}
+                                        rows={10}
                                         maxLength={2000}
+                                        onChange={(event) => setData('description', event.target.value)}
+                                        aria-invalid={Boolean(errors.description)}
                                         placeholder={copy.service_description_placeholder.replace(
                                             ':service',
-                                            data.name && data.name !== generatedServiceName
-                                                ? data.name
-                                                : suggestedServiceName || copy.service_description_fallback,
+                                            data.name
                                         )}
-                                        aria-invalid={Boolean(errors.description)}
                                     />
                                     <FieldError>{errors.description}</FieldError>
                                 </Field>

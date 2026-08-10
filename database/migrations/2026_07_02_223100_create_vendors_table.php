@@ -21,7 +21,6 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->string('location')->index();
             $table->text('short_description')->nullable();
-            $table->boolean('is_public')->default(false)->index();
             $table->timestamps();
         });
     }

@@ -26,7 +26,6 @@ class UpdateVendorRequest extends FormRequest
                 Rule::unique('vendors', 'slug')->ignore($this->user()->vendor?->id),
             ],
             'short_description' => ['nullable', 'string', 'max:2000'],
-            'is_public' => ['boolean'],
         ];
     }
 

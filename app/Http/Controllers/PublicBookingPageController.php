@@ -14,7 +14,6 @@ class PublicBookingPageController extends Controller
     {
         $vendor = Vendor::query()
             ->where('slug', $vendorSlug)
-            ->where('is_public', true)
             ->with(['services' => function ($query) {
                 $query
                     ->where('is_public', true)
@@ -30,7 +29,6 @@ class PublicBookingPageController extends Controller
     {
         $vendor = Vendor::query()
             ->where('slug', $vendorSlug)
-            ->where('is_public', true)
             ->with(['services' => function ($query) {
                 $query
                     ->where('is_public', true)

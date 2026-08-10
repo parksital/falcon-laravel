@@ -21,7 +21,6 @@ class VendorController extends Controller
             'name' => $validated['name'],
             'slug' => $validated['slug'],
             'short_description' => $validated['short_description'] ?? null,
-            'is_public' => $validated['is_public'] ?? false,
         ]);
 
         return to_route('overview')->with('success', __('overview.vendor_edit_saved'));

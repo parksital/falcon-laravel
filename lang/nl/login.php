@@ -9,7 +9,7 @@ return [
     'password_label' => 'Wachtwoord',
     'password_placeholder' => 'Wachtwoord',
     'forgot_password' => 'Wachtwoord vergeten?',
-    'submit' => 'Inloggen',
+    'submit' => 'Log in',
     'register_prompt' => 'Nog geen account?',
-    'register_link' => 'Aanmelden',
+    'register_link' => 'Meld je aan',
 ];
