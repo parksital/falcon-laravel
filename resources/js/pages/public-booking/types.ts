@@ -25,7 +25,18 @@ export type PublicBookingPageProps = {
     copy: Record<string, string>;
     vendor: Vendor;
     services: Service[];
-    featuredServiceSlug: string | null;
+    locale: string;
+    seo: {
+        title: string;
+        description: string;
+        canonical: string;
+    };
+};
+
+export type PublicBookingServicePageProps = {
+    copy: Record<string, string>;
+    vendor: Vendor;
+    service: Service;
     locale: string;
     seo: {
         title: string;

@@ -8,6 +8,8 @@ return [
     'joined_date_format' => 'j F Y',
     'per_unit' => 'per :unit',
     'view_service' => 'Bekijk service',
+    'service_by_vendor' => 'Van :vendor',
+    'back_to_services' => 'Alle services',
     'seo_service_title' => ':service van :vendor',
     'seo_vendor_title' => 'Services van :vendor in :location',
     'seo_service_description' => ':service van :vendor in :location.',

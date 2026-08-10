@@ -1,3 +1,4 @@
+import { Toaster } from '@/components/ui/sonner';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import DesktopPublicLayout from '@/layouts/public/desktop-public-layout';
 import MobilePublicLayout from '@/layouts/public/mobile-public-layout';
@@ -11,8 +12,14 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
     const isMobile = useMediaQuery('(max-width: 640px)');
 
     return isMobile ? (
-        <MobilePublicLayout>{children}</MobilePublicLayout>
+        <MobilePublicLayout>
+            {children}
+            <Toaster />
+        </MobilePublicLayout>
     ) : (
-        <DesktopPublicLayout>{children}</DesktopPublicLayout>
+        <DesktopPublicLayout>
+            {children}
+            <Toaster />
+        </DesktopPublicLayout>
     );
 }

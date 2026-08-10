@@ -4,6 +4,7 @@ import {
     Card,
     CardContent,
     CardDescription,
+    CardFooter,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
@@ -45,7 +46,7 @@ function formatPriceInMinor(priceInMinor: number | null, locale: string) {
     }).format(priceInMinor / 100);
 }
 
-export default function DesktopPublicBookingPage({ copy, vendor, services, featuredServiceSlug, locale }: PublicBookingPageProps) {
+export default function DesktopPublicBookingPage({ copy, vendor, services, locale }: PublicBookingPageProps) {
     const { layoutCopy } = usePage<SharedData>().props;
 
     return (
@@ -103,21 +104,14 @@ export default function DesktopPublicBookingPage({ copy, vendor, services, featu
                     {copy.services_heading}
                 </h2>
                 {services.length > 0 ? (
-                    <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="grid gap-3 grid-cols-3">
                         {services.map((service) => (
-                            <Card
-                                key={service.id}
-                                id={`service-${service.slug}`}
-                                className={service.slug === featuredServiceSlug ? 'border-foreground' : undefined}
-                            >
+                            <Card key={service.id} id={`service-${service.slug}`}>
                                 <CardHeader>
                                     <Badge variant="secondary">{service.category_label}</Badge>
                                     <CardTitle>{service.name}</CardTitle>
-                                    {service.description ? (
-                                        <CardDescription>{service.description}</CardDescription>
-                                    ) : null}
                                 </CardHeader>
-                                <CardContent className="flex flex-col gap-3">
+                                <CardContent className="flex flex-1 flex-col gap-3">
                                     {formatPriceInMinor(service.price_in_minor, locale) ? (
                                         <p className="font-medium">
                                             {formatPriceInMinor(service.price_in_minor, locale)}
@@ -126,10 +120,14 @@ export default function DesktopPublicBookingPage({ copy, vendor, services, featu
                                             })}` : null}
                                         </p>
                                     ) : null}
+
+                                </CardContent>
+
+                                <CardFooter>
                                     <Button variant="outline" onClick={() => router.visit(service.url)}>
                                         {copy.view_service}
                                     </Button>
-                                </CardContent>
+                                </CardFooter>
                             </Card>
                         ))}
                     </div>

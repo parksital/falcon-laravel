@@ -39,7 +39,7 @@ function formatPriceInMinor(priceInMinor: number | null, locale: string) {
     }).format(priceInMinor / 100);
 }
 
-export default function MobilePublicBookingPage({ copy, vendor, services, featuredServiceSlug, locale }: PublicBookingPageProps) {
+export default function MobilePublicBookingPage({ copy, vendor, services, locale }: PublicBookingPageProps) {
     const { layoutCopy } = usePage<SharedData>().props;
 
     return (
@@ -86,17 +86,10 @@ export default function MobilePublicBookingPage({ copy, vendor, services, featur
                 {services.length > 0 ? (
                     <div className="grid gap-3">
                         {services.map((service) => (
-                            <Card
-                                key={service.id}
-                                id={`service-${service.slug}`}
-                                className={service.slug === featuredServiceSlug ? 'border-foreground' : undefined}
-                            >
+                            <Card key={service.id} id={`service-${service.slug}`}>
                                 <CardHeader>
                                     <Badge variant="secondary">{service.category_label}</Badge>
                                     <CardTitle>{service.name}</CardTitle>
-                                    {service.description ? (
-                                        <CardDescription>{service.description}</CardDescription>
-                                    ) : null}
                                 </CardHeader>
                                 <CardContent className="flex flex-col gap-3">
                                     {formatPriceInMinor(service.price_in_minor, locale) ? (

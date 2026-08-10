@@ -23,7 +23,7 @@ class PublicBookingPageController extends Controller
             }])
             ->firstOrFail();
 
-        return $this->render($vendor);
+        return $this->renderVendor($vendor);
     }
 
     public function showService(string $vendorSlug, string $serviceSlug): Response
@@ -43,42 +43,17 @@ class PublicBookingPageController extends Controller
 
         abort_unless($service, 404);
 
-        return $this->render($vendor, $service);
+        return $this->renderService($vendor, $service);
     }
 
-    private function render(Vendor $vendor, ?Service $service = null): Response
+    private function renderVendor(Vendor $vendor): Response
     {
-        $seo = $this->seo($vendor, $service);
+        $seo = $this->seo($vendor);
 
         return Inertia::render('PublicBookingPage', [
             'copy' => __('public-booking'),
-            'vendor' => [
-                'id' => $vendor->id,
-                'name' => $vendor->name,
-                'slug' => $vendor->slug,
-                'location' => $vendor->location,
-                'short_description' => $vendor->short_description,
-                'joined_at' => $vendor->created_at?->locale(app()->getLocale())->translatedFormat(__('public-booking.joined_date_format')),
-                'url' => route('public.booking.show', $vendor->slug),
-            ],
-            'services' => $vendor->services
-                ->map(fn (Service $service) => [
-                    'id' => $service->id,
-                    'name' => $service->name,
-                    'slug' => $service->slug,
-                    'category' => $service->category,
-                    'category_label' => $service->category === 'other'
-                        ? ($service->customCategory?->name ?? $this->serviceCategoryLabels()['other'] ?? $service->category)
-                        : $this->serviceCategoryLabels()[$service->category] ?? $service->category,
-                    'description' => $service->description,
-                    'price_in_minor' => $service->price_in_minor,
-                    'unit' => $service->unit,
-                    'unit_label' => $service->unit ? ($this->pricingStructureLabels()[$service->unit] ?? $service->unit) : null,
-                    'url' => route('public.booking.service.show', [$vendor->slug, $service->slug]),
-                ])
-                ->values()
-                ->all(),
-            'featuredServiceSlug' => $service?->slug,
+            'vendor' => $this->vendorPayload($vendor),
+            'services' => $vendor->services->map(fn (Service $service) => $this->servicePayload($vendor, $service))->values()->all(),
             'locale' => app()->getLocale(),
             'seo' => [
                 'title' => $seo['title'],
@@ -86,6 +61,54 @@ class PublicBookingPageController extends Controller
                 'canonical' => $seo['canonical'],
             ],
         ])->withViewData(['seo' => $seo]);
+    }
+
+    private function renderService(Vendor $vendor, Service $service): Response
+    {
+        $seo = $this->seo($vendor, $service);
+
+        return Inertia::render('PublicBookingServicePage', [
+            'copy' => __('public-booking'),
+            'vendor' => $this->vendorPayload($vendor),
+            'service' => $this->servicePayload($vendor, $service),
+            'locale' => app()->getLocale(),
+            'seo' => [
+                'title' => $seo['title'],
+                'description' => $seo['description'],
+                'canonical' => $seo['canonical'],
+            ],
+        ])->withViewData(['seo' => $seo]);
+    }
+
+    private function vendorPayload(Vendor $vendor): array
+    {
+        return [
+            'id' => $vendor->id,
+            'name' => $vendor->name,
+            'slug' => $vendor->slug,
+            'location' => $vendor->location,
+            'short_description' => $vendor->short_description,
+            'joined_at' => $vendor->created_at?->locale(app()->getLocale())->translatedFormat(__('public-booking.joined_date_format')),
+            'url' => route('public.booking.show', $vendor->slug),
+        ];
+    }
+
+    private function servicePayload(Vendor $vendor, Service $service): array
+    {
+        return [
+            'id' => $service->id,
+            'name' => $service->name,
+            'slug' => $service->slug,
+            'category' => $service->category,
+            'category_label' => $service->category === 'other'
+                ? ($service->customCategory?->name ?? $this->serviceCategoryLabels()['other'] ?? $service->category)
+                : $this->serviceCategoryLabels()[$service->category] ?? $service->category,
+            'description' => $service->description,
+            'price_in_minor' => $service->price_in_minor,
+            'unit' => $service->unit,
+            'unit_label' => $service->unit ? ($this->pricingStructureLabels()[$service->unit] ?? $service->unit) : null,
+            'url' => route('public.booking.service.show', [$vendor->slug, $service->slug]),
+        ];
     }
 
     private function seo(Vendor $vendor, ?Service $service = null): array
