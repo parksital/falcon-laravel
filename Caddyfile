@@ -8,6 +8,10 @@
 
 {$CADDY_EXTRA_CONFIG}
 
+www.huurmaar.nl {
+    redir https://huurmaar.nl{uri} permanent
+}
+
 {$SERVER_NAME} {
     root * /app/public
     encode zstd br gzip
