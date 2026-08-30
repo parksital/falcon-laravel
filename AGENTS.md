@@ -11,6 +11,8 @@ Before changing code in this repository, read and follow these project rules.
   change. Prefer static checks or a build when appropriate. Only perform
   runtime browser verification when the user explicitly asks for it or when
   the behavior cannot be verified confidently without running the app.
+- Use Bun for JavaScript tooling in this repository. Prefer `bun` instead of
+  `npm`, and `bunx` instead of `npx`.
 
 ## Code Style
 

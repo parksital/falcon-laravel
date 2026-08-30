@@ -40,7 +40,10 @@ return [
     'services_empty' => 'No services have been added yet.',
     'services_table_name' => 'Name',
     'services_table_category' => 'Category',
+    'services_table_prices' => 'Prices',
     'services_table_status' => 'Status',
+    'services_price_singular' => ':count price',
+    'services_price_plural' => ':count prices',
 
     'service_edit_title' => 'Edit service',
     'service_edit_description' => 'Manage what customers see, how this service is priced, and whether it is public.',

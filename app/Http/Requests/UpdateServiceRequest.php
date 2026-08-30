@@ -17,7 +17,7 @@ class UpdateServiceRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:120'],
-            'category' => ['required', 'string', Rule::in(config('service_categories'))],
+            'category' => ['required', 'string', Rule::in(array_keys(config('service_categories')))],
             'custom_category' => ['nullable', 'required_if:category,other', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:2000'],
             'pricing_options' => ['sometimes', 'array', 'min:1', 'max:1'],
@@ -36,6 +36,6 @@ class UpdateServiceRequest extends FormRequest
 
     private function pricingStructuresForCategory(string $category): array
     {
-        return config("service_pricing_structures.{$category}", config('service_pricing_structures.default'));
+        return config("service_categories.{$category}.pricing_structures", []);
     }
 }

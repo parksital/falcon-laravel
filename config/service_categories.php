@@ -1,7 +1,29 @@
 <?php
 
 return [
-    'photobooths',
-    'foodtrucks',
-    'other',
+    'photobooths' => [
+        'pricing_structures' => [
+            'package',
+        ],
+    ],
+
+    'foodtrucks' => [
+        'pricing_structures' => [
+            'package',
+            'hour',
+            'person',
+            'day',
+            'event',
+        ],
+    ],
+
+    'other' => [
+        'pricing_structures' => [
+            'package',
+            'hour',
+            'person',
+            'day',
+            'event',
+        ],
+    ],
 ];

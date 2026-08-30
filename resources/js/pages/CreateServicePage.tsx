@@ -1,5 +1,11 @@
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import {
     Field,
     FieldError,
@@ -7,6 +13,12 @@ import {
     FieldLabel,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import {
+    InputGroup,
+    InputGroupAddon,
+    InputGroupInput,
+} from '@/components/ui/input-group';
+import { Separator } from '@/components/ui/separator';
 import {
     Select,
     SelectContent,
@@ -21,13 +33,22 @@ import EmptyLayout from '@/layouts/empty-layout';
 import { overview } from '@/routes';
 import { store } from '@/routes/services';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeftIcon, CheckIcon } from '@phosphor-icons/react';
+import { ArrowLeftIcon, CheckIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
+
+interface PackagePricingOption {
+    name: string;
+    description: string;
+    price_in_minor: string;
+    unit: 'package';
+}
 
 interface CreateServiceForm {
     name: string;
     category: string;
     custom_category: string;
     description: string;
+    pricing_structure: '' | 'package';
+    pricing_options: PackagePricingOption[];
 }
 
 interface SelectOption {
@@ -40,12 +61,34 @@ interface CreateServicePageProps {
         name: string;
     };
     serviceCategories: SelectOption[];
+    locale: string;
     copy: Record<string, string>;
+}
+
+function emptyPackage(): PackagePricingOption {
+    return {
+        name: '',
+        description: '',
+        price_in_minor: '',
+        unit: 'package',
+    };
+}
+
+function formatPriceInMinor(priceInMinor: number, locale: string) {
+    return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: 'EUR',
+    }).format(priceInMinor / 100);
+}
+
+function formatPriceInMinorDescription(priceInMinor: string, locale: string) {
+    return formatPriceInMinor(Number(priceInMinor || 0), locale);
 }
 
 export default function CreateServicePage({
     vendor,
     serviceCategories,
+    locale,
     copy,
 }: CreateServicePageProps) {
     function defaultServiceName(category: string, customCategory: string) {
@@ -58,19 +101,22 @@ export default function CreateServicePage({
             .replace(':vendor', vendor.name);
     }
 
-    const { data, setData, errors, processing, submit } = useForm<CreateServiceForm>({
+    const { data, setData, errors, processing, submit, transform } = useForm<CreateServiceForm>({
         name: defaultServiceName('', ''),
         category: '',
         custom_category: '',
         description: '',
+        pricing_structure: '',
+        pricing_options: [],
     });
 
-    const selectedCategory = serviceCategories.find((category) => category.value === data.category);
-    const suggestedServiceName = data.category === 'other' ? data.custom_category : selectedCategory?.label || '';
     const generatedServiceName = defaultServiceName(data.category, data.custom_category);
+    const formErrors = errors as Record<string, string | undefined>;
+    const shouldShowPackagePricing = data.category === 'photobooths';
 
     function changeCategory(category: string) {
         const customCategory = category === 'other' ? data.custom_category : '';
+        const shouldUsePackagePricing = category === 'photobooths';
 
         setData({
             ...data,
@@ -79,6 +125,10 @@ export default function CreateServicePage({
                 : data.name,
             category,
             custom_category: customCategory,
+            pricing_structure: shouldUsePackagePricing ? 'package' : '',
+            pricing_options: shouldUsePackagePricing
+                ? (data.pricing_options.length ? data.pricing_options : [emptyPackage()])
+                : [],
         });
     }
 
@@ -90,6 +140,20 @@ export default function CreateServicePage({
                 : data.name,
             custom_category: customCategory,
         });
+    }
+
+    function changePackage(index: number, packagePricingOption: PackagePricingOption) {
+        setData('pricing_options', data.pricing_options.map((option, optionIndex) =>
+            optionIndex === index ? packagePricingOption : option,
+        ));
+    }
+
+    function addPackage() {
+        setData('pricing_options', [...data.pricing_options, emptyPackage()]);
+    }
+
+    function removePackage(index: number) {
+        setData('pricing_options', data.pricing_options.filter((_, optionIndex) => optionIndex !== index));
     }
 
     return (
@@ -113,6 +177,15 @@ export default function CreateServicePage({
                     inert={processing ? true : undefined}
                     onSubmit={(event) => {
                         event.preventDefault();
+                        transform((formData) => ({
+                            ...formData,
+                            pricing_options: formData.pricing_options.map((pricingOption) => ({
+                                name: pricingOption.name,
+                                description: pricingOption.description,
+                                price_in_minor: pricingOption.price_in_minor,
+                                unit: pricingOption.unit,
+                            })),
+                        }));
                         submit(store());
                     }}
                 >
@@ -190,6 +263,106 @@ export default function CreateServicePage({
                             </FieldGroup>
                         </CardContent>
                     </Card>
+
+                    {shouldShowPackagePricing ? (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>{copy.pricing_section_label}</CardTitle>
+                                <CardDescription>{copy.package_section_description}</CardDescription>
+                            </CardHeader>
+
+                            <CardContent>
+                                <FieldGroup>
+                                    {data.pricing_options.map((pricingOption, index) => (
+                                        <div key={index} className="flex flex-col gap-4">
+                                            {index > 0 ? <Separator /> : null}
+
+                                            <div className="flex items-center justify-between gap-4">
+                                                <h2 className="text-sm font-medium">
+                                                    {copy.package_legend.replace(':number', `${index + 1}`)}
+                                                </h2>
+
+                                                {data.pricing_options.length > 1 ? (
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => removePackage(index)}
+                                                    >
+                                                        <TrashIcon data-icon="inline-start" />
+                                                        {copy.remove_package}
+                                                    </Button>
+                                                ) : null}
+                                            </div>
+
+                                            <Field data-invalid={formErrors[`pricing_options.${index}.name`] ? true : undefined}>
+                                                <FieldLabel htmlFor={`package-name-${index}`}>{copy.package_name_label}</FieldLabel>
+                                                <Input
+                                                    id={`package-name-${index}`}
+                                                    value={pricingOption.name}
+                                                    onChange={(event) => changePackage(index, {
+                                                        ...pricingOption,
+                                                        name: event.target.value,
+                                                    })}
+                                                    maxLength={120}
+                                                    placeholder={copy.package_name_placeholder}
+                                                    aria-invalid={Boolean(formErrors[`pricing_options.${index}.name`])}
+                                                />
+                                                <FieldError>{formErrors[`pricing_options.${index}.name`]}</FieldError>
+                                            </Field>
+
+                                            <Field data-invalid={formErrors[`pricing_options.${index}.price_in_minor`] ? true : undefined}>
+                                                <FieldLabel htmlFor={`package-price-${index}`}>{copy.package_price_label}</FieldLabel>
+                                                <InputGroup>
+                                                    <InputGroupAddon>EUR</InputGroupAddon>
+                                                    <InputGroupInput
+                                                        id={`package-price-${index}`}
+                                                        inputMode="decimal"
+                                                        value={pricingOption.price_in_minor}
+                                                        onChange={(event) => changePackage(index, {
+                                                            ...pricingOption,
+                                                            price_in_minor: event.target.value.replace(/\D/g, ''),
+                                                        })}
+                                                        placeholder={copy.price_placeholder}
+                                                        aria-invalid={Boolean(formErrors[`pricing_options.${index}.price_in_minor`])}
+                                                    />
+                                                    <InputGroupAddon align="inline-end">
+                                                        {formatPriceInMinorDescription(pricingOption.price_in_minor, locale)}
+                                                    </InputGroupAddon>
+                                                </InputGroup>
+                                                <FieldError>{formErrors[`pricing_options.${index}.price_in_minor`]}</FieldError>
+                                            </Field>
+
+                                            <Field data-invalid={formErrors[`pricing_options.${index}.description`] ? true : undefined}>
+                                                <FieldLabel htmlFor={`package-description-${index}`}>{copy.package_included_label}</FieldLabel>
+                                                <Textarea
+                                                    id={`package-description-${index}`}
+                                                    className="field-sizing-fixed"
+                                                    value={pricingOption.description}
+                                                    rows={4}
+                                                    maxLength={2000}
+                                                    onChange={(event) => changePackage(index, {
+                                                        ...pricingOption,
+                                                        description: event.target.value,
+                                                    })}
+                                                    placeholder={copy.package_included_placeholder}
+                                                    aria-invalid={Boolean(formErrors[`pricing_options.${index}.description`])}
+                                                />
+                                                <FieldError>{formErrors[`pricing_options.${index}.description`]}</FieldError>
+                                            </Field>
+                                        </div>
+                                    ))}
+
+                                    {data.pricing_options.length < 3 ? (
+                                        <Button type="button" variant="outline" onClick={addPackage}>
+                                            <PlusIcon data-icon="inline-start" />
+                                            {copy.add_package}
+                                        </Button>
+                                    ) : null}
+                                </FieldGroup>
+                            </CardContent>
+                        </Card>
+                    ) : null}
 
                     <div className="flex justify-end gap-2">
                         <Button type="button" variant="outline" asChild>

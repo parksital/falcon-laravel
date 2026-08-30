@@ -15,7 +15,7 @@ use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 Route::get('/index', function () {
-    $serviceCategoryLabels = collect(config('service_categories'))
+    $serviceCategoryLabels = collect(array_keys(config('service_categories')))
         ->mapWithKeys(function (string $value) {
             $translation = __("config-service-categories.{$value}");
 
@@ -25,7 +25,8 @@ Route::get('/index', function () {
         })
         ->all();
 
-    $pricingStructureLabels = collect(config('service_pricing_structures'))
+    $pricingStructureLabels = collect(config('service_categories'))
+        ->pluck('pricing_structures')
         ->flatten()
         ->unique()
         ->mapWithKeys(function (string $value) {
@@ -171,7 +172,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->withCount('pricingOptions')
             ->get();
 
-        $serviceCategoryLabels = collect(config('service_categories'))
+        $serviceCategoryLabels = collect(array_keys(config('service_categories')))
             ->mapWithKeys(function (string $value) {
                 $translation = __("config-service-categories.{$value}");
 
@@ -193,17 +194,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
                     'category_label' => $serviceCategoryLabels[$service->category] ?? $service->category,
                     'description' => $service->description,
                     'is_public' => (bool) $service->is_public,
+                    'pricing_options_count' => $service->pricing_options_count,
                 ]),
-            'serviceCategories' => collect(config('service_categories'))
+            'serviceCategories' => collect(array_keys(config('service_categories')))
                 ->map(fn (string $value) => [
                     'value' => $value,
                     'label' => $serviceCategoryLabels[$value] ?? $value,
                 ])
                 ->values()
                 ->all(),
-            'pricingStructuresByCategory' => collect(config('service_categories'))
+            'pricingStructuresByCategory' => collect(array_keys(config('service_categories')))
                 ->mapWithKeys(fn (string $category) => [
-                    $category => collect(config("service_pricing_structures.{$category}", config('service_pricing_structures.default')))
+                    $category => collect(config("service_categories.{$category}.pricing_structures", []))
                         ->map(fn (string $value) => [
                             'value' => $value,
                             'label' => __("config-service-units.{$value}"),
@@ -223,6 +225,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/services/{service}', [ServiceController::class, 'show'])->name('services.show');
 
     Route::post('/services', [ServiceController::class, 'store'])->name('services.store');
+    Route::post('/services/{service}/pricing-options', [ServiceController::class, 'storePricingOption'])->name('services.pricing-options.store');
+    Route::patch('/services/{service}/pricing-options/{pricingOption}', [ServiceController::class, 'updatePricingOption'])->name('services.pricing-options.update');
+    Route::delete('/services/{service}/pricing-options/{pricingOption}', [ServiceController::class, 'destroyPricingOption'])->name('services.pricing-options.destroy');
     Route::patch('/services/{service}', [ServiceController::class, 'update'])->name('services.update');
     Route::delete('/services/{service}', [ServiceController::class, 'destroy'])->name('services.destroy');
 

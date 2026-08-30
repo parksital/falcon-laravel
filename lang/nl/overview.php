@@ -36,11 +36,14 @@ return [
     'vendor_discard_confirm' => 'Negeer wijzigingen',
 
     'services_heading' => 'Services',
-    'services_add' => 'Voeg service toe',
+    'services_add' => 'Nieuwe Service',
     'services_empty' => 'Er zijn nog geen services toegevoegd.',
     'services_table_name' => 'Naam',
     'services_table_category' => 'Categorie',
+    'services_table_prices' => 'Prijzen',
     'services_table_status' => 'Status',
+    'services_price_singular' => ':count prijs',
+    'services_price_plural' => ':count prijzen',
 
     'service_edit_title' => 'Service bewerken',
     'service_edit_description' => 'Beheer wat klanten zien, hoe deze service is geprijsd en of de service openbaar is.',

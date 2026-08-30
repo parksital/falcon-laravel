@@ -105,6 +105,7 @@ interface OverviewPageProps {
         custom_category: string | null;
         description: string | null;
         is_public: boolean;
+        pricing_options_count: number;
     }[];
     serviceCategories: {
         value: string;
@@ -314,6 +315,7 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                                 <TableRow>
                                     <TableHead>{copy.services_table_name}</TableHead>
                                     <TableHead>{copy.services_table_category}</TableHead>
+                                    <TableHead>{copy.services_table_prices}</TableHead>
                                     <TableHead>{copy.services_table_status}</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -330,6 +332,11 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                                             <TableCell className="font-medium">{service.name}</TableCell>
                                             <TableCell>
                                                 <Badge variant="secondary">{service.category_label}</Badge>
+                                            </TableCell>
+                                            <TableCell className="text-muted-foreground">
+                                                {service.pricing_options_count === 1
+                                                    ? copy.services_price_singular.replace(':count', `${service.pricing_options_count}`)
+                                                    : copy.services_price_plural.replace(':count', `${service.pricing_options_count}`)}
                                             </TableCell>
                                             <TableCell>
                                                 <Badge variant={service.is_public ? 'default' : 'secondary'}>

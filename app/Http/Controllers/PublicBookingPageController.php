@@ -190,7 +190,7 @@ class PublicBookingPageController extends Controller
 
     private function serviceCategoryLabels(): array
     {
-        return collect(config('service_categories'))
+        return collect(array_keys(config('service_categories')))
             ->mapWithKeys(function (string $value) {
                 $translation = __("config-service-categories.{$value}");
 
@@ -203,7 +203,8 @@ class PublicBookingPageController extends Controller
 
     private function pricingStructureLabels(): array
     {
-        return collect(config('service_pricing_structures'))
+        return collect(config('service_categories'))
+            ->pluck('pricing_structures')
             ->flatten()
             ->unique()
             ->mapWithKeys(function (string $value) {

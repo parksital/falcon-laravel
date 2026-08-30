@@ -41,6 +41,11 @@ import {
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import {
+    InputGroup,
+    InputGroupAddon,
+    InputGroupInput,
+} from '@/components/ui/input-group';
+import {
     Select,
     SelectContent,
     SelectGroup,
@@ -60,9 +65,10 @@ import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { overview } from '@/routes';
+import { destroy as destroyPricingOption, store as storePricingOption, update as updatePricingOption } from '@/routes/services/pricing-options';
 import { destroy as destroyService, show as showService, update as updateService } from '@/routes/services';
 import { Head, setLayoutProps, useForm } from '@inertiajs/react';
-import { DotsThreeIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
+import { DotsThreeIcon, PencilSimpleIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
 import { type ReactNode, useState } from 'react';
 import { type BreadcrumbItem } from '@/types';
 
@@ -78,12 +84,33 @@ interface ServiceDetailsPageProps {
         description: string | null;
         category_label: string;
         is_public: boolean;
+        pricing_options: {
+            id: number;
+            name: string;
+            description: string | null;
+            price_in_minor: number;
+            unit: string;
+            unit_label: string;
+            is_public: boolean;
+        }[];
     };
     serviceCategories: {
         value: string;
         label: string;
     }[];
+    locale: string;
     copy: Record<string, string>;
+}
+
+function formatPriceInMinor(priceInMinor: number, locale: string) {
+    return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: 'EUR',
+    }).format(priceInMinor / 100);
+}
+
+function formatPriceInMinorDescription(priceInMinor: string, locale: string) {
+    return formatPriceInMinor(Number(priceInMinor || 0), locale);
 }
 
 type ServiceDetailsPageComponent = ((props: ServiceDetailsPageProps) => ReactNode) & {
@@ -94,8 +121,10 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
     vendor,
     service,
     serviceCategories,
+    locale,
     copy,
 }: ServiceDetailsPageProps) {
+
     setLayoutProps<{ breadcrumbs: BreadcrumbItem[] }>({
         breadcrumbs: [
             { title: vendor.name, href: overview.url() },
@@ -105,6 +134,28 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
 
     const [isEditServiceOpen, setIsEditServiceOpen] = useState(false);
     const [isDeleteServiceOpen, setIsDeleteServiceOpen] = useState(false);
+    const [isAddPriceOpen, setIsAddPriceOpen] = useState(false);
+    const [isEditPriceOpen, setIsEditPriceOpen] = useState(false);
+    const [isDeletePriceOpen, setIsDeletePriceOpen] = useState(false);
+    const [editingPricingOptionId, setEditingPricingOptionId] = useState<number | null>(null);
+    const [deletingPricingOptionId, setDeletingPricingOptionId] = useState<number | null>(null);
+    const packagePricingOptions = service.pricing_options.filter((pricingOption) => pricingOption.unit === 'package');
+    const addPriceForm = useForm({
+        name: '',
+        description: '',
+        price_in_minor: '',
+        unit: 'package',
+        is_public: service.is_public,
+    });
+    const editPriceForm = useForm({
+        name: '',
+        description: '',
+        price_in_minor: '',
+        unit: 'package',
+        is_public: false,
+    });
+    const deletePriceForm = useForm({});
+
     const editForm = useForm({
         name: service.name,
         category: service.category,
@@ -112,9 +163,13 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
         description: service.description ?? '',
         is_public: service.is_public,
     });
+
     const deleteForm = useForm({
         confirmation_name: service.name,
     });
+
+    const editingPricingOption = service.pricing_options.find((pricingOption) => pricingOption.id === editingPricingOptionId);
+    const deletingPricingOption = service.pricing_options.find((pricingOption) => pricingOption.id === deletingPricingOptionId);
 
     function openServiceEditor() {
         const serviceDetails = {
@@ -137,6 +192,55 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
         editForm.clearErrors();
     }
 
+    function openAddPrice() {
+        addPriceForm.setDefaults({
+            name: '',
+            description: '',
+            price_in_minor: '',
+            unit: 'package',
+            is_public: service.is_public,
+        });
+
+        addPriceForm.reset();
+        addPriceForm.clearErrors();
+        setIsAddPriceOpen(true);
+    }
+
+    function closeAddPrice() {
+        setIsAddPriceOpen(false);
+        addPriceForm.reset();
+        addPriceForm.clearErrors();
+    }
+
+    function openEditPrice(pricingOption: ServiceDetailsPageProps['service']['pricing_options'][number]) {
+        const pricingOptionDetails = {
+            name: pricingOption.name,
+            description: pricingOption.description ?? '',
+            price_in_minor: `${pricingOption.price_in_minor}`,
+            unit: pricingOption.unit,
+            is_public: pricingOption.is_public,
+        };
+
+        setEditingPricingOptionId(pricingOption.id);
+        editPriceForm.setDefaults(pricingOptionDetails);
+        editPriceForm.setData(pricingOptionDetails);
+        editPriceForm.clearErrors();
+        setIsEditPriceOpen(true);
+    }
+
+    function closeEditPrice() {
+        setIsEditPriceOpen(false);
+        setEditingPricingOptionId(null);
+        editPriceForm.reset();
+        editPriceForm.clearErrors();
+    }
+
+    function openDeletePrice(pricingOption: ServiceDetailsPageProps['service']['pricing_options'][number]) {
+        setDeletingPricingOptionId(pricingOption.id);
+        deletePriceForm.clearErrors();
+        setIsDeletePriceOpen(true);
+    }
+
     return (
         <>
             <Head title={service.name} />
@@ -155,9 +259,12 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
 
                                 <CardTitle>{service.name}</CardTitle>
 
-                                {service.description ? (
-                                    <CardDescription className="whitespace-pre-line">{service.description}</CardDescription>
-                                ) : null}
+                                <CardDescription className="whitespace-pre-line">
+                                    {service.description
+                                        ? <span>{service.description}</span>
+                                        : <span>{copy.service_description_empty}</span>
+                                    }
+                                </CardDescription>
                             </CardHeader>
 
                             <CardFooter className="gap-2 justify-end">
@@ -195,20 +302,325 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
                     <section className="flex min-w-0 flex-col gap-3">
                         <div className="flex items-center justify-between">
                             <h2 className="text-2xl font-semibold">{copy.pricing_heading}</h2>
+
+                            {packagePricingOptions.length < 3 ? (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={openAddPrice}
+                                >
+                                    <PlusIcon data-icon="inline-start" />
+                                    {copy.add_price_action}
+                                </Button>
+                            ) : null}
                         </div>
 
-                        <Empty className="border">
-                            <EmptyHeader>
-                                <EmptyMedia>
-                                    <h1 className="text-6xl">🏝️</h1>
-                                </EmptyMedia>
-                                <EmptyTitle>{copy.pricing_empty_title}</EmptyTitle>
-                                <EmptyDescription>{copy.pricing_empty_description}</EmptyDescription>
-                            </EmptyHeader>
-                        </Empty>
+                        {packagePricingOptions.length ? (
+                            <div className="flex flex-col gap-2">
+                                {packagePricingOptions.map((pricingOption) => (
+                                    <Card key={pricingOption.id}>
+                                        <CardHeader className="gap-0">
+                                            <div className="flex items-center justify-between gap-2">
+                                                <div className="min-w-0 flex flex-row items-center gap-1">
+                                                    <CardTitle className="truncate text-base">{pricingOption.name}</CardTitle>
+                                                    <Badge variant="secondary" className="w-fit">
+                                                        {pricingOption.unit_label}
+                                                    </Badge>
+                                                </div>
+
+                                                <div className="flex shrink-0 items-center gap-2">
+                                                    <p className="font-mono text-base text-secondary-foreground">
+                                                        {formatPriceInMinor(pricingOption.price_in_minor, locale)}
+                                                    </p>
+
+                                                    <DropdownMenu modal={false}>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button
+                                                                type="button"
+                                                                variant="ghost"
+                                                                size="icon-sm"
+                                                                aria-label={copy.price_actions_label}
+                                                            >
+                                                                <DotsThreeIcon />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end" className="w-auto">
+                                                            <DropdownMenuGroup>
+                                                                <DropdownMenuItem className="whitespace-nowrap" onSelect={() => openEditPrice(pricingOption)}>
+                                                                    <PencilSimpleIcon className='invisible' />
+                                                                    {copy.price_edit_action}
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem
+                                                                    className="whitespace-nowrap"
+                                                                    variant="destructive"
+                                                                    onSelect={() => openDeletePrice(pricingOption)}
+                                                                >
+                                                                    <TrashIcon />
+                                                                    {copy.price_delete_action}
+                                                                </DropdownMenuItem>
+                                                            </DropdownMenuGroup>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </div>
+                                            </div>
+
+                                            <CardDescription className="whitespace-pre-line">
+                                                {pricingOption.description
+                                                    ? <span>{pricingOption.description}</span>
+                                                    : <span>{copy.pricing_option_description_empty}</span>
+                                                }
+                                            </CardDescription>
+                                        </CardHeader>
+                                    </Card>
+                                ))}
+                            </div>
+                        ) : (
+                            <Empty className="border">
+                                <EmptyHeader>
+                                    <EmptyMedia>
+                                        <h1 className="text-6xl">🏝️</h1>
+                                    </EmptyMedia>
+                                    <EmptyTitle>{copy.pricing_empty_title}</EmptyTitle>
+                                    <EmptyDescription>{copy.pricing_empty_description}</EmptyDescription>
+                                </EmptyHeader>
+                            </Empty>
+                        )}
                     </section>
                 </div>
             </main>
+
+            <Sheet open={isAddPriceOpen} onOpenChange={setIsAddPriceOpen}>
+                <SheetContent showCloseButton={false} className="sm:max-w-lg">
+                    <form
+                        className="flex min-h-0 flex-1 flex-col"
+                        onSubmit={(event) => {
+                            event.preventDefault();
+
+                            addPriceForm.post(storePricingOption(service.id).url, {
+                                preserveScroll: true,
+                                onBefore: () => {
+                                    addPriceForm.clearErrors();
+                                },
+                                onSuccess: () => {
+                                    setIsAddPriceOpen(false);
+                                    addPriceForm.setDefaults({
+                                        name: '',
+                                        description: '',
+                                        price_in_minor: '',
+                                        unit: 'package',
+                                        is_public: service.is_public,
+                                    });
+                                    addPriceForm.reset();
+                                    addPriceForm.clearErrors();
+                                },
+                            });
+                        }}
+                    >
+                        <SheetHeader>
+                            <SheetTitle>{copy.price_add_title}</SheetTitle>
+                            <SheetDescription>{copy.price_add_description}</SheetDescription>
+                        </SheetHeader>
+
+                        <div className="flex flex-1 flex-col overflow-y-auto p-4">
+                            <FieldGroup>
+                                <Field data-invalid={addPriceForm.errors.name ? true : undefined}>
+                                    <FieldLabel htmlFor="add-price-name">{copy.price_field_name}</FieldLabel>
+                                    <Input
+                                        id="add-price-name"
+                                        required
+                                        maxLength={120}
+                                        placeholder={copy.price_name_placeholder}
+                                        aria-invalid={Boolean(addPriceForm.errors.name)}
+                                        value={addPriceForm.data.name}
+                                        onChange={(event) => addPriceForm.setData('name', event.target.value)}
+                                    />
+                                    <FieldError>{addPriceForm.errors.name}</FieldError>
+                                </Field>
+
+                                <Field data-invalid={addPriceForm.errors.price_in_minor ? true : undefined}>
+                                    <FieldLabel htmlFor="add-price-amount">{copy.price_field_amount}</FieldLabel>
+                                    <InputGroup>
+                                        <InputGroupAddon>EUR</InputGroupAddon>
+                                        <InputGroupInput
+                                            id="add-price-amount"
+                                            required
+                                            inputMode="decimal"
+                                            placeholder={copy.price_amount_placeholder}
+                                            aria-invalid={Boolean(addPriceForm.errors.price_in_minor)}
+                                            value={addPriceForm.data.price_in_minor}
+                                            onChange={(event) => addPriceForm.setData('price_in_minor', event.target.value.replace(/\D/g, ''))}
+                                        />
+                                        <InputGroupAddon align="inline-end">
+                                            {formatPriceInMinorDescription(addPriceForm.data.price_in_minor, locale)}
+                                        </InputGroupAddon>
+                                    </InputGroup>
+                                    <FieldError>{addPriceForm.errors.price_in_minor}</FieldError>
+                                </Field>
+
+                                <Field data-invalid={addPriceForm.errors.description ? true : undefined}>
+                                    <FieldLabel htmlFor="add-price-description">{copy.price_field_description}</FieldLabel>
+                                    <Textarea
+                                        id="add-price-description"
+                                        className="field-sizing-fixed"
+                                        rows={5}
+                                        maxLength={2000}
+                                        placeholder={copy.price_description_placeholder}
+                                        aria-invalid={Boolean(addPriceForm.errors.description)}
+                                        value={addPriceForm.data.description}
+                                        onChange={(event) => addPriceForm.setData('description', event.target.value)}
+                                    />
+                                    <FieldError>{addPriceForm.errors.description}</FieldError>
+                                </Field>
+
+                                <Field orientation="horizontal">
+                                    <Checkbox
+                                        id="add-price-is-public"
+                                        checked={addPriceForm.data.is_public}
+                                        onCheckedChange={(checked) => addPriceForm.setData('is_public', checked === true)}
+                                    />
+                                    <FieldContent>
+                                        <FieldLabel htmlFor="add-price-is-public">
+                                            {copy.price_field_visibility}
+                                        </FieldLabel>
+                                        <FieldDescription>
+                                            {addPriceForm.data.is_public
+                                                ? copy.price_public_description
+                                                : copy.price_private_description}
+                                        </FieldDescription>
+                                    </FieldContent>
+                                </Field>
+                            </FieldGroup>
+                        </div>
+
+                        <SheetFooter>
+                            <Button type="button" variant="outline" onClick={closeAddPrice}>
+                                {copy.price_add_cancel}
+                            </Button>
+                            <Button type="submit" disabled={addPriceForm.processing}>
+                                {addPriceForm.processing ? <Spinner data-icon="inline-start" /> : null}
+                                {copy.price_add_save}
+                            </Button>
+                        </SheetFooter>
+                    </form>
+                </SheetContent>
+            </Sheet>
+
+            <Sheet open={isEditPriceOpen} onOpenChange={setIsEditPriceOpen}>
+                <SheetContent showCloseButton={false} className="sm:max-w-lg">
+                    <form
+                        className="flex min-h-0 flex-1 flex-col"
+                        onSubmit={(event) => {
+                            event.preventDefault();
+
+                            if (! editingPricingOption) {
+                                return;
+                            }
+
+                            editPriceForm.patch(updatePricingOption({
+                                service: service.id,
+                                pricingOption: editingPricingOption.id,
+                            }).url, {
+                                preserveScroll: true,
+                                onBefore: () => {
+                                    editPriceForm.clearErrors();
+                                },
+                                onSuccess: () => {
+                                    setIsEditPriceOpen(false);
+                                    setEditingPricingOptionId(null);
+                                    editPriceForm.setDefaults();
+                                    editPriceForm.clearErrors();
+                                },
+                            });
+                        }}
+                    >
+                        <SheetHeader>
+                            <SheetTitle>{copy.price_edit_title}</SheetTitle>
+                            <SheetDescription>{copy.price_edit_description}</SheetDescription>
+                        </SheetHeader>
+
+                        <div className="flex flex-1 flex-col overflow-y-auto p-4">
+                            <FieldGroup>
+                                <Field data-invalid={editPriceForm.errors.name ? true : undefined}>
+                                    <FieldLabel htmlFor="edit-price-name">{copy.price_field_name}</FieldLabel>
+                                    <Input
+                                        id="edit-price-name"
+                                        required
+                                        maxLength={120}
+                                        placeholder={copy.price_name_placeholder}
+                                        aria-invalid={Boolean(editPriceForm.errors.name)}
+                                        value={editPriceForm.data.name}
+                                        onChange={(event) => editPriceForm.setData('name', event.target.value)}
+                                    />
+                                    <FieldError>{editPriceForm.errors.name}</FieldError>
+                                </Field>
+
+                                <Field data-invalid={editPriceForm.errors.price_in_minor ? true : undefined}>
+                                    <FieldLabel htmlFor="edit-price-amount">{copy.price_field_amount}</FieldLabel>
+                                    <InputGroup>
+                                        <InputGroupAddon>EUR</InputGroupAddon>
+                                        <InputGroupInput
+                                            id="edit-price-amount"
+                                            required
+                                            inputMode="decimal"
+                                            placeholder={copy.price_amount_placeholder}
+                                            aria-invalid={Boolean(editPriceForm.errors.price_in_minor)}
+                                            value={editPriceForm.data.price_in_minor}
+                                            onChange={(event) => editPriceForm.setData('price_in_minor', event.target.value.replace(/\D/g, ''))}
+                                        />
+                                        <InputGroupAddon align="inline-end">
+                                            {formatPriceInMinorDescription(editPriceForm.data.price_in_minor, locale)}
+                                        </InputGroupAddon>
+                                    </InputGroup>
+                                    <FieldError>{editPriceForm.errors.price_in_minor}</FieldError>
+                                </Field>
+
+                                <Field data-invalid={editPriceForm.errors.description ? true : undefined}>
+                                    <FieldLabel htmlFor="edit-price-description">{copy.price_field_description}</FieldLabel>
+                                    <Textarea
+                                        id="edit-price-description"
+                                        className="field-sizing-fixed"
+                                        rows={5}
+                                        maxLength={2000}
+                                        placeholder={copy.price_description_placeholder}
+                                        aria-invalid={Boolean(editPriceForm.errors.description)}
+                                        value={editPriceForm.data.description}
+                                        onChange={(event) => editPriceForm.setData('description', event.target.value)}
+                                    />
+                                    <FieldError>{editPriceForm.errors.description}</FieldError>
+                                </Field>
+
+                                <Field orientation="horizontal">
+                                    <Checkbox
+                                        id="edit-price-is-public"
+                                        checked={editPriceForm.data.is_public}
+                                        onCheckedChange={(checked) => editPriceForm.setData('is_public', checked === true)}
+                                    />
+                                    <FieldContent>
+                                        <FieldLabel htmlFor="edit-price-is-public">
+                                            {copy.price_field_visibility}
+                                        </FieldLabel>
+                                        <FieldDescription>
+                                            {editPriceForm.data.is_public
+                                                ? copy.price_public_description
+                                                : copy.price_private_description}
+                                        </FieldDescription>
+                                    </FieldContent>
+                                </Field>
+                            </FieldGroup>
+                        </div>
+
+                        <SheetFooter>
+                            <Button type="button" variant="outline" onClick={closeEditPrice}>
+                                {copy.price_edit_cancel}
+                            </Button>
+                            <Button type="submit" disabled={!editPriceForm.isDirty || editPriceForm.processing}>
+                                {editPriceForm.processing ? <Spinner data-icon="inline-start" /> : null}
+                                {copy.price_edit_save}
+                            </Button>
+                        </SheetFooter>
+                    </form>
+                </SheetContent>
+            </Sheet>
 
             <Sheet open={isEditServiceOpen} onOpenChange={setIsEditServiceOpen}>
                 <SheetContent showCloseButton={false} className="sm:max-w-lg">
@@ -351,6 +763,58 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
                     </form>
                 </SheetContent>
             </Sheet>
+
+            <AlertDialog
+                open={isDeletePriceOpen}
+                onOpenChange={(open) => {
+                    setIsDeletePriceOpen(open);
+
+                    if (! open) {
+                        setDeletingPricingOptionId(null);
+                        deletePriceForm.clearErrors();
+                    }
+                }}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>{copy.price_delete_title}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {copy.price_delete_description.replace(':price', deletingPricingOption?.name ?? '')}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>
+                            {copy.price_delete_cancel}
+                        </AlertDialogCancel>
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            disabled={deletePriceForm.processing || ! deletingPricingOption}
+                            onClick={() => {
+                                if (! deletingPricingOption) {
+                                    return;
+                                }
+
+                                deletePriceForm.delete(destroyPricingOption({
+                                    service: service.id,
+                                    pricingOption: deletingPricingOption.id,
+                                }).url, {
+                                    preserveScroll: true,
+                                    onSuccess: () => {
+                                        setIsDeletePriceOpen(false);
+                                        setDeletingPricingOptionId(null);
+                                        deletePriceForm.clearErrors();
+                                    },
+                                });
+                            }}
+                        >
+                            {deletePriceForm.processing ? <Spinner data-icon="inline-start" /> : null}
+                            {copy.price_delete_confirm}
+                        </Button>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             <AlertDialog
                 open={isDeleteServiceOpen}
