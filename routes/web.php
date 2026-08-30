@@ -296,7 +296,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'location' => '',
         ]);
 
-        return to_route('services.create');
+        return to_route('overview');
     })->name('onboarding.vendor.store');
 });
 
