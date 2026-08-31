@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
-    CardDescription,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
@@ -65,17 +64,25 @@ export default function MobilePublicBookingPage({ copy, vendor, services, locale
             </div>
 
             <section className="flex flex-col gap-3">
-                <div className="flex flex-col gap-2">
-                    <p className="text-sm text-muted-foreground">{vendor.location}</p>
-                    <h1 className="text-3xl font-semibold text-foreground">{vendor.name}</h1>
-                    {vendor.short_description ? (
-                        <p className="text-sm text-muted-foreground">{vendor.short_description}</p>
-                    ) : null}
-                    {vendor.joined_at ? (
-                        <p className="text-sm text-muted-foreground">
-                            {interpolate(copy.joined, { formatted_date: vendor.joined_at })}
-                        </p>
-                    ) : null}
+                <div className="flex items-start gap-3">
+                    {vendor.logo_url && (
+                        <div className="size-20 shrink-0 overflow-hidden border">
+                            <img src={vendor.logo_url} alt={vendor.name} className="size-full object-cover" />
+                        </div>
+                    )}
+
+                    <div className="flex flex-col gap-2">
+                        <p className="text-sm text-muted-foreground">{vendor.location}</p>
+                        <h1 className="text-3xl font-semibold text-foreground">{vendor.name}</h1>
+                        {vendor.short_description ? (
+                            <p className="text-sm text-muted-foreground">{vendor.short_description}</p>
+                        ) : null}
+                        {vendor.joined_at ? (
+                            <p className="text-sm text-muted-foreground">
+                                {interpolate(copy.joined, { formatted_date: vendor.joined_at })}
+                            </p>
+                        ) : null}
+                    </div>
                 </div>
             </section>
 

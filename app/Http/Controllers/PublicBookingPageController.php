@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Service;
 use App\Models\Vendor;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -88,6 +89,7 @@ class PublicBookingPageController extends Controller
             'short_description' => $vendor->short_description,
             'joined_at' => $vendor->created_at?->locale(app()->getLocale())->translatedFormat(__('public-booking.joined_date_format')),
             'url' => route('public.booking.show', $vendor->slug),
+            'logo_url' => $vendor->logo_path ? Storage::disk('public')->url($vendor->logo_path) : null,
         ];
     }
 
