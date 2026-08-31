@@ -183,7 +183,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         $logoUrl = null;
         if ($vendor->logo_path) {
-            $logoUrl = Storage::disk('public')->url($vendor->logo_path);
+            $logoUrl = Storage::disk('r2')->url($vendor->logo_path);
         }
 
         return Inertia::render('OverviewPage', [
