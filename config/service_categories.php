@@ -7,6 +7,12 @@ return [
         ],
     ],
 
+    'photography' => [
+        'pricing_structures' => [
+            'hour',
+        ],
+    ],
+
     'foodtrucks' => [
         'pricing_structures' => [
             'package',

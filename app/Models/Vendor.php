@@ -12,9 +12,11 @@ class Vendor extends Model
     use HasFactory;
 
     protected $fillable = [
+        'uuid',
         'user_id',
         'name',
         'slug',
+        'logo_path',
         'location',
         'short_description',
     ];

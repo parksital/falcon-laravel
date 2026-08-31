@@ -33,6 +33,7 @@ import {
     FieldGroup,
     FieldLabel,
 } from '@/components/ui/field';
+import { useFileUpload } from '@/hooks/use-file-upload';
 import { Input } from '@/components/ui/input';
 import {
     InputGroup,
@@ -79,8 +80,10 @@ import { Head, router, setLayoutProps, useForm } from '@inertiajs/react';
 import { create } from '@/routes/services';
 import {
     CopyIcon,
+    ImageIcon,
     PencilSimpleIcon,
     PlusIcon,
+    XIcon,
 } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { type ReactNode, useState } from 'react';
@@ -92,6 +95,7 @@ interface Vendor {
     slug: string;
     short_description: string | null;
     joined_at: string | null;
+    logo_url: string | null;
     public_url: string;
 }
 
@@ -153,6 +157,13 @@ type OverviewPageComponent = ((props: OverviewPageProps) => ReactNode) & {
     layout?: typeof AppLayout;
 };
 
+interface VendorForm {
+    name: string;
+    slug: string;
+    logo?: File | null;
+    short_description: string;
+}
+
 const OverviewPage: OverviewPageComponent = function OverviewPage({
     vendor,
     services,
@@ -170,10 +181,22 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
     const [isDeleteServiceOpen, setIsDeleteServiceOpen] = useState(false);
     const [editingServiceId, setEditingServiceId] = useState<number | null>(null);
 
-    const vendorForm = useForm({
+    const vendorForm = useForm<VendorForm>({
         name: vendor.name,
         slug: vendor.slug,
         short_description: vendor.short_description ?? '',
+    });
+    const [{ files }, { clearFiles, getInputProps }] = useFileUpload({
+        accept: 'image/*',
+        maxFiles: 1,
+        maxSize: 2 * 1024 * 1024,
+        onFilesChange(files) {
+            const logo = files[0]?.file;
+
+            if (logo instanceof File) {
+                vendorForm.setData('logo', logo);
+            }
+        },
     });
 
     const editForm = useForm({
@@ -194,8 +217,8 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
     const editPricingStructures = pricingStructuresByCategory[editForm.data.category] || [];
     const previewSlug = slugify(vendorForm.data.slug);
     const previewBookingPageUrl = `${vendor.public_url.slice(0, -vendor.slug.length)}${previewSlug}`;
-    // We'll revisit pricing later.
     const shouldShowPricingSection = false;
+    const vendorLogoPreviewUrl = files[0]?.preview ?? (vendorForm.data.logo === null ? null : vendor.logo_url);
 
     async function copyBookingPageUrl() {
         try {
@@ -206,17 +229,9 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
         }
     }
 
-    function openVendorEditor() {
-        const vendorDetails = {
-            name: vendor.name,
-            slug: vendor.slug,
-            short_description: vendor.short_description ?? '',
-        };
-
-        vendorForm.setDefaults(vendorDetails);
-        vendorForm.setData(vendorDetails);
-        vendorForm.clearErrors();
-        setIsEditVendorOpen(true);
+    function clearVendorLogo() {
+        clearFiles();
+        vendorForm.setData('logo', null);
     }
 
     function requestCloseVendorEditor() {
@@ -232,6 +247,7 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
     function discardVendorChanges() {
         setIsDiscardVendorChangesOpen(false);
         setIsEditVendorOpen(false);
+        clearFiles();
         vendorForm.resetAndClearErrors();
     }
 
@@ -246,6 +262,13 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
 
                         <Card>
                             <CardHeader>
+
+                                {vendor.logo_url && (
+                                    <div className='w-24 aspect-square border'>
+                                        <img className='object-cover size-full' src={vendor.logo_url} alt={vendor.name} />
+                                    </div>
+                                )}
+
                                 <CardTitle>{vendor.name}</CardTitle>
 
                                 {vendor.short_description ? (
@@ -292,7 +315,11 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                             </CardContent>
 
                             <CardFooter className="flex-wrap gap-2">
-                                <Button variant="outline" size="sm" onClick={openVendorEditor}>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setIsEditVendorOpen(true)}
+                                >
                                     <PencilSimpleIcon data-icon="inline-start" />
                                     {copy.vendor_edit_action}
                                 </Button>
@@ -373,16 +400,20 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                         onSubmit={(event) => {
                             event.preventDefault();
 
-                            vendorForm.transform((data) => ({
-                                ...data,
-                                slug: slugify(data.slug),
-                            }));
-
-                            vendorForm.patch(updateVendor.url(), {
+                            vendorForm.post(updateVendor.url(), {
+                                forceFormData: true,
                                 preserveScroll: true,
                                 onSuccess: () => {
+                                    const vendorDetails = {
+                                        name: vendorForm.data.name,
+                                        slug: vendorForm.data.slug,
+                                        short_description: vendorForm.data.short_description,
+                                    };
+
                                     setIsEditVendorOpen(false);
-                                    vendorForm.setDefaults();
+                                    clearFiles();
+                                    vendorForm.setDefaults(vendorDetails);
+                                    vendorForm.setData(vendorDetails);
                                     vendorForm.clearErrors();
                                 },
                             });
@@ -395,6 +426,54 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
 
                         <div className="flex flex-1 flex-col overflow-y-auto p-4">
                             <FieldGroup>
+                                <Field orientation="vertical" data-invalid={vendorForm.errors.logo ? true : undefined}>
+                                    <div className="flex items-end gap-2">
+                                        <label
+                                            htmlFor="vendor-logo"
+                                            className="flex size-24 max-w-24 cursor-pointer overflow-hidden"
+                                        >
+                                            {vendorLogoPreviewUrl ? (
+                                                <img
+                                                    src={vendorLogoPreviewUrl}
+                                                    alt=""
+                                                    className="size-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="flex size-full items-center justify-center border border-dashed border-input bg-background text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground">
+                                                    <ImageIcon className="size-5" />
+                                                </div>
+                                            )}
+                                        </label>
+                                        <Input
+                                            {...getInputProps({
+                                                id: 'vendor-logo',
+                                                accept: 'image/*',
+                                                className: 'sr-only',
+                                                'aria-invalid': Boolean(vendorForm.errors.logo),
+                                            })}
+                                        />
+
+                                        {vendorLogoPreviewUrl && (
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={clearVendorLogo}
+                                                aria-label={copy.vendor_clear_logo}
+                                            >
+                                                <XIcon />
+                                                <span>Clear</span>
+                                            </Button>
+                                        )}
+                                    </div>
+
+                                    <FieldContent>
+                                        <FieldLabel htmlFor="vendor-logo">{copy.vendor_field_logo}</FieldLabel>
+                                        <FieldDescription>{copy.vendor_field_logo_help}</FieldDescription>
+                                        <FieldError>{vendorForm.errors.logo}</FieldError>
+                                    </FieldContent>
+                                </Field>
+
                                 <Field data-invalid={vendorForm.errors.name ? true : undefined}>
                                     <FieldLabel htmlFor="vendor-name">{copy.vendor_field_name}</FieldLabel>
                                     <Input
