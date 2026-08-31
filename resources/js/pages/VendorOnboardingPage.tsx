@@ -123,7 +123,7 @@ export default function VendorOnboardingPage({ bookingPageBaseUrl, copy }: Vendo
                                             aria-label={copy.clear_logo}
                                         >
                                             <XIcon />
-                                            <span>Clear</span>
+                                            <span>{copy.clear_logo}</span>
                                         </Button>
                                     ) : null}
                                 </div>

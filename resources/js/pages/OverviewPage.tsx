@@ -462,7 +462,7 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                                                 aria-label={copy.vendor_clear_logo}
                                             >
                                                 <XIcon />
-                                                <span>Clear</span>
+                                                <span>{copy.vendor_clear_logo}</span>
                                             </Button>
                                         )}
                                     </div>
