@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
-    CardDescription,
     CardFooter,
     CardHeader,
     CardTitle,
@@ -52,19 +51,28 @@ export default function DesktopPublicBookingPage({ copy, vendor, services, local
     return (
         <main className="mx-auto flex min-h-screen w-full max-w-4xl flex-1 flex-col gap-6 px-6 py-12">
             <section className="flex flex-col gap-3">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="flex flex-col gap-2">
-                        <p className="text-sm text-muted-foreground">{vendor.location}</p>
-                        <h1 className="text-3xl font-semibold text-foreground">{vendor.name}</h1>
-                        {vendor.short_description ? (
-                            <p className="max-w-2xl text-sm text-muted-foreground">{vendor.short_description}</p>
-                        ) : null}
-                        {vendor.joined_at ? (
-                            <p className="text-sm text-muted-foreground">
-                                {interpolate(copy.joined, { formatted_date: vendor.joined_at })}
-                            </p>
-                        ) : null}
+                <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                        {vendor.logo_url && (
+                            <div className="size-24 shrink-0 overflow-hidden border">
+                                <img src={vendor.logo_url} alt={vendor.name} className="size-full object-cover" />
+                            </div>
+                        )}
+
+                        <div className="flex flex-col gap-2">
+                            <p className="text-sm text-muted-foreground">{vendor.location}</p>
+                            <h1 className="text-3xl font-semibold text-foreground">{vendor.name}</h1>
+                            {vendor.short_description ? (
+                                <p className="max-w-2xl text-sm text-muted-foreground">{vendor.short_description}</p>
+                            ) : null}
+                            {vendor.joined_at ? (
+                                <p className="text-sm text-muted-foreground">
+                                    {interpolate(copy.joined, { formatted_date: vendor.joined_at })}
+                                </p>
+                            ) : null}
+                        </div>
                     </div>
+
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button type="button" variant="outline" size="sm">

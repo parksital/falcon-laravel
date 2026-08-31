@@ -6,6 +6,7 @@ export type Vendor = {
     short_description: string | null;
     joined_at: string | null;
     url: string;
+    logo_url: string | null;
 };
 
 export type Service = {
