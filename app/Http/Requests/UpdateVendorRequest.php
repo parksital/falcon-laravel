@@ -25,6 +25,7 @@ class UpdateVendorRequest extends FormRequest
                 Rule::notIn(config('reserved_vendor_slugs')),
                 Rule::unique('vendors', 'slug')->ignore($this->user()->vendor?->id),
             ],
+            'logo' => ['sometimes', 'nullable', 'image', 'max:2048'],
             'short_description' => ['nullable', 'string', 'max:2000'],
         ];
     }

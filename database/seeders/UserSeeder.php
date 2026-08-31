@@ -38,5 +38,14 @@ class UserSeeder extends Seeder
                 'email_verified_at' => now(),
             ],
         );
+
+        User::firstOrCreate(
+            ['email' => 'genebremer@picturesbygb.nl'],
+            [
+                'name' => 'Gene',
+                'password' => 'password',
+                'email_verified_at' => now(),
+            ],
+        );
     }
 }

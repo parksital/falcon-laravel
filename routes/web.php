@@ -8,10 +8,9 @@ use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\TwoFactorAuthenticationController;
 use App\Models\Service;
-use App\Models\Vendor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 Route::get('/index', function () {
@@ -182,10 +181,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
             })
             ->all();
 
+        $logoUrl = null;
+        if ($vendor->logo_path) {
+            $logoUrl = Storage::disk('public')->url($vendor->logo_path);
+        }
+
         return Inertia::render('OverviewPage', [
             'vendor' => [
                 ...$vendor->toArray(),
                 'joined_at' => $vendor->created_at?->translatedFormat(__('overview.joined_date_format')),
+                'logo_url' => $logoUrl,
                 'public_url' => route('public.booking.show', $vendor->slug),
             ],
             'services' => $services
@@ -219,7 +224,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('overview');
 
     Route::redirect('/vendor/profile', '/overview')->name('vendor.profile');
-    Route::patch('/vendor', [VendorController::class, 'update'])->name('vendor.update');
+    Route::post('/vendor', [VendorController::class, 'update'])->name('vendor.update');
 
     Route::get('/services/create', [ServiceController::class, 'create'])->name('services.create');
     Route::get('/services/{service}', [ServiceController::class, 'show'])->name('services.show');
@@ -268,36 +273,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ]);
     })->name('onboarding.vendor.show');
 
-    Route::post('/onboarding/vendor', function (Request $request) {
-        if ($request->user()->vendor()->exists()) {
-            return to_route('onboarding');
-        }
+    Route::post('/onboarding/vendor', [VendorController::class, 'store'])
+        ->name('onboarding.vendor.store');
 
-        $validated = $request->validate([
-            'business_name' => ['required', 'string', 'max:120'],
-            'slug' => [
-                'required',
-                'string',
-                'max:120',
-                'regex:/^[a-z0-9_]+(?:-[a-z0-9_]+)*$/',
-                Rule::notIn(config('reserved_vendor_slugs')),
-                Rule::unique('vendors', 'slug'),
-            ],
-        ], [
-            'slug.not_in' => __('vendor-onboarding.booking_page_url_unavailable'),
-            'slug.regex' => __('vendor-onboarding.booking_page_url_format'),
-            'slug.unique' => __('vendor-onboarding.booking_page_url_unavailable'),
-        ]);
-
-        Vendor::create([
-            'user_id' => $request->user()->id,
-            'name' => $validated['business_name'],
-            'slug' => $validated['slug'],
-            'location' => '',
-        ]);
-
-        return to_route('overview');
-    })->name('onboarding.vendor.store');
 });
 
 Route::get('/{vendorSlug}/services/{serviceSlug}', [PublicBookingPageController::class, 'showService'])
