@@ -112,7 +112,7 @@ export default function DesktopPublicBookingPage({ copy, vendor, services, local
                     {copy.services_heading}
                 </h2>
                 {services.length > 0 ? (
-                    <div className="grid gap-3 grid-cols-3">
+                    <div className="grid gap-3 grid-cols-2">
                         {services.map((service) => (
                             <Card key={service.id} id={`service-${service.slug}`}>
                                 <CardHeader>
