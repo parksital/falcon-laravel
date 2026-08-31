@@ -37,7 +37,7 @@ class VendorController extends Controller
 
         $logoPath = null;
         if (isset($validated['logo'])) {
-            $logoPath = $validated['logo']->store('vendor-logos', 'public');
+            $logoPath = Storage::disk('r2')->putFile('vendor-logos', $validated['logo'], 'public');
         }
 
         Vendor::create([
@@ -65,13 +65,13 @@ class VendorController extends Controller
 
         if ($request->hasFile('logo')) {
             if ($vendor->logo_path) {
-                Storage::disk('public')->delete($vendor->logo_path);
+                Storage::disk('r2')->delete($vendor->logo_path);
             }
 
-            $logoPath = $validated['logo']->store('vendor-logos', 'public');
+            $logoPath = Storage::disk('r2')->putFile('vendor-logos', $validated['logo'], 'public');
         } elseif ($request->exists('logo')) {
             if ($vendor->logo_path) {
-                Storage::disk('public')->delete($vendor->logo_path);
+                Storage::disk('r2')->delete($vendor->logo_path);
             }
 
             $logoPath = null;
