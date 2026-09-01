@@ -133,8 +133,18 @@ function formatPriceInMinor(priceInMinor: number, locale: string) {
     }).format(priceInMinor / 100);
 }
 
-function formatPriceInMinorDescription(priceInMinor: string, locale: string) {
-    return formatPriceInMinor(Number(priceInMinor || 0), locale);
+function normalizePriceAmount(value: string) {
+    return value.replace(/\D/g, '');
+}
+
+function priceAmountToMinor(value: string) {
+    if (! value) return '';
+
+    return `${Number(value) * 100}`;
+}
+
+function formatPriceAmountDescription(priceAmount: string, locale: string) {
+    return formatPriceInMinor(Number(priceAmountToMinor(priceAmount) || 0), locale);
 }
 
 const CreateServicePage: CreateServicePageComponent = function CreateServicePage({
@@ -265,6 +275,15 @@ const CreateServicePage: CreateServicePageComponent = function CreateServicePage
         return priceFeatures.filter((feature) => pricingOption.features.some((selectedFeature) => selectedFeature.feature_key === feature.value));
     }
 
+    function hasStartedPricingOption(pricingOption: PricingOption) {
+        return Boolean(
+            pricingOption.name.trim()
+            || pricingOption.description.trim()
+            || pricingOption.price_in_minor
+            || pricingOption.features.length > 0,
+        );
+    }
+
     function addPrice() {
         setData('pricing_options', [...data.pricing_options, firstPriceType === 'package'
             ? emptyPackage()
@@ -303,11 +322,12 @@ const CreateServicePage: CreateServicePageComponent = function CreateServicePage
             is_public: isPublic,
             description: formData.has_description ? formData.description : '',
             pricing_options: formData.pricing_options
-                .filter((pricingOption) => pricingOption.price_in_minor)
-                .map((pricingOption) => ({
-                    name: pricingOption.name || formData.name,
+                .map((pricingOption, index) => ({ pricingOption, index }))
+                .filter(({ pricingOption }) => hasStartedPricingOption(pricingOption))
+                .map(({ pricingOption, index }) => ({
+                    name: pricingOption.name || copy.price_legend.replace(':number', `${index + 1}`),
                     description: pricingOption.description,
-                    price_in_minor: pricingOption.price_in_minor,
+                    price_in_minor: priceAmountToMinor(pricingOption.price_in_minor),
                     pricing_type: pricingOption.pricing_type,
                     features: pricingOption.features
                         .filter((feature) => feature.is_included)
@@ -576,13 +596,13 @@ const CreateServicePage: CreateServicePageComponent = function CreateServicePage
                                                                     value={pricingOption.price_in_minor}
                                                                     onChange={(event) => changePricingOption(index, {
                                                                         ...pricingOption,
-                                                                        price_in_minor: event.target.value.replace(/\D/g, ''),
+                                                                        price_in_minor: normalizePriceAmount(event.target.value),
                                                                     })}
                                                                     placeholder={copy.price_placeholder}
                                                                     aria-invalid={Boolean(formErrors[`pricing_options.${index}.price_in_minor`])}
                                                                 />
                                                                 <InputGroupAddon align="inline-end">
-                                                                    {formatPriceInMinorDescription(pricingOption.price_in_minor, locale)}
+                                                                    {formatPriceAmountDescription(pricingOption.price_in_minor, locale)}
                                                                 </InputGroupAddon>
                                                             </InputGroup>
                                                             <FieldError>{formErrors[`pricing_options.${index}.price_in_minor`]}</FieldError>
@@ -745,7 +765,7 @@ const CreateServicePage: CreateServicePageComponent = function CreateServicePage
                                                                 ) : null}
                                                             </div>
                                                             <p className="shrink-0 font-medium">
-                                                                {formatPriceInMinorDescription(pricingOption.price_in_minor, locale)}
+                                                                {formatPriceAmountDescription(pricingOption.price_in_minor, locale)}
                                                                 {pricingOption.pricing_type !== 'package' && priceTypeLabel(pricingOption.pricing_type) ? ` ${copy.per_unit.replace(':unit', priceTypeLabel(pricingOption.pricing_type)?.priceTypeLabel || '')}` : null}
                                                             </p>
                                                         </div>

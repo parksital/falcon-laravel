@@ -158,9 +158,9 @@ export default function IndexPage({ services, locale, copy }: IndexPageProps) {
                                     <CardContent className="flex flex-col gap-4">
                                         <p className="font-medium">
                                             {formatPriceInMinor(service.price_in_minor, locale, copy)}{' '}
-                                            {interpolate(copy.per_unit, {
-                                                pricing_type: service.price_type_label || copy.unit_not_set,
-                                            })}
+                                            {service.price_in_minor !== null && service.pricing_type !== 'package' && service.price_type_label ? interpolate(copy.per_unit, {
+                                                unit: service.price_type_label,
+                                            }) : null}
                                         </p>
                                         {service.description ? (
                                             <p className="text-muted-foreground">

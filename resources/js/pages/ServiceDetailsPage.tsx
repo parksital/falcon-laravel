@@ -108,8 +108,22 @@ function formatPriceInMinor(priceInMinor: number, locale: string) {
     }).format(priceInMinor / 100);
 }
 
-function formatPriceInMinorDescription(priceInMinor: string, locale: string) {
-    return formatPriceInMinor(Number(priceInMinor || 0), locale);
+function minorToPriceAmount(priceInMinor: number) {
+    return `${Math.round(priceInMinor / 100)}`;
+}
+
+function normalizePriceAmount(value: string) {
+    return value.replace(/\D/g, '');
+}
+
+function priceAmountToMinor(value: string) {
+    if (! value) return '';
+
+    return `${Number(value) * 100}`;
+}
+
+function formatPriceAmountDescription(priceAmount: string, locale: string) {
+    return formatPriceInMinor(Number(priceAmountToMinor(priceAmount) || 0), locale);
 }
 
 type ServiceDetailsPageComponent = ((props: ServiceDetailsPageProps) => ReactNode) & {
@@ -212,7 +226,7 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
         const pricingOptionDetails = {
             name: pricingOption.name,
             description: pricingOption.description ?? '',
-            price_in_minor: `${pricingOption.price_in_minor}`,
+            price_in_minor: minorToPriceAmount(pricingOption.price_in_minor),
             pricing_type: pricingOption.pricing_type,
         };
 
@@ -392,6 +406,11 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
                         onSubmit={(event) => {
                             event.preventDefault();
 
+                            addPriceForm.transform((formData) => ({
+                                ...formData,
+                                price_in_minor: priceAmountToMinor(formData.price_in_minor),
+                            }));
+
                             addPriceForm.post(storePricingOption(service.id).url, {
                                 preserveScroll: true,
                                 onBefore: () => {
@@ -422,7 +441,6 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
                                     <FieldLabel htmlFor="add-price-name">{copy.price_field_name}</FieldLabel>
                                     <Input
                                         id="add-price-name"
-                                        required
                                         maxLength={120}
                                         placeholder={copy.price_name_placeholder}
                                         aria-invalid={Boolean(addPriceForm.errors.name)}
@@ -443,10 +461,10 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
                                             placeholder={copy.price_amount_placeholder}
                                             aria-invalid={Boolean(addPriceForm.errors.price_in_minor)}
                                             value={addPriceForm.data.price_in_minor}
-                                            onChange={(event) => addPriceForm.setData('price_in_minor', event.target.value.replace(/\D/g, ''))}
+                                            onChange={(event) => addPriceForm.setData('price_in_minor', normalizePriceAmount(event.target.value))}
                                         />
                                         <InputGroupAddon align="inline-end">
-                                            {formatPriceInMinorDescription(addPriceForm.data.price_in_minor, locale)}
+                                            {formatPriceAmountDescription(addPriceForm.data.price_in_minor, locale)}
                                         </InputGroupAddon>
                                     </InputGroup>
                                     <FieldError>{addPriceForm.errors.price_in_minor}</FieldError>
@@ -494,6 +512,11 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
                                 return;
                             }
 
+                            editPriceForm.transform((formData) => ({
+                                ...formData,
+                                price_in_minor: priceAmountToMinor(formData.price_in_minor),
+                            }));
+
                             editPriceForm.patch(updatePricingOption({
                                 service: service.id,
                                 pricingOption: editingPricingOption.id,
@@ -522,7 +545,6 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
                                     <FieldLabel htmlFor="edit-price-name">{copy.price_field_name}</FieldLabel>
                                     <Input
                                         id="edit-price-name"
-                                        required
                                         maxLength={120}
                                         placeholder={copy.price_name_placeholder}
                                         aria-invalid={Boolean(editPriceForm.errors.name)}
@@ -543,10 +565,10 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
                                             placeholder={copy.price_amount_placeholder}
                                             aria-invalid={Boolean(editPriceForm.errors.price_in_minor)}
                                             value={editPriceForm.data.price_in_minor}
-                                            onChange={(event) => editPriceForm.setData('price_in_minor', event.target.value.replace(/\D/g, ''))}
+                                            onChange={(event) => editPriceForm.setData('price_in_minor', normalizePriceAmount(event.target.value))}
                                         />
                                         <InputGroupAddon align="inline-end">
-                                            {formatPriceInMinorDescription(editPriceForm.data.price_in_minor, locale)}
+                                            {formatPriceAmountDescription(editPriceForm.data.price_in_minor, locale)}
                                         </InputGroupAddon>
                                     </InputGroup>
                                     <FieldError>{editPriceForm.errors.price_in_minor}</FieldError>

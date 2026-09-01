@@ -16,7 +16,7 @@ class StoreServicePriceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:120'],
+            'name' => ['nullable', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:2000'],
             'price_in_minor' => ['required', 'integer', 'min:0', 'max:4294967295'],
             'pricing_type' => [

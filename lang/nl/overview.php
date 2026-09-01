@@ -63,8 +63,8 @@ return [
     'service_field_custom_category' => 'Naam van de categorie',
     'service_field_description' => 'Beschrijving',
     'service_field_description_placeholder' => 'Wat is bij deze service inbegrepen?',
-    'service_field_price_in_minor' => 'Prijs in centen',
-    'service_field_price_placeholder' => '20000',
+    'service_field_price_in_minor' => 'Bedrag',
+    'service_field_price_placeholder' => '650',
     'service_field_unit' => 'Per',
     'service_field_unit_placeholder' => 'Selecteer',
 
