@@ -35,13 +35,17 @@ class VendorController extends Controller
             'slug.unique' => __('vendor-onboarding.booking_page_url_unavailable'),
         ]);
 
+        $vendorUuid = (string) Str::uuid();
         $logoPath = null;
         if (isset($validated['logo'])) {
-            $logoPath = Storage::disk('r2')->putFile('vendor-logos', $validated['logo'], 'public');
+            $extension = $validated['logo']->extension();
+            $filename = Str::uuid().".{$extension}";
+
+            $logoPath = Storage::disk('r2')->putFileAs("vendors/$vendorUuid/logo", $validated['logo'], $filename, 'public');
         }
 
         Vendor::create([
-            'uuid' => Str::uuid(),
+            'uuid' => $vendorUuid,
             'user_id' => $request->user()->id,
             'name' => $validated['business_name'],
             'slug' => $validated['slug'],
@@ -64,11 +68,13 @@ class VendorController extends Controller
         $logoPath = $vendor->logo_path;
 
         if ($request->hasFile('logo')) {
-            if ($vendor->logo_path) {
+            $extension = $validated['logo']->extension();
+            $filename = Str::uuid().".{$extension}";
+            $logoPath = Storage::disk('r2')->putFileAs("vendors/{$vendor->uuid}/logo", $validated['logo'], $filename, 'public');
+
+            if ($vendor->logo_path && $vendor->logo_path !== $logoPath) {
                 Storage::disk('r2')->delete($vendor->logo_path);
             }
-
-            $logoPath = Storage::disk('r2')->putFile('vendor-logos', $validated['logo'], 'public');
         } elseif ($request->exists('logo')) {
             if ($vendor->logo_path) {
                 Storage::disk('r2')->delete($vendor->logo_path);
