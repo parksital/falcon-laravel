@@ -151,6 +151,7 @@ class ServiceController extends Controller
 
         $service = DB::transaction(function () use ($request, $vendor, $validated, $slug) {
             $service = $vendor->services()->create([
+                'uuid' => Str::uuid(),
                 'name' => $validated['name'],
                 'slug' => $slug,
                 'category' => $validated['category'],
@@ -185,7 +186,7 @@ class ServiceController extends Controller
 
             foreach ($request->file('media', []) as $sortOrder => $media) {
                 $service->media()->create([
-                    'path' => Storage::disk('r2')->putFile('service-media', $media, 'public'),
+                    'path' => Storage::disk('r2')->putFile("vendors/{$vendor->uuid}/services/{$service->uuid}/images", $media, 'public'),
                     'sort_order' => $sortOrder,
                 ]);
             }
