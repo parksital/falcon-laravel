@@ -38,8 +38,13 @@ class Service extends Model
         return $this->hasOne(ServiceCustomCategory::class);
     }
 
-    public function pricingOptions(): HasMany
+    public function prices(): HasMany
     {
-        return $this->hasMany(ServicePricingOption::class)->orderBy('sort_order');
+        return $this->hasMany(ServicePrice::class)->orderBy('sort_order');
+    }
+
+    public function media(): HasMany
+    {
+        return $this->hasMany(ServiceMedia::class)->orderBy('sort_order');
     }
 }

@@ -18,7 +18,7 @@ class PublicBookingPageController extends Controller
             ->with(['services' => function ($query) {
                 $query
                     ->where('is_public', true)
-                    ->with('customCategory')
+                    ->with(['customCategory', 'prices'])
                     ->orderBy('name');
             }])
             ->firstOrFail();
@@ -33,7 +33,7 @@ class PublicBookingPageController extends Controller
             ->with(['services' => function ($query) {
                 $query
                     ->where('is_public', true)
-                    ->with('customCategory')
+                    ->with(['customCategory', 'prices'])
                     ->orderBy('name');
             }])
             ->firstOrFail();
@@ -95,6 +95,8 @@ class PublicBookingPageController extends Controller
 
     private function servicePayload(Vendor $vendor, Service $service): array
     {
+        $price = $service->prices->first();
+
         return [
             'id' => $service->id,
             'name' => $service->name,
@@ -104,9 +106,9 @@ class PublicBookingPageController extends Controller
                 ? ($service->customCategory?->name ?? $this->serviceCategoryLabels()['other'] ?? $service->category)
                 : $this->serviceCategoryLabels()[$service->category] ?? $service->category,
             'description' => $service->description,
-            'price_in_minor' => $service->price_in_minor,
-            'unit' => $service->unit,
-            'unit_label' => $service->unit ? ($this->pricingStructureLabels()[$service->unit] ?? $service->unit) : null,
+            'price_in_minor' => $price?->price_in_minor,
+            'pricing_type' => $price?->pricing_type,
+            'price_type_label' => $price?->pricing_type ? ($this->priceTypeLabels()[$price->pricing_type] ?? $price->pricing_type) : null,
             'url' => route('public.booking.service.show', [$vendor->slug, $service->slug]),
         ];
     }
@@ -178,8 +180,10 @@ class PublicBookingPageController extends Controller
                         ],
                     ];
 
-                    if ($service->price_in_minor !== null) {
-                        $offer['price'] = number_format($service->price_in_minor / 100, 2, '.', '');
+                    $price = $service->prices->first();
+
+                    if ($price?->price_in_minor !== null) {
+                        $offer['price'] = number_format($price->price_in_minor / 100, 2, '.', '');
                         $offer['priceCurrency'] = 'EUR';
                     }
 
@@ -203,17 +207,17 @@ class PublicBookingPageController extends Controller
             ->all();
     }
 
-    private function pricingStructureLabels(): array
+    private function priceTypeLabels(): array
     {
         return collect(config('service_categories'))
-            ->pluck('pricing_structures')
+            ->pluck('price_types')
             ->flatten()
             ->unique()
             ->mapWithKeys(function (string $value) {
-                $translation = __("config-service-units.{$value}");
+                $translation = __("config-service-price-types.{$value}");
 
                 return [
-                    $value => $translation === "config-service-units.{$value}" ? $value : $translation,
+                    $value => $translation === "config-service-price-types.{$value}" ? $value : $translation,
                 ];
             })
             ->all();

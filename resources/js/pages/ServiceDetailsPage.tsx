@@ -68,7 +68,7 @@ import { overview } from '@/routes';
 import { destroy as destroyPricingOption, store as storePricingOption, update as updatePricingOption } from '@/routes/services/pricing-options';
 import { destroy as destroyService, show as showService, update as updateService } from '@/routes/services';
 import { Head, setLayoutProps, useForm } from '@inertiajs/react';
-import { DotsThreeIcon, PencilSimpleIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
+import { DotsThreeIcon, MoneyIcon, PencilSimpleIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
 import { type ReactNode, useState } from 'react';
 import { type BreadcrumbItem } from '@/types';
 
@@ -89,9 +89,8 @@ interface ServiceDetailsPageProps {
             name: string;
             description: string | null;
             price_in_minor: number;
-            unit: string;
-            unit_label: string;
-            is_public: boolean;
+            pricing_type: string;
+            price_type_label: string;
         }[];
     };
     serviceCategories: {
@@ -139,20 +138,18 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
     const [isDeletePriceOpen, setIsDeletePriceOpen] = useState(false);
     const [editingPricingOptionId, setEditingPricingOptionId] = useState<number | null>(null);
     const [deletingPricingOptionId, setDeletingPricingOptionId] = useState<number | null>(null);
-    const packagePricingOptions = service.pricing_options.filter((pricingOption) => pricingOption.unit === 'package');
+    const packagePricingOptions = service.pricing_options.filter((pricingOption) => pricingOption.pricing_type === 'package');
     const addPriceForm = useForm({
         name: '',
         description: '',
         price_in_minor: '',
-        unit: 'package',
-        is_public: service.is_public,
+        pricing_type: 'package',
     });
     const editPriceForm = useForm({
         name: '',
         description: '',
         price_in_minor: '',
-        unit: 'package',
-        is_public: false,
+        pricing_type: 'package',
     });
     const deletePriceForm = useForm({});
 
@@ -197,8 +194,7 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
             name: '',
             description: '',
             price_in_minor: '',
-            unit: 'package',
-            is_public: service.is_public,
+            pricing_type: 'package',
         });
 
         addPriceForm.reset();
@@ -217,8 +213,7 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
             name: pricingOption.name,
             description: pricingOption.description ?? '',
             price_in_minor: `${pricingOption.price_in_minor}`,
-            unit: pricingOption.unit,
-            is_public: pricingOption.is_public,
+            pricing_type: pricingOption.pricing_type,
         };
 
         setEditingPricingOptionId(pricingOption.id);
@@ -324,7 +319,7 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
                                                 <div className="min-w-0 flex flex-row items-center gap-1">
                                                     <CardTitle className="truncate text-base">{pricingOption.name}</CardTitle>
                                                     <Badge variant="secondary" className="w-fit">
-                                                        {pricingOption.unit_label}
+                                                        {pricingOption.price_type_label}
                                                     </Badge>
                                                 </div>
 
@@ -377,8 +372,9 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
                         ) : (
                             <Empty className="border">
                                 <EmptyHeader>
-                                    <EmptyMedia>
-                                        <h1 className="text-6xl">🏝️</h1>
+                                        <EmptyMedia variant={"icon"}>
+                                            {/*<h1 className="text-6xl">🏝️</h1>*/}
+                                            <MoneyIcon/>
                                     </EmptyMedia>
                                     <EmptyTitle>{copy.pricing_empty_title}</EmptyTitle>
                                     <EmptyDescription>{copy.pricing_empty_description}</EmptyDescription>
@@ -407,8 +403,7 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
                                         name: '',
                                         description: '',
                                         price_in_minor: '',
-                                        unit: 'package',
-                                        is_public: service.is_public,
+                                        pricing_type: 'package',
                                     });
                                     addPriceForm.reset();
                                     addPriceForm.clearErrors();
@@ -472,23 +467,6 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
                                     <FieldError>{addPriceForm.errors.description}</FieldError>
                                 </Field>
 
-                                <Field orientation="horizontal">
-                                    <Checkbox
-                                        id="add-price-is-public"
-                                        checked={addPriceForm.data.is_public}
-                                        onCheckedChange={(checked) => addPriceForm.setData('is_public', checked === true)}
-                                    />
-                                    <FieldContent>
-                                        <FieldLabel htmlFor="add-price-is-public">
-                                            {copy.price_field_visibility}
-                                        </FieldLabel>
-                                        <FieldDescription>
-                                            {addPriceForm.data.is_public
-                                                ? copy.price_public_description
-                                                : copy.price_private_description}
-                                        </FieldDescription>
-                                    </FieldContent>
-                                </Field>
                             </FieldGroup>
                         </div>
 
@@ -589,23 +567,6 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
                                     <FieldError>{editPriceForm.errors.description}</FieldError>
                                 </Field>
 
-                                <Field orientation="horizontal">
-                                    <Checkbox
-                                        id="edit-price-is-public"
-                                        checked={editPriceForm.data.is_public}
-                                        onCheckedChange={(checked) => editPriceForm.setData('is_public', checked === true)}
-                                    />
-                                    <FieldContent>
-                                        <FieldLabel htmlFor="edit-price-is-public">
-                                            {copy.price_field_visibility}
-                                        </FieldLabel>
-                                        <FieldDescription>
-                                            {editPriceForm.data.is_public
-                                                ? copy.price_public_description
-                                                : copy.price_private_description}
-                                        </FieldDescription>
-                                    </FieldContent>
-                                </Field>
                             </FieldGroup>
                         </div>
 

@@ -8,6 +8,22 @@ use Illuminate\Validation\Rule;
 
 class StoreServiceRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        if (! $this->has('pricing_options')) {
+            return;
+        }
+
+        $pricingOptions = collect($this->input('pricing_options', []))
+            ->filter(fn (array $pricingOption) => filled($pricingOption['price_in_minor'] ?? null))
+            ->values()
+            ->all();
+
+        $this->merge([
+            'pricing_options' => $pricingOptions,
+        ]);
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -15,23 +31,25 @@ class StoreServiceRequest extends FormRequest
      */
     public function rules(): array
     {
-        $pricingStructure = $this->string('pricing_structure')->toString();
+        $priceTypes = $this->priceTypesForCategory($this->string('category')->toString());
+        $priceFeatures = $this->priceFeaturesForCategory($this->string('category')->toString());
 
         return [
             'name' => ['required', 'string', 'max:120'],
             'category' => ['required', 'string', Rule::in(array_keys(config('service_categories')))],
             'custom_category' => ['nullable', 'required_if:category,other', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:2000'],
-            'pricing_structure' => [
-                'nullable',
-                'string',
-                Rule::in($this->pricingStructuresForCategory($this->string('category')->toString())),
-            ],
-            'pricing_options' => ['sometimes', 'array', 'max:'.($pricingStructure === 'package' ? 3 : 1)],
-            'pricing_options.*.name' => ['nullable', 'required_if:pricing_structure,package', 'string', 'max:120'],
+            'pricing_options' => ['sometimes', 'array', 'max:3'],
+            'pricing_options.*.name' => ['nullable', 'string', 'max:120'],
             'pricing_options.*.description' => ['nullable', 'string', 'max:2000'],
             'pricing_options.*.price_in_minor' => ['required', 'integer', 'min:0', 'max:4294967295'],
-            'pricing_options.*.unit' => ['required', 'string', Rule::in([$pricingStructure])],
+            'pricing_options.*.pricing_type' => ['required', 'string', Rule::in($priceTypes)],
+            'pricing_options.*.features' => ['sometimes', 'array'],
+            'pricing_options.*.features.*.feature_key' => ['required', 'string', Rule::in($priceFeatures)],
+            'pricing_options.*.features.*.is_included' => ['boolean'],
+            'pricing_options.*.features.*.value' => ['nullable', 'string', 'max:120'],
+            'media' => ['sometimes', 'array', 'max:3'],
+            'media.*' => ['image', 'max:4096'],
             'is_public' => ['boolean'],
         ];
     }
@@ -48,19 +66,27 @@ class StoreServiceRequest extends FormRequest
             'category.required' => __('create-service.validation_category_required'),
             'category.in' => __('create-service.validation_category_required'),
             'custom_category.required_if' => __('create-service.validation_custom_category_required'),
-            'pricing_structure.required' => __('create-service.validation_pricing_structure_required'),
-            'pricing_structure.in' => __('create-service.validation_pricing_structure_invalid'),
             'pricing_options.max' => __('create-service.validation_package_limit'),
-            'pricing_options.*.name.required_if' => __('create-service.validation_package_name_required'),
+            'pricing_options.*.pricing_type.required' => __('create-service.validation_price_type_required'),
+            'pricing_options.*.pricing_type.in' => __('create-service.validation_price_type_invalid'),
+            'pricing_options.*.features.*.feature_key.in' => __('create-service.validation_price_feature_invalid'),
             'pricing_options.*.price_in_minor.required' => __('create-service.validation_price_required'),
             'pricing_options.*.price_in_minor.integer' => __('create-service.validation_price_invalid'),
             'pricing_options.*.price_in_minor.min' => __('create-service.validation_price_invalid'),
             'pricing_options.*.price_in_minor.max' => __('create-service.validation_price_invalid'),
+            'media.max' => __('create-service.validation_media_limit'),
+            'media.*.image' => __('create-service.validation_media_image'),
+            'media.*.max' => __('create-service.validation_media_size'),
         ];
     }
 
-    private function pricingStructuresForCategory(string $category): array
+    private function priceTypesForCategory(string $category): array
     {
-        return config("service_categories.{$category}.pricing_structures", []);
+        return config("service_categories.{$category}.price_types", []);
+    }
+
+    private function priceFeaturesForCategory(string $category): array
+    {
+        return config("service_categories.{$category}.price_features", []);
     }
 }

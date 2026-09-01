@@ -6,29 +6,27 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ServicePricingOption extends Model
+class ServicePriceFeature extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'service_id',
-        'name',
-        'description',
-        'price_in_minor',
-        'unit',
+        'service_price_id',
+        'feature_key',
+        'is_included',
+        'value',
         'sort_order',
-        'is_public',
     ];
 
     protected function casts(): array
     {
         return [
-            'is_public' => 'boolean',
+            'is_included' => 'boolean',
         ];
     }
 
-    public function service(): BelongsTo
+    public function price(): BelongsTo
     {
-        return $this->belongsTo(Service::class);
+        return $this->belongsTo(ServicePrice::class, 'service_price_id');
     }
 }

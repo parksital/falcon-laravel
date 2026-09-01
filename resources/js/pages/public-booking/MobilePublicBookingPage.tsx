@@ -102,8 +102,8 @@ export default function MobilePublicBookingPage({ copy, vendor, services, locale
                                     {formatPriceInMinor(service.price_in_minor, locale) ? (
                                         <p className="font-medium">
                                             {formatPriceInMinor(service.price_in_minor, locale)}
-                                            {service.unit_label ? ` ${interpolate(copy.per_unit, {
-                                                unit: service.unit_label,
+                                            {service.price_type_label ? ` ${interpolate(copy.per_unit, {
+                                                pricing_type: service.price_type_label,
                                             })}` : null}
                                         </p>
                                     ) : null}

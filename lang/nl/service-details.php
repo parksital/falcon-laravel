@@ -62,9 +62,9 @@ return [
     'validation_price_name_required' => 'Vul een pakketnaam in.',
     'validation_price_required' => 'Vul een prijs in.',
     'validation_price_invalid' => 'Vul een geldige prijs in.',
-    'validation_price_unit_invalid' => 'Kies een beschikbare prijsberekening.',
+    'validation_price_type_invalid' => 'Kies een beschikbaar prijstype.',
     'validation_package_limit' => 'Je kunt maximaal drie pakketten toevoegen.',
     'pricing_placeholder' => 'Prijsopties voor deze service worden hier weergegeven.',
-    'pricing_empty_title' => 'Prijzen komen binnenkort',
-    'pricing_empty_description' => 'Binnenkort kun je hier pakketten, tarieven en vanafprijzen toevoegen.',
+    'pricing_empty_title' => 'Nog geen prijzen',
+    'pricing_empty_description' => 'Voeg een prijs toe zodra je klanten wilt laten zien wat deze service kost.',
 ];

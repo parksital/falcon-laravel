@@ -2,19 +2,28 @@
 
 return [
     'photobooths' => [
-        'pricing_structures' => [
+        'price_types' => [
             'package',
+        ],
+        'price_features' => [
+            'attendant',
+            'prints',
+            'props',
+            'backdrop',
+            'digital_gallery',
+            'custom_template',
+            'travel_included',
         ],
     ],
 
     'photography' => [
-        'pricing_structures' => [
+        'price_types' => [
             'hour',
         ],
     ],
 
     'foodtrucks' => [
-        'pricing_structures' => [
+        'price_types' => [
             'package',
             'hour',
             'person',
@@ -24,7 +33,7 @@ return [
     ],
 
     'other' => [
-        'pricing_structures' => [
+        'price_types' => [
             'package',
             'hour',
             'person',

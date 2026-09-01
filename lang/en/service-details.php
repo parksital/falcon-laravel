@@ -62,9 +62,9 @@ return [
     'validation_price_name_required' => 'Enter a package name.',
     'validation_price_required' => 'Enter a price.',
     'validation_price_invalid' => 'Enter a valid price.',
-    'validation_price_unit_invalid' => 'Choose an available pricing method.',
+    'validation_price_type_invalid' => 'Choose an available price type.',
     'validation_package_limit' => 'You can add up to three packages.',
     'pricing_placeholder' => 'Pricing options for this service will appear here.',
-    'pricing_empty_title' => 'Pricing is coming soon',
-    'pricing_empty_description' => 'You’ll be able to add packages, rates, and starting prices here.',
+    'pricing_empty_title' => 'No prices yet',
+    'pricing_empty_description' => 'Add a price when you are ready to show customers what this service costs.',
 ];

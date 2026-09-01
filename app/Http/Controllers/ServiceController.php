@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreServiceRequest;
-use App\Http\Requests\StoreServicePricingOptionRequest;
+use App\Http\Requests\StoreServicePriceRequest;
 use App\Http\Requests\UpdateServiceRequest;
 use App\Models\Service;
-use App\Models\ServicePricingOption;
+use App\Models\ServicePrice;
 use App\Models\Vendor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
@@ -46,14 +47,29 @@ class ServiceController extends Controller
                 ])
                 ->values()
                 ->all(),
-            'pricingStructuresByCategory' => collect(array_keys(config('service_categories')))
+            'priceTypesByCategory' => collect(array_keys(config('service_categories')))
                 ->mapWithKeys(function (string $category) {
                     return [
-                        $category => collect($this->pricingStructuresForCategory($category))
+                        $category => collect($this->priceTypesForCategory($category))
                             ->map(fn (string $value) => [
                                 'value' => $value,
-                                'label' => __("create-service.pricing_structure_{$value}_label"),
-                                'unitLabel' => __("config-service-units.{$value}"),
+                                'label' => __("create-service.price_type_{$value}_label"),
+                                'priceTypeLabel' => __("config-service-price-types.{$value}"),
+                            ])
+                            ->values()
+                            ->all(),
+                    ];
+                })
+                ->all(),
+            'priceFeaturesByCategory' => collect(array_keys(config('service_categories')))
+                ->mapWithKeys(function (string $category) {
+                    return [
+                        $category => collect($this->priceFeaturesForCategory($category))
+                            ->map(fn (string $value) => [
+                                'value' => $value,
+                                'label' => __("config-service-price-features.{$value}") === "config-service-price-features.{$value}"
+                                    ? $value
+                                    : __("config-service-price-features.{$value}"),
                             ])
                             ->values()
                             ->all(),
@@ -75,7 +91,7 @@ class ServiceController extends Controller
 
         abort_unless($service->vendor_id === $vendor->id, 404);
 
-        $service->loadMissing(['customCategory', 'pricingOptions']);
+        $service->loadMissing(['customCategory', 'prices']);
         $categoryLabel = $service->category === 'other'
             ? $service->customCategory?->name
             : __("config-service-categories.{$service->category}");
@@ -94,17 +110,16 @@ class ServiceController extends Controller
                 'description' => $service->description,
                 'category_label' => $categoryLabel ?: $service->category,
                 'is_public' => (bool) $service->is_public,
-                'pricing_options' => $service->pricingOptions
+                'pricing_options' => $service->prices
                     ->map(fn ($pricingOption) => [
                         'id' => $pricingOption->id,
                         'name' => $pricingOption->name,
                         'description' => $pricingOption->description,
                         'price_in_minor' => $pricingOption->price_in_minor,
-                        'unit' => $pricingOption->unit,
-                        'unit_label' => __("config-service-units.{$pricingOption->unit}") === "config-service-units.{$pricingOption->unit}"
-                            ? $pricingOption->unit
-                            : __("config-service-units.{$pricingOption->unit}"),
-                        'is_public' => (bool) $pricingOption->is_public,
+                        'pricing_type' => $pricingOption->pricing_type,
+                        'price_type_label' => __("config-service-price-types.{$pricingOption->pricing_type}") === "config-service-price-types.{$pricingOption->pricing_type}"
+                            ? $pricingOption->pricing_type
+                            : __("config-service-price-types.{$pricingOption->pricing_type}"),
                     ])
                     ->values()
                     ->all(),
@@ -134,13 +149,13 @@ class ServiceController extends Controller
         $validated = $request->validated();
         $slug = $this->makeSlug($vendor, $validated['name']);
 
-        $service = DB::transaction(function () use ($vendor, $validated, $slug) {
+        $service = DB::transaction(function () use ($request, $vendor, $validated, $slug) {
             $service = $vendor->services()->create([
                 'name' => $validated['name'],
                 'slug' => $slug,
                 'category' => $validated['category'],
                 'description' => $validated['description'] ?? null,
-                'is_public' => $validated['is_public'] ?? false,
+                'is_public' => $validated['is_public'] ?? true,
             ]);
 
             if ($validated['category'] === 'other') {
@@ -150,13 +165,28 @@ class ServiceController extends Controller
             }
 
             foreach ($validated['pricing_options'] ?? [] as $sortOrder => $pricingOptionData) {
-                $service->pricingOptions()->create([
+                $price = $service->prices()->create([
                     'name' => $pricingOptionData['name'] ?? $validated['name'],
                     'description' => $pricingOptionData['description'] ?? null,
                     'price_in_minor' => $pricingOptionData['price_in_minor'],
-                    'unit' => $pricingOptionData['unit'],
+                    'pricing_type' => $pricingOptionData['pricing_type'],
                     'sort_order' => $sortOrder,
-                    'is_public' => $validated['is_public'] ?? false,
+                ]);
+
+                foreach ($pricingOptionData['features'] ?? [] as $featureSortOrder => $featureData) {
+                    $price->features()->create([
+                        'feature_key' => $featureData['feature_key'],
+                        'is_included' => $featureData['is_included'] ?? true,
+                        'value' => $featureData['value'] ?? null,
+                        'sort_order' => $featureSortOrder,
+                    ]);
+                }
+            }
+
+            foreach ($request->file('media', []) as $sortOrder => $media) {
+                $service->media()->create([
+                    'path' => Storage::disk('r2')->putFile('service-media', $media, 'public'),
+                    'sort_order' => $sortOrder,
                 ]);
             }
 
@@ -197,27 +227,27 @@ class ServiceController extends Controller
             }
 
             if (array_key_exists('pricing_options', $validated)) {
-                $pricingOptions = $service->pricingOptions()->get()->keyBy('id');
+                $prices = $service->prices()->get()->keyBy('id');
                 $submittedPricingOptionIds = collect($validated['pricing_options'])
                     ->pluck('id')
                     ->filter()
                     ->values();
 
                 foreach ($submittedPricingOptionIds as $pricingOptionId) {
-                    abort_unless($pricingOptions->has($pricingOptionId), 404);
+                    abort_unless($prices->has($pricingOptionId), 404);
                 }
 
                 if ($submittedPricingOptionIds->isEmpty()) {
-                    $service->pricingOptions()->delete();
+                    $service->prices()->delete();
                 } else {
-                    $service->pricingOptions()
+                    $service->prices()
                         ->whereNotIn('id', $submittedPricingOptionIds)
                         ->delete();
                 }
 
                 foreach ($validated['pricing_options'] as $sortOrder => $pricingOptionData) {
                     $pricingOption = ($pricingOptionData['id'] ?? null)
-                        ? $pricingOptions->get($pricingOptionData['id'])
+                        ? $prices->get($pricingOptionData['id'])
                         : null;
 
                     $pricingOptionAttributes = [
@@ -226,15 +256,14 @@ class ServiceController extends Controller
                             ? $pricingOptionData['description']
                             : $pricingOption?->description,
                         'price_in_minor' => $pricingOptionData['price_in_minor'],
-                        'unit' => $pricingOptionData['unit'],
+                        'pricing_type' => $pricingOptionData['pricing_type'],
                         'sort_order' => $sortOrder,
-                        'is_public' => $validated['is_public'] ?? false,
                     ];
 
                     if ($pricingOption) {
                         $pricingOption->update($pricingOptionAttributes);
                     } else {
-                        $service->pricingOptions()->create($pricingOptionAttributes);
+                        $service->prices()->create($pricingOptionAttributes);
                     }
                 }
             }
@@ -243,7 +272,7 @@ class ServiceController extends Controller
         return to_route('overview');
     }
 
-    public function storePricingOption(StoreServicePricingOptionRequest $request, Service $service)
+    public function storePricingOption(StoreServicePriceRequest $request, Service $service)
     {
         $vendor = $request->user()->vendor;
 
@@ -256,27 +285,26 @@ class ServiceController extends Controller
         $validated = $request->validated();
 
         if (
-            $validated['unit'] === 'package'
-            && $service->pricingOptions()->where('unit', 'package')->count() >= 3
+            $validated['pricing_type'] === 'package'
+            && $service->prices()->where('pricing_type', 'package')->count() >= 3
         ) {
             throw ValidationException::withMessages([
-                'unit' => __('service-details.validation_package_limit'),
+                'pricing_type' => __('service-details.validation_package_limit'),
             ]);
         }
 
-        $service->pricingOptions()->create([
+        $service->prices()->create([
             'name' => $validated['name'],
             'description' => $validated['description'] ?? null,
             'price_in_minor' => $validated['price_in_minor'],
-            'unit' => $validated['unit'],
-            'sort_order' => ($service->pricingOptions()->max('sort_order') ?? -1) + 1,
-            'is_public' => $validated['is_public'] ?? false,
+            'pricing_type' => $validated['pricing_type'],
+            'sort_order' => ($service->prices()->max('sort_order') ?? -1) + 1,
         ]);
 
         return to_route('services.show', $service)->with('success', __('service-details.price_saved'));
     }
 
-    public function updatePricingOption(StoreServicePricingOptionRequest $request, Service $service, ServicePricingOption $pricingOption)
+    public function updatePricingOption(StoreServicePriceRequest $request, Service $service, ServicePrice $pricingOption)
     {
         $vendor = $request->user()->vendor;
 
@@ -293,14 +321,13 @@ class ServiceController extends Controller
             'name' => $validated['name'],
             'description' => $validated['description'] ?? null,
             'price_in_minor' => $validated['price_in_minor'],
-            'unit' => $validated['unit'],
-            'is_public' => $validated['is_public'] ?? false,
+            'pricing_type' => $validated['pricing_type'],
         ]);
 
         return to_route('services.show', $service)->with('success', __('service-details.price_updated'));
     }
 
-    public function destroyPricingOption(Request $request, Service $service, ServicePricingOption $pricingOption)
+    public function destroyPricingOption(Request $request, Service $service, ServicePrice $pricingOption)
     {
         $vendor = $request->user()->vendor;
 
@@ -356,8 +383,13 @@ class ServiceController extends Controller
         return $slug;
     }
 
-    private function pricingStructuresForCategory(string $category): array
+    private function priceTypesForCategory(string $category): array
     {
-        return config("service_categories.{$category}.pricing_structures", []);
+        return config("service_categories.{$category}.price_types", []);
+    }
+
+    private function priceFeaturesForCategory(string $category): array
+    {
+        return config("service_categories.{$category}.price_features", []);
     }
 }
