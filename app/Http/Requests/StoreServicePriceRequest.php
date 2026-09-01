@@ -6,7 +6,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class StoreServicePricingOptionRequest extends FormRequest
+class StoreServicePriceRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -19,12 +19,11 @@ class StoreServicePricingOptionRequest extends FormRequest
             'name' => ['required', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:2000'],
             'price_in_minor' => ['required', 'integer', 'min:0', 'max:4294967295'],
-            'unit' => [
+            'pricing_type' => [
                 'required',
                 'string',
                 Rule::in(['package']),
             ],
-            'is_public' => ['boolean'],
         ];
     }
 
@@ -41,7 +40,7 @@ class StoreServicePricingOptionRequest extends FormRequest
             'price_in_minor.integer' => __('service-details.validation_price_invalid'),
             'price_in_minor.min' => __('service-details.validation_price_invalid'),
             'price_in_minor.max' => __('service-details.validation_price_invalid'),
-            'unit.in' => __('service-details.validation_price_unit_invalid'),
+            'pricing_type.in' => __('service-details.validation_price_type_invalid'),
         ];
     }
 }

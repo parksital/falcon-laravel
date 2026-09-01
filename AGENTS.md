@@ -53,6 +53,9 @@ Before changing code in this repository, read and follow these project rules.
   helpers first. Use `<Form {...store.form()}>`, `disableWhileProcessing`, and
   form slot props for processing/errors when they fit. Use `useForm` when the
   form needs controlled state or custom client-side behavior.
+- When using the Inertia `useForm` helper, update individual fields with
+  `setData('field', value)` instead of spreading and replacing the whole form
+  object, unless a full reset of related form state is intentional.
 
 ## UI Style
 

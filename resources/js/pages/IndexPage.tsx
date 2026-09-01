@@ -31,8 +31,8 @@ type Service = {
     category_label: string;
     description: string | null;
     price_in_minor: number | null;
-    unit: string | null;
-    unit_label: string | null;
+    pricing_type: string | null;
+    price_type_label: string | null;
     vendor: {
         name: string | null;
         location: string | null;
@@ -159,7 +159,7 @@ export default function IndexPage({ services, locale, copy }: IndexPageProps) {
                                         <p className="font-medium">
                                             {formatPriceInMinor(service.price_in_minor, locale, copy)}{' '}
                                             {interpolate(copy.per_unit, {
-                                                unit: service.unit_label || copy.unit_not_set,
+                                                pricing_type: service.price_type_label || copy.unit_not_set,
                                             })}
                                         </p>
                                         {service.description ? (

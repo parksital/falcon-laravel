@@ -11,21 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('service_pricing_options', function (Blueprint $table) {
+        Schema::create('service_media', function (Blueprint $table) {
             $table->id();
             $table->foreignId('service_id')
                 ->constrained()
                 ->cascadeOnDelete();
-            $table->string('name');
-            $table->text('description')->nullable();
-            $table->unsignedInteger('price_in_minor');
-            $table->string('unit');
+            $table->string('path');
             $table->unsignedSmallInteger('sort_order')->default(0);
-            $table->boolean('is_public')->default(false)->index();
             $table->timestamps();
 
             $table->index(['service_id', 'sort_order']);
-            $table->index(['service_id', 'is_public']);
         });
     }
 
@@ -34,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('service_pricing_options');
+        Schema::dropIfExists('service_media');
     }
 };

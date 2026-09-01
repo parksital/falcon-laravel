@@ -25,17 +25,17 @@ class UpdateServiceRequest extends FormRequest
             'pricing_options.*.name' => ['nullable', 'string', 'max:120'],
             'pricing_options.*.description' => ['nullable', 'string', 'max:2000'],
             'pricing_options.*.price_in_minor' => ['required', 'integer', 'min:0', 'max:4294967295'],
-            'pricing_options.*.unit' => [
+            'pricing_options.*.pricing_type' => [
                 'required',
                 'string',
-                Rule::in($this->pricingStructuresForCategory($this->string('category')->toString())),
+                Rule::in($this->priceTypesForCategory($this->string('category')->toString())),
             ],
             'is_public' => ['boolean'],
         ];
     }
 
-    private function pricingStructuresForCategory(string $category): array
+    private function priceTypesForCategory(string $category): array
     {
-        return config("service_categories.{$category}.pricing_structures", []);
+        return config("service_categories.{$category}.price_types", []);
     }
 }

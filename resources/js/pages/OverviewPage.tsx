@@ -115,7 +115,7 @@ interface OverviewPageProps {
         value: string;
         label: string;
     }[];
-    pricingStructuresByCategory: Record<string, {
+    priceTypesByCategory: Record<string, {
         value: string;
         label: string;
     }[]>;
@@ -150,7 +150,7 @@ function slugify(text: string) {
 type EditPricingOption = {
     id: number | null;
     price_in_minor: string;
-    unit: string;
+    pricing_type: string;
 };
 
 type OverviewPageComponent = ((props: OverviewPageProps) => ReactNode) & {
@@ -168,7 +168,7 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
     vendor,
     services,
     serviceCategories,
-    pricingStructuresByCategory,
+    priceTypesByCategory,
     copy,
 }: OverviewPageProps) {
     setLayoutProps<{ breadcrumbs: BreadcrumbItem[] }>({
@@ -214,7 +214,7 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
 
     const editingService = services.find((service) => service.id === editingServiceId);
     const editFormErrors = editForm.errors as Record<string, string | undefined>;
-    const editPricingStructures = pricingStructuresByCategory[editForm.data.category] || [];
+    const editPriceTypes = priceTypesByCategory[editForm.data.category] || [];
     const previewSlug = slugify(vendorForm.data.slug);
     const previewBookingPageUrl = `${vendor.public_url.slice(0, -vendor.slug.length)}${previewSlug}`;
     const shouldShowPricingSection = false;
@@ -624,9 +624,9 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                                             custom_category: value === 'other' ? editForm.data.custom_category : '',
                                             pricing_options: editForm.data.pricing_options.map((pricingOption) => ({
                                                 ...pricingOption,
-                                                unit: pricingStructuresByCategory[value]?.some((pricingStructure) => pricingStructure.value === pricingOption.unit)
-                                                    ? pricingOption.unit
-                                                    : pricingStructuresByCategory[value]?.[0]?.value || '',
+                                                pricing_type: priceTypesByCategory[value]?.some((priceType) => priceType.value === pricingOption.pricing_type)
+                                                    ? pricingOption.pricing_type
+                                                    : priceTypesByCategory[value]?.[0]?.value || '',
                                             })),
                                         })}
                                     >
@@ -729,13 +729,13 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                                                     <InputError message={editFormErrors[`pricing_options.${index}.price_in_minor`]} />
                                                 </Field>
 
-                                                <Field data-invalid={editFormErrors[`pricing_options.${index}.unit`] ? true : undefined}>
+                                                <Field data-invalid={editFormErrors[`pricing_options.${index}.pricing_type`] ? true : undefined}>
                                                     <Select
-                                                        value={pricingOption.unit}
+                                                        value={pricingOption.pricing_type}
                                                         onValueChange={(value) => {
                                                             const pricingOptions = editForm.data.pricing_options.map((option, optionIndex) =>
                                                                 optionIndex === index
-                                                                    ? { ...option, unit: value }
+                                                                    ? { ...option, pricing_type: value }
                                                                     : option,
                                                             );
 
@@ -743,21 +743,21 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                                                         }}
                                                     >
                                                         <SelectTrigger
-                                                            aria-invalid={Boolean(editFormErrors[`pricing_options.${index}.unit`])}
+                                                            aria-invalid={Boolean(editFormErrors[`pricing_options.${index}.pricing_type`])}
                                                         >
                                                             <SelectValue placeholder={copy.service_field_unit_placeholder} />
                                                         </SelectTrigger>
                                                         <SelectContent position="popper">
                                                             <SelectGroup>
-                                                                {editPricingStructures.map((pricingStructure) => (
-                                                                    <SelectItem key={pricingStructure.value} value={pricingStructure.value}>
-                                                                        {pricingStructure.label}
+                                                                {editPriceTypes.map((priceType) => (
+                                                                    <SelectItem key={priceType.value} value={priceType.value}>
+                                                                        {priceType.label}
                                                                     </SelectItem>
                                                                 ))}
                                                             </SelectGroup>
                                                         </SelectContent>
                                                     </Select>
-                                                    <InputError message={editFormErrors[`pricing_options.${index}.unit`]} />
+                                                    <InputError message={editFormErrors[`pricing_options.${index}.pricing_type`]} />
                                                 </Field>
                                             </div>
                                         ))}

@@ -17,8 +17,8 @@ export type Service = {
     category_label: string;
     description: string | null;
     price_in_minor: number | null;
-    unit: string | null;
-    unit_label: string | null;
+    pricing_type: string | null;
+    price_type_label: string | null;
     url: string;
 };
 
