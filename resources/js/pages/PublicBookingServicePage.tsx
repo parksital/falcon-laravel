@@ -136,8 +136,8 @@ export default function PublicBookingServicePage({ copy, vendor, service, locale
                         {formattedPrice ? (
                             <p className="font-medium">
                                 {formattedPrice}
-                                {service.price_type_label ? ` ${interpolate(copy.per_unit, {
-                                    pricing_type: service.price_type_label,
+                                {service.pricing_type !== 'package' && service.price_type_label ? ` ${interpolate(copy.per_unit, {
+                                    unit: service.price_type_label,
                                 })}` : null}
                             </p>
                         ) : null}

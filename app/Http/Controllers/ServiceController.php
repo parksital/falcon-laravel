@@ -167,7 +167,7 @@ class ServiceController extends Controller
 
             foreach ($validated['pricing_options'] ?? [] as $sortOrder => $pricingOptionData) {
                 $price = $service->prices()->create([
-                    'name' => $pricingOptionData['name'] ?? $validated['name'],
+                    'name' => $pricingOptionData['name'] ?? 'Price '.($sortOrder + 1),
                     'description' => $pricingOptionData['description'] ?? null,
                     'price_in_minor' => $pricingOptionData['price_in_minor'],
                     'pricing_type' => $pricingOptionData['pricing_type'],
@@ -294,12 +294,14 @@ class ServiceController extends Controller
             ]);
         }
 
+        $sortOrder = ($service->prices()->max('sort_order') ?? -1) + 1;
+
         $service->prices()->create([
-            'name' => $validated['name'],
+            'name' => $validated['name'] ?? 'Price '.($sortOrder + 1),
             'description' => $validated['description'] ?? null,
             'price_in_minor' => $validated['price_in_minor'],
             'pricing_type' => $validated['pricing_type'],
-            'sort_order' => ($service->prices()->max('sort_order') ?? -1) + 1,
+            'sort_order' => $sortOrder,
         ]);
 
         return to_route('services.show', $service)->with('success', __('service-details.price_saved'));
@@ -319,7 +321,7 @@ class ServiceController extends Controller
         $validated = $request->validated();
 
         $pricingOption->update([
-            'name' => $validated['name'],
+            'name' => $validated['name'] ?? 'Price '.($pricingOption->sort_order + 1),
             'description' => $validated['description'] ?? null,
             'price_in_minor' => $validated['price_in_minor'],
             'pricing_type' => $validated['pricing_type'],

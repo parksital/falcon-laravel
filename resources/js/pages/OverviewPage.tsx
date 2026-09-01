@@ -129,8 +129,18 @@ function formatPriceInMinorValue(priceInMinor: string) {
     }).format(Number(priceInMinor) / 100)}`;
 }
 
-function formatPriceInMinorDescription(priceInMinor: string) {
-    return formatPriceInMinorValue(priceInMinor || '0');
+function normalizePriceAmount(value: string) {
+    return value.replace(/\D/g, '');
+}
+
+function priceAmountToMinor(value: string) {
+    if (! value) return '';
+
+    return `${Number(value) * 100}`;
+}
+
+function formatPriceAmountDescription(priceAmount: string) {
+    return formatPriceInMinorValue(priceAmountToMinor(priceAmount) || '0');
 }
 
 function slugifyTyping(text: string) {
@@ -574,6 +584,14 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
 
                             if (editingServiceId === null) return;
 
+                            editForm.transform((formData) => ({
+                                ...formData,
+                                pricing_options: formData.pricing_options.map((pricingOption) => ({
+                                    ...pricingOption,
+                                    price_in_minor: priceAmountToMinor(pricingOption.price_in_minor),
+                                })),
+                            }));
+
                             editForm.patch(updateService(editingServiceId).url, {
                                 preserveScroll: true,
                                 onBefore: () => {
@@ -714,7 +732,7 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                                                             onChange={(event) => {
                                                                 const pricingOptions = editForm.data.pricing_options.map((option, optionIndex) =>
                                                                     optionIndex === index
-                                                                        ? { ...option, price_in_minor: event.target.value.replace(/\D/g, '') }
+                                                                        ? { ...option, price_in_minor: normalizePriceAmount(event.target.value) }
                                                                         : option,
                                                                 );
 
@@ -723,7 +741,7 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                                                         />
 
                                                         <InputGroupAddon align="inline-end">
-                                                            {formatPriceInMinorDescription(pricingOption.price_in_minor)}
+                                                            {formatPriceAmountDescription(pricingOption.price_in_minor)}
                                                         </InputGroupAddon>
                                                     </InputGroup>
                                                     <InputError message={editFormErrors[`pricing_options.${index}.price_in_minor`]} />

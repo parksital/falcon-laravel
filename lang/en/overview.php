@@ -63,8 +63,8 @@ return [
     'service_field_custom_category' => 'Category name',
     'service_field_description' => 'Description',
     'service_field_description_placeholder' => 'What does this service include?',
-    'service_field_price_in_minor' => 'Price in cents',
-    'service_field_price_placeholder' => '20000',
+    'service_field_price_in_minor' => 'Amount',
+    'service_field_price_placeholder' => '650',
     'service_field_unit' => 'Per',
     'service_field_unit_placeholder' => 'Select',
 

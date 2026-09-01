@@ -65,7 +65,7 @@ return [
     'rate_price_day_label' => 'Price per day',
     'rate_price_event_label' => 'Price per event',
     'rate_included_label' => 'What’s included in this rate? (optional)',
-    'price_placeholder' => '20000',
+    'price_placeholder' => '650',
     'per_unit' => 'per :unit',
     'media_section_label' => 'Show the experience',
     'media_section_description' => 'Add up to three photos for this service.',

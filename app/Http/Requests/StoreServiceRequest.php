@@ -15,7 +15,12 @@ class StoreServiceRequest extends FormRequest
         }
 
         $pricingOptions = collect($this->input('pricing_options', []))
-            ->filter(fn (array $pricingOption) => filled($pricingOption['price_in_minor'] ?? null))
+            ->filter(fn ($pricingOption) => is_array($pricingOption) && (
+                filled($pricingOption['name'] ?? null)
+                || filled($pricingOption['description'] ?? null)
+                || filled($pricingOption['price_in_minor'] ?? null)
+                || ! empty($pricingOption['features'] ?? [])
+            ))
             ->values()
             ->all();
 

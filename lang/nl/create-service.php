@@ -65,7 +65,7 @@ return [
     'rate_price_day_label' => 'Prijs per dag',
     'rate_price_event_label' => 'Prijs per evenement',
     'rate_included_label' => 'Wat is inbegrepen in dit tarief? (optioneel)',
-    'price_placeholder' => '20000',
+    'price_placeholder' => '650',
     'per_unit' => 'per :unit',
     'media_section_label' => 'Laat de ervaring zien',
     'media_section_description' => 'Voeg maximaal drie foto’s toe voor deze service.',
