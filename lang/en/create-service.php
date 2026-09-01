@@ -81,7 +81,7 @@ return [
     'back' => 'Back',
     'cancel' => 'Cancel',
     'submit_draft' => 'Save as draft',
-    'submit' => 'Save and publish service',
+    'submit' => 'Save and publish',
     'saved' => 'Service published',
     'preview_label' => 'Preview',
     'preview_by_vendor' => 'By :business_name',
