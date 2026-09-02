@@ -7,6 +7,12 @@ import {
     BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
+import {
+    Empty,
+    EmptyDescription,
+    EmptyHeader,
+    EmptyTitle,
+} from '@/components/ui/empty';
 import { Toaster } from '@/components/ui/sonner';
 import { index } from '@/routes';
 import { type BreadcrumbItem as BreadcrumbItemType, SharedData } from '@/types';
@@ -19,7 +25,7 @@ type MobilePublicBookingLayoutProps = {
     headerAction?: ReactNode;
 };
 
-export default function MobilePublicBookingLayout({ breadcrumbs, children, headerAction }: MobilePublicBookingLayoutProps) {
+export default function MobilePublicBookingLayout({ breadcrumbs, headerAction }: MobilePublicBookingLayoutProps) {
     const { name } = usePage<SharedData>().props;
 
     return (
@@ -58,7 +64,14 @@ export default function MobilePublicBookingLayout({ breadcrumbs, children, heade
             </header>
 
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-                {children}
+                <Empty className="min-h-full border-0">
+                    <EmptyHeader>
+                        <EmptyTitle>Desktop only for now</EmptyTitle>
+                        <EmptyDescription>
+                            {name} is currently only supported on desktop.
+                        </EmptyDescription>
+                    </EmptyHeader>
+                </Empty>
             </div>
             <Toaster />
         </div>
