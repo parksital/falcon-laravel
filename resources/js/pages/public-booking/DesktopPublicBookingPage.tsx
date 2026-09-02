@@ -14,20 +14,8 @@ import {
     EmptyMedia,
     EmptyTitle,
 } from '@/components/ui/empty';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuGroup,
-    DropdownMenuLabel,
-    DropdownMenuRadioGroup,
-    DropdownMenuRadioItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { update as updateLocale } from '@/routes/locale';
-import { SharedData } from '@/types';
-import { router, usePage } from '@inertiajs/react';
-import { GlobeIcon } from '@phosphor-icons/react';
-import { type PublicBookingPageProps } from './types';
+import { router } from '@inertiajs/react';
+import { type PublicBookingPageProps, type Service } from './types';
 
 function interpolate(value: string, replacements: Record<string, string>) {
     return Object.entries(replacements).reduce(
@@ -45,65 +33,49 @@ function formatPriceInMinor(priceInMinor: number | null, locale: string) {
     }).format(priceInMinor / 100);
 }
 
+function servicePriceSummary(service: Service, locale: string, copy: PublicBookingPageProps['copy']) {
+    const lowestPrice = service.pricing_options
+        .toSorted((first, second) => first.price_in_minor - second.price_in_minor)
+        [0];
+
+    if (! lowestPrice) return null;
+
+    const formattedPrice = formatPriceInMinor(lowestPrice.price_in_minor, locale);
+    const unit = lowestPrice.pricing_type !== 'package'
+        ? ` ${interpolate(copy.per_unit, { unit: lowestPrice.price_type_label })}`
+        : '';
+    const additionalPrices = service.pricing_options.length - 1;
+
+    if (additionalPrices === 0) return `${formattedPrice}${unit}`;
+
+    return `${formattedPrice}${unit} ${interpolate(additionalPrices === 1 ? copy.more_price : copy.more_prices, {
+        count: `${additionalPrices}`,
+    })}`;
+}
+
 export default function DesktopPublicBookingPage({ copy, vendor, services, locale }: PublicBookingPageProps) {
-    const { layoutCopy } = usePage<SharedData>().props;
-
     return (
-        <main className="mx-auto flex min-h-screen w-full max-w-4xl flex-1 flex-col gap-6 px-6 py-12">
+        <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 px-6 py-12">
             <section className="flex flex-col gap-3">
-                <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3">
-                        {vendor.logo_url && (
-                            <div className="size-24 shrink-0 overflow-hidden border">
-                                <img src={vendor.logo_url} alt={vendor.name} className="size-full object-cover" />
-                            </div>
-                        )}
-
-                        <div className="flex flex-col gap-2">
-                            <p className="text-sm text-muted-foreground">{vendor.location}</p>
-                            <h1 className="text-3xl font-semibold text-foreground">{vendor.name}</h1>
-                            {vendor.short_description ? (
-                                <p className="max-w-2xl text-sm text-muted-foreground">{vendor.short_description}</p>
-                            ) : null}
-                            {vendor.joined_at ? (
-                                <p className="text-sm text-muted-foreground">
-                                    {interpolate(copy.joined, { formatted_date: vendor.joined_at })}
-                                </p>
-                            ) : null}
+                <div className="flex items-start gap-3">
+                    {vendor.logo_url && (
+                        <div className="size-24 shrink-0 overflow-hidden border">
+                            <img src={vendor.logo_url} alt={vendor.name} className="size-full object-cover" />
                         </div>
-                    </div>
+                    )}
 
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button type="button" variant="outline" size="sm">
-                                <GlobeIcon data-icon="inline-start" />
-                                {locale === 'nl' ? layoutCopy.language_dutch : layoutCopy.language_english}
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuGroup>
-                                <DropdownMenuLabel>{layoutCopy.language}</DropdownMenuLabel>
-                                <DropdownMenuRadioGroup
-                                    value={locale}
-                                    onValueChange={(nextLocale) => {
-                                        if (nextLocale !== locale) {
-                                            router.patch(updateLocale.url(), { locale: nextLocale }, {
-                                                preserveScroll: true,
-                                                preserveState: true,
-                                            });
-                                        }
-                                    }}
-                                >
-                                    <DropdownMenuRadioItem value="en">
-                                        {layoutCopy.language_english}
-                                    </DropdownMenuRadioItem>
-                                    <DropdownMenuRadioItem value="nl">
-                                        {layoutCopy.language_dutch}
-                                    </DropdownMenuRadioItem>
-                                </DropdownMenuRadioGroup>
-                            </DropdownMenuGroup>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    <div className="flex flex-col gap-2">
+                        <p className="text-sm text-muted-foreground">{vendor.location}</p>
+                        <h1 className="text-3xl font-semibold text-foreground">{vendor.name}</h1>
+                        {vendor.short_description ? (
+                            <p className="max-w-2xl text-sm text-muted-foreground">{vendor.short_description}</p>
+                        ) : null}
+                        {vendor.joined_at ? (
+                            <p className="text-sm text-muted-foreground">
+                                {interpolate(copy.joined, { formatted_date: vendor.joined_at })}
+                            </p>
+                        ) : null}
+                    </div>
                 </div>
             </section>
 
@@ -114,18 +86,20 @@ export default function DesktopPublicBookingPage({ copy, vendor, services, local
                 {services.length > 0 ? (
                     <div className="grid gap-3 grid-cols-2">
                         {services.map((service) => (
-                            <Card key={service.id} id={`service-${service.slug}`}>
+                            <Card key={service.id} id={`service-${service.slug}`} className='pt-0'>
+                                {service.media[0] ? (
+                                    <div className="aspect-[16/9] overflow-hidden border-b">
+                                        <img src={service.media[0].url} alt={service.name} className="size-full object-cover" />
+                                    </div>
+                                ) : null}
                                 <CardHeader>
                                     <Badge variant="secondary">{service.category_label}</Badge>
                                     <CardTitle>{service.name}</CardTitle>
                                 </CardHeader>
                                 <CardContent className="flex flex-1 flex-col gap-3">
-                                    {formatPriceInMinor(service.price_in_minor, locale) ? (
+                                    {servicePriceSummary(service, locale, copy) ? (
                                         <p className="font-medium">
-                                            {formatPriceInMinor(service.price_in_minor, locale)}
-                                            {service.pricing_type !== 'package' && service.price_type_label ? ` ${interpolate(copy.per_unit, {
-                                                unit: service.price_type_label,
-                                            })}` : null}
+                                            {servicePriceSummary(service, locale, copy)}
                                         </p>
                                     ) : null}
 

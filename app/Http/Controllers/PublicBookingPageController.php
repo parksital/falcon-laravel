@@ -18,7 +18,7 @@ class PublicBookingPageController extends Controller
             ->with(['services' => function ($query) {
                 $query
                     ->where('is_public', true)
-                    ->with(['customCategory', 'prices'])
+                    ->with(['customCategory', 'media', 'prices.features'])
                     ->orderBy('name');
             }])
             ->firstOrFail();
@@ -33,7 +33,7 @@ class PublicBookingPageController extends Controller
             ->with(['services' => function ($query) {
                 $query
                     ->where('is_public', true)
-                    ->with(['customCategory', 'prices'])
+                    ->with(['customCategory', 'media', 'prices.features'])
                     ->orderBy('name');
             }])
             ->firstOrFail();
@@ -110,6 +110,41 @@ class PublicBookingPageController extends Controller
             'pricing_type' => $price?->pricing_type,
             'price_type_label' => $price?->pricing_type ? ($this->priceTypeLabels()[$price->pricing_type] ?? $price->pricing_type) : null,
             'url' => route('public.booking.service.show', [$vendor->slug, $service->slug]),
+            'pricing_options' => $service->prices
+                ->map(fn ($price) => $this->pricePayload($price))
+                ->values()
+                ->all(),
+            'media' => $service->media
+                ->map(fn ($media) => [
+                    'id' => $media->id,
+                    'url' => Storage::disk('r2')->url($media->path),
+                    'sort_order' => $media->sort_order,
+                ])
+                ->values()
+                ->all(),
+        ];
+    }
+
+    private function pricePayload($price): array
+    {
+        return [
+            'id' => $price->id,
+            'name' => $price->name,
+            'description' => $price->description,
+            'price_in_minor' => $price->price_in_minor,
+            'pricing_type' => $price->pricing_type,
+            'price_type_label' => $this->priceTypeLabels()[$price->pricing_type] ?? $price->pricing_type,
+            'features' => $price->features
+                ->map(fn ($feature) => [
+                    'id' => $feature->id,
+                    'feature_key' => $feature->feature_key,
+                    'label' => $this->priceFeatureLabels()[$feature->feature_key] ?? $feature->feature_key,
+                    'is_included' => $feature->is_included,
+                    'value' => $feature->value,
+                    'sort_order' => $feature->sort_order,
+                ])
+                ->values()
+                ->all(),
         ];
     }
 
@@ -163,7 +198,11 @@ class PublicBookingPageController extends Controller
                 'addressLocality' => $vendor->location,
             ],
             'makesOffer' => $vendor->services
-                ->map(function (Service $service) use ($businessId, $vendor) {
+                ->flatMap(function (Service $service) use ($businessId, $vendor) {
+                    $images = $service->media
+                        ->map(fn ($media) => Storage::disk('r2')->url($media->path))
+                        ->values()
+                        ->all();
                     $offer = [
                         '@type' => 'Offer',
                         'url' => route('public.booking.service.show', [$vendor->slug, $service->slug]),
@@ -174,20 +213,26 @@ class PublicBookingPageController extends Controller
                             'category' => $service->category === 'other'
                                 ? ($service->customCategory?->name ?? $this->serviceCategoryLabels()['other'] ?? $service->category)
                                 : $this->serviceCategoryLabels()[$service->category] ?? $service->category,
+                            ...($images ? ['image' => $images] : []),
                             'provider' => [
                                 '@id' => $businessId,
                             ],
                         ],
                     ];
 
-                    $price = $service->prices->first();
-
-                    if ($price?->price_in_minor !== null) {
-                        $offer['price'] = number_format($price->price_in_minor / 100, 2, '.', '');
-                        $offer['priceCurrency'] = 'EUR';
+                    if ($service->prices->isEmpty()) {
+                        return [$offer];
                     }
 
-                    return $offer;
+                    return $service->prices
+                        ->map(fn ($price) => [
+                            ...$offer,
+                            'name' => $price->name,
+                            'description' => $price->description,
+                            'price' => number_format($price->price_in_minor / 100, 2, '.', ''),
+                            'priceCurrency' => 'EUR',
+                        ])
+                        ->all();
                 })
                 ->values()
                 ->all(),
@@ -218,6 +263,23 @@ class PublicBookingPageController extends Controller
 
                 return [
                     $value => $translation === "config-service-price-types.{$value}" ? $value : $translation,
+                ];
+            })
+            ->all();
+    }
+
+    private function priceFeatureLabels(): array
+    {
+        return collect(config('service_categories'))
+            ->pluck('price_features')
+            ->flatten()
+            ->filter()
+            ->unique()
+            ->mapWithKeys(function (string $value) {
+                $translation = __("config-service-price-features.{$value}");
+
+                return [
+                    $value => $translation === "config-service-price-features.{$value}" ? $value : $translation,
                 ];
             })
             ->all();
