@@ -8,6 +8,8 @@ return [
     'joined_date_format' => 'j F Y',
     'service_details_heading' => 'Over deze service',
     'pricing_heading' => 'Prijzen',
+    'starting_from' => 'vanaf',
+    'prices_count' => ':count prijzen',
     'per_unit' => 'per :unit',
     'more_price' => '+ :count extra prijs',
     'more_prices' => '+ :count extra prijzen',

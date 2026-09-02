@@ -1,12 +1,6 @@
 import { Badge } from '@/components/ui/badge';
+import { ServicePricingCard } from '@/components/service-pricing-card';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -34,18 +28,8 @@ function interpolate(value: string, replacements: Record<string, string>) {
     );
 }
 
-function formatPriceInMinor(priceInMinor: number | null, locale: string) {
-    if (priceInMinor === null) return null;
-
-    return new Intl.NumberFormat(locale, {
-        style: 'currency',
-        currency: 'EUR',
-    }).format(priceInMinor / 100);
-}
-
 export default function PublicBookingServicePage({ copy, vendor, service, locale, seo }: PublicBookingServicePageProps) {
     const { layoutCopy } = usePage<SharedData>().props;
-    const formattedPrice = formatPriceInMinor(service.price_in_minor, locale);
     const breadcrumbs: BreadcrumbItem[] = [
         { title: vendor.name, href: vendor.url },
         { title: service.name, href: service.url },
@@ -107,7 +91,7 @@ export default function PublicBookingServicePage({ copy, vendor, service, locale
             </Head>
 
             <main className="w-full">
-                <section className='flex flex-col mx-auto max-w-4xl gap-6 px-6 py-12 overflow-hidden overflow-y-auto'>
+                <section className='mx-auto flex max-w-4xl flex-col gap-6 px-6 py-12'>
 
 
                     <section className="flex items-start justify-between gap-2">
@@ -145,50 +129,31 @@ export default function PublicBookingServicePage({ copy, vendor, service, locale
                             <h2 className="text-xl font-semibold text-foreground">{copy.pricing_heading}</h2>
                             <div className="grid gap-3">
                                 {service.pricing_options.map((pricingOption) => (
-                                    <Card key={pricingOption.id}>
-                                        <CardHeader>
-                                            <div className="flex flex-wrap items-start justify-between gap-2">
-                                                <div className="flex min-w-0 flex-col gap-1">
-                                                    <CardTitle className="text-base">{pricingOption.name}</CardTitle>
-                                                    <Badge variant="secondary" className="w-fit">
-                                                        {pricingOption.price_type_label}
-                                                    </Badge>
-                                                </div>
-                                                <p className="shrink-0 font-medium">
-                                                    {formatPriceInMinor(pricingOption.price_in_minor, locale)}
-                                                    {pricingOption.pricing_type !== 'package' ? ` ${interpolate(copy.per_unit, {
-                                                        unit: pricingOption.price_type_label,
-                                                    })}` : null}
-                                                </p>
-                                            </div>
-                                            {pricingOption.description ? (
-                                                <CardDescription className="whitespace-pre-line">{pricingOption.description}</CardDescription>
-                                            ) : null}
-                                        </CardHeader>
-                                        {pricingOption.features.length > 0 ? (
-                                            <CardContent className="flex flex-wrap gap-2">
-                                                {pricingOption.features.map((feature) => (
-                                                    <Badge key={feature.id} variant="secondary">
-                                                        {feature.value ? `${feature.label}: ${feature.value}` : feature.label}
-                                                    </Badge>
-                                                ))}
-                                            </CardContent>
-                                        ) : null}
-                                    </Card>
+                                    <ServicePricingCard
+                                        key={pricingOption.id}
+                                        title={pricingOption.name}
+                                        formattedPrice={pricingOption.formatted_price}
+                                        priceLabel={pricingOption.pricing_type !== 'package' ? interpolate(copy.per_unit, {
+                                            unit: pricingOption.price_type_label,
+                                        }) : pricingOption.price_type_label}
+                                        description={pricingOption.description}
+                                        features={pricingOption.features.map((feature) => ({
+                                            key: feature.id,
+                                            label: feature.label,
+                                            value: feature.value,
+                                        }))}
+                                    />
                                 ))}
                             </div>
                         </section>
-                    ) : formattedPrice ? (
-                        <Card>
-                            <CardContent className="flex flex-col gap-3">
-                                <p className="font-medium">
-                                    {formattedPrice}
-                                    {service.pricing_type !== 'package' && service.price_type_label ? ` ${interpolate(copy.per_unit, {
-                                        unit: service.price_type_label,
-                                    })}` : null}
-                                </p>
-                            </CardContent>
-                        </Card>
+                    ) : service.formatted_price ? (
+                        <ServicePricingCard
+                            title={service.name}
+                            formattedPrice={service.formatted_price}
+                            priceLabel={service.pricing_type !== 'package' && service.price_type_label ? interpolate(copy.per_unit, {
+                                unit: service.price_type_label,
+                            }) : service.price_type_label}
+                        />
                         ) : null}
                 </section>
             </main>

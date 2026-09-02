@@ -6,6 +6,7 @@ use App\Models\Service;
 use App\Models\Vendor;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Support\Number;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -107,6 +108,7 @@ class PublicBookingPageController extends Controller
                 : $this->serviceCategoryLabels()[$service->category] ?? $service->category,
             'description' => $service->description,
             'price_in_minor' => $price?->price_in_minor,
+            'formatted_price' => $price?->price_in_minor !== null ? $this->formatPrice($price->price_in_minor) : null,
             'pricing_type' => $price?->pricing_type,
             'price_type_label' => $price?->pricing_type ? ($this->priceTypeLabels()[$price->pricing_type] ?? $price->pricing_type) : null,
             'url' => route('public.booking.service.show', [$vendor->slug, $service->slug]),
@@ -132,6 +134,7 @@ class PublicBookingPageController extends Controller
             'name' => $price->name,
             'description' => $price->description,
             'price_in_minor' => $price->price_in_minor,
+            'formatted_price' => $this->formatPrice($price->price_in_minor),
             'pricing_type' => $price->pricing_type,
             'price_type_label' => $this->priceTypeLabels()[$price->pricing_type] ?? $price->pricing_type,
             'features' => $price->features
@@ -146,6 +149,11 @@ class PublicBookingPageController extends Controller
                 ->values()
                 ->all(),
         ];
+    }
+
+    private function formatPrice(int $priceInMinor): string
+    {
+        return Number::currency($priceInMinor / 100, 'EUR', app()->getLocale());
     }
 
     private function seo(Vendor $vendor, ?Service $service = null): array

@@ -4,7 +4,7 @@ export type Vendor = {
     slug: string;
     location: string;
     short_description: string | null;
-    joined_at: string | null;
+    joined_at: string;
     url: string;
     logo_url: string | null;
 };
@@ -29,6 +29,7 @@ export type ServicePricingOption = {
     name: string;
     description: string | null;
     price_in_minor: number;
+    formatted_price: string;
     pricing_type: string;
     price_type_label: string;
     features: ServicePriceFeature[];
@@ -42,6 +43,7 @@ export type Service = {
     category_label: string;
     description: string | null;
     price_in_minor: number | null;
+    formatted_price: string | null;
     pricing_type: string | null;
     price_type_label: string | null;
     url: string;
