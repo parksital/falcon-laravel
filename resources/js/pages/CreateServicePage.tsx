@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { ServicePricingCard } from '@/components/service-pricing-card';
 import {
     Card,
     CardContent,
@@ -273,6 +274,14 @@ const CreateServicePage: CreateServicePageComponent = function CreateServicePage
 
     function selectedFeatureLabels(pricingOption: PricingOption) {
         return priceFeatures.filter((feature) => pricingOption.features.some((selectedFeature) => selectedFeature.feature_key === feature.value));
+    }
+
+    function pricingOptionPriceLabel(pricingOption: PricingOption) {
+        const priceType = priceTypeLabel(pricingOption.pricing_type);
+
+        return pricingOption.pricing_type !== 'package' && priceType
+            ? copy.per_unit.replace(':unit', priceType.priceTypeLabel)
+            : priceType?.priceTypeLabel || copy.review_empty_value;
     }
 
     function hasStartedPricingOption(pricingOption: PricingOption) {
@@ -753,37 +762,17 @@ const CreateServicePage: CreateServicePageComponent = function CreateServicePage
 
                                             <CardContent className="flex flex-col gap-4">
                                                 {visiblePricingOptions.map((pricingOption, index) => (
-                                                    <div key={index} className="flex flex-col gap-3">
-                                                        {index > 0 ? <Separator /> : null}
-                                                        <div className="flex items-start justify-between gap-3">
-                                                            <div className="min-w-0">
-                                                                <p className="font-medium">{pricingOption.name || data.name}</p>
-                                                                {pricingOption.pricing_type !== 'package' ? (
-                                                                    <p className="text-sm text-muted-foreground">
-                                                                        {priceTypeLabel(pricingOption.pricing_type)?.label || copy.review_empty_value}
-                                                                    </p>
-                                                                ) : null}
-                                                            </div>
-                                                            <p className="shrink-0 font-medium">
-                                                                {formatPriceAmountDescription(pricingOption.price_in_minor, locale)}
-                                                                {pricingOption.pricing_type !== 'package' && priceTypeLabel(pricingOption.pricing_type) ? ` ${copy.per_unit.replace(':unit', priceTypeLabel(pricingOption.pricing_type)?.priceTypeLabel || '')}` : null}
-                                                            </p>
-                                                        </div>
-                                                        {selectedFeatureLabels(pricingOption).length > 0 ? (
-                                                            <div className="flex flex-wrap gap-2">
-                                                                {selectedFeatureLabels(pricingOption).map((feature) => (
-                                                                    <Badge key={feature.value} variant="secondary">
-                                                                        {feature.label}
-                                                                    </Badge>
-                                                                ))}
-                                                            </div>
-                                                        ) : null}
-                                                        {pricingOption.description ? (
-                                                            <p className="whitespace-pre-line text-sm text-muted-foreground">
-                                                                {pricingOption.description}
-                                                            </p>
-                                                        ) : null}
-                                                    </div>
+                                                    <ServicePricingCard
+                                                        key={index}
+                                                        title={pricingOption.name || data.name || copy.review_service_name_fallback}
+                                                        formattedPrice={formatPriceAmountDescription(pricingOption.price_in_minor, locale)}
+                                                        priceLabel={pricingOptionPriceLabel(pricingOption)}
+                                                        description={pricingOption.description}
+                                                        features={selectedFeatureLabels(pricingOption).map((feature) => ({
+                                                            key: feature.value,
+                                                            label: feature.label,
+                                                        }))}
+                                                    />
                                                 ))}
                                                 <p className="whitespace-pre-line text-muted-foreground">
                                                     {data.has_description && data.description ? data.description : copy.review_no_description}

@@ -8,6 +8,8 @@ return [
     'joined_date_format' => 'F j, Y',
     'service_details_heading' => 'About this service',
     'pricing_heading' => 'Pricing',
+    'starting_from' => 'starting from',
+    'prices_count' => ':count prices',
     'per_unit' => 'per :unit',
     'more_price' => '+ :count more price',
     'more_prices' => '+ :count more prices',

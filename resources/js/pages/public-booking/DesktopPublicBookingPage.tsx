@@ -1,10 +1,10 @@
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
     CardFooter,
     CardHeader,
+    CardDescription,
     CardTitle,
 } from '@/components/ui/card';
 import {
@@ -14,7 +14,8 @@ import {
     EmptyMedia,
     EmptyTitle,
 } from '@/components/ui/empty';
-import { router } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
+import { ArrowRightIcon } from '@phosphor-icons/react';
 import { type PublicBookingPageProps, type Service } from './types';
 
 function interpolate(value: string, replacements: Record<string, string>) {
@@ -24,33 +25,24 @@ function interpolate(value: string, replacements: Record<string, string>) {
     );
 }
 
-function formatPriceInMinor(priceInMinor: number | null, locale: string) {
-    if (priceInMinor === null) return null;
-
-    return new Intl.NumberFormat(locale, {
-        style: 'currency',
-        currency: 'EUR',
-    }).format(priceInMinor / 100);
-}
-
-function servicePriceSummary(service: Service, locale: string, copy: PublicBookingPageProps['copy']) {
+function servicePriceSummary(service: Service, copy: PublicBookingPageProps['copy']) {
     const lowestPrice = service.pricing_options
         .toSorted((first, second) => first.price_in_minor - second.price_in_minor)
         [0];
 
     if (! lowestPrice) return null;
 
-    const formattedPrice = formatPriceInMinor(lowestPrice.price_in_minor, locale);
     const unit = lowestPrice.pricing_type !== 'package'
         ? ` ${interpolate(copy.per_unit, { unit: lowestPrice.price_type_label })}`
         : '';
-    const additionalPrices = service.pricing_options.length - 1;
 
-    if (additionalPrices === 0) return `${formattedPrice}${unit}`;
-
-    return `${formattedPrice}${unit} ${interpolate(additionalPrices === 1 ? copy.more_price : copy.more_prices, {
-        count: `${additionalPrices}`,
-    })}`;
+    return {
+        price: `${copy.starting_from} ${lowestPrice.formatted_price}${unit}`,
+        count: interpolate(copy.prices_count, {
+            count: `${service.pricing_options.length}`,
+        }),
+        hasMultiplePrices: service.pricing_options.length > 1,
+    }
 }
 
 export default function DesktopPublicBookingPage({ copy, vendor, services, locale }: PublicBookingPageProps) {
@@ -64,17 +56,16 @@ export default function DesktopPublicBookingPage({ copy, vendor, services, local
                         </div>
                     )}
 
-                    <div className="flex flex-col gap-2">
+                    <div>
                         <p className="text-sm text-muted-foreground">{vendor.location}</p>
                         <h1 className="text-3xl font-semibold text-foreground">{vendor.name}</h1>
                         {vendor.short_description ? (
                             <p className="max-w-2xl text-sm text-muted-foreground">{vendor.short_description}</p>
                         ) : null}
-                        {vendor.joined_at ? (
-                            <p className="text-sm text-muted-foreground">
-                                {interpolate(copy.joined, { formatted_date: vendor.joined_at })}
-                            </p>
-                        ) : null}
+
+                        <p className="text-sm text-muted-foreground">
+                            {interpolate(copy.joined, { formatted_date: vendor.joined_at })}
+                        </p>
                     </div>
                 </div>
             </section>
@@ -86,31 +77,40 @@ export default function DesktopPublicBookingPage({ copy, vendor, services, local
                 {services.length > 0 ? (
                     <div className="grid gap-3 grid-cols-2">
                         {services.map((service) => (
-                            <Card key={service.id} id={`service-${service.slug}`} className='pt-0'>
-                                {service.media[0] ? (
-                                    <div className="aspect-[16/9] overflow-hidden border-b">
-                                        <img src={service.media[0].url} alt={service.name} className="size-full object-cover" />
-                                    </div>
-                                ) : null}
-                                <CardHeader>
-                                    <Badge variant="secondary">{service.category_label}</Badge>
-                                    <CardTitle>{service.name}</CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex flex-1 flex-col gap-3">
-                                    {servicePriceSummary(service, locale, copy) ? (
-                                        <p className="font-medium">
-                                            {servicePriceSummary(service, locale, copy)}
-                                        </p>
+                            <Link key={service.id} href={service.url} className="flex h-full flex-col text-left">
+                                <Card id={`service-${service.slug}`} className='pt-0'>
+                                    {service.media[0] ? (
+                                        <div className="aspect-[16/9] overflow-hidden border-b">
+                                            <img src={service.media[0].url} alt={service.name} className="size-full object-cover" />
+                                        </div>
                                     ) : null}
+                                    <CardHeader>
+                                        <Badge variant="secondary">{service.category_label}</Badge>
+                                        <CardTitle>{service.name}</CardTitle>
+                                        {service.description ? (
+                                            <CardDescription className="line-clamp-2">{service.description}</CardDescription>
+                                        ) : null}
+                                    </CardHeader>
+                                    <CardContent className="flex flex-1 flex-col gap-3">
+                                        {servicePriceSummary(service, copy) ? (
+                                            <div className="flex flex-wrap items-center gap-2 font-medium">
+                                                {servicePriceSummary(service, copy)?.hasMultiplePrices ? (
+                                                    <>
+                                                        <span>{servicePriceSummary(service, copy)?.count}</span>
+                                                        <span className="text-muted-foreground">&middot;</span>
+                                                    </>
+                                                ) : null}
+                                                <span>{servicePriceSummary(service, copy)?.price}</span>
+                                            </div>
+                                        ) : null}
+                                    </CardContent>
 
-                                </CardContent>
-
-                                <CardFooter>
-                                    <Button variant="outline" onClick={() => router.visit(service.url)}>
-                                        {copy.view_service}
-                                    </Button>
-                                </CardFooter>
-                            </Card>
+                                    <CardFooter className="mt-auto justify-between text-sm text-muted-foreground">
+                                        <span>{copy.view_service}</span>
+                                        <ArrowRightIcon aria-hidden="true" />
+                                    </CardFooter>
+                                </Card>
+                            </Link>
                         ))}
                     </div>
                 ) : (
