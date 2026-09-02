@@ -9,6 +9,31 @@ export type Vendor = {
     logo_url: string | null;
 };
 
+export type ServiceMedia = {
+    id: number;
+    url: string;
+    sort_order: number;
+};
+
+export type ServicePriceFeature = {
+    id: number;
+    feature_key: string;
+    label: string;
+    is_included: boolean;
+    value: string | null;
+    sort_order: number;
+};
+
+export type ServicePricingOption = {
+    id: number;
+    name: string;
+    description: string | null;
+    price_in_minor: number;
+    pricing_type: string;
+    price_type_label: string;
+    features: ServicePriceFeature[];
+};
+
 export type Service = {
     id: number;
     name: string;
@@ -20,6 +45,8 @@ export type Service = {
     pricing_type: string | null;
     price_type_label: string | null;
     url: string;
+    pricing_options: ServicePricingOption[];
+    media: ServiceMedia[];
 };
 
 export type PublicBookingPageProps = {

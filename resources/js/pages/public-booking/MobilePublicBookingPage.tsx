@@ -13,14 +13,8 @@ import {
     EmptyMedia,
     EmptyTitle,
 } from '@/components/ui/empty';
-import {
-    NativeSelect,
-    NativeSelectOption,
-} from '@/components/ui/native-select';
-import { update as updateLocale } from '@/routes/locale';
-import { SharedData } from '@/types';
-import { router, usePage } from '@inertiajs/react';
-import { type PublicBookingPageProps } from './types';
+import { router } from '@inertiajs/react';
+import { type PublicBookingPageProps, type Service } from './types';
 
 function interpolate(value: string, replacements: Record<string, string>) {
     return Object.entries(replacements).reduce(
@@ -38,31 +32,29 @@ function formatPriceInMinor(priceInMinor: number | null, locale: string) {
     }).format(priceInMinor / 100);
 }
 
-export default function MobilePublicBookingPage({ copy, vendor, services, locale }: PublicBookingPageProps) {
-    const { layoutCopy } = usePage<SharedData>().props;
+function servicePriceSummary(service: Service, locale: string, copy: PublicBookingPageProps['copy']) {
+    const lowestPrice = service.pricing_options
+        .toSorted((first, second) => first.price_in_minor - second.price_in_minor)
+        [0];
 
+    if (! lowestPrice) return null;
+
+    const formattedPrice = formatPriceInMinor(lowestPrice.price_in_minor, locale);
+    const unit = lowestPrice.pricing_type !== 'package'
+        ? ` ${interpolate(copy.per_unit, { unit: lowestPrice.price_type_label })}`
+        : '';
+    const additionalPrices = service.pricing_options.length - 1;
+
+    if (additionalPrices === 0) return `${formattedPrice}${unit}`;
+
+    return `${formattedPrice}${unit} ${interpolate(additionalPrices === 1 ? copy.more_price : copy.more_prices, {
+        count: `${additionalPrices}`,
+    })}`;
+}
+
+export default function MobilePublicBookingPage({ copy, vendor, services, locale }: PublicBookingPageProps) {
     return (
         <main className="mx-auto flex min-h-screen w-full max-w-4xl flex-1 flex-col gap-6 px-4 py-4">
-            <div className="flex justify-end">
-                <NativeSelect
-                    value={locale}
-                    aria-label={layoutCopy.language}
-                    onChange={(event) => {
-                        const nextLocale = event.target.value;
-
-                        if (nextLocale !== locale) {
-                            router.patch(updateLocale.url(), { locale: nextLocale }, {
-                                preserveScroll: true,
-                                preserveState: true,
-                            });
-                        }
-                    }}
-                >
-                    <NativeSelectOption value="en">{layoutCopy.language_english}</NativeSelectOption>
-                    <NativeSelectOption value="nl">{layoutCopy.language_dutch}</NativeSelectOption>
-                </NativeSelect>
-            </div>
-
             <section className="flex flex-col gap-3">
                 <div className="flex items-start gap-3">
                     {vendor.logo_url && (
@@ -94,17 +86,19 @@ export default function MobilePublicBookingPage({ copy, vendor, services, locale
                     <div className="grid gap-3">
                         {services.map((service) => (
                             <Card key={service.id} id={`service-${service.slug}`}>
+                                {service.media[0] ? (
+                                    <div className="aspect-[4/3] overflow-hidden border-b">
+                                        <img src={service.media[0].url} alt={service.name} className="size-full object-cover" />
+                                    </div>
+                                ) : null}
                                 <CardHeader>
                                     <Badge variant="secondary">{service.category_label}</Badge>
                                     <CardTitle>{service.name}</CardTitle>
                                 </CardHeader>
                                 <CardContent className="flex flex-col gap-3">
-                                    {formatPriceInMinor(service.price_in_minor, locale) ? (
+                                    {servicePriceSummary(service, locale, copy) ? (
                                         <p className="font-medium">
-                                            {formatPriceInMinor(service.price_in_minor, locale)}
-                                            {service.pricing_type !== 'package' && service.price_type_label ? ` ${interpolate(copy.per_unit, {
-                                                unit: service.price_type_label,
-                                            })}` : null}
+                                            {servicePriceSummary(service, locale, copy)}
                                         </p>
                                     ) : null}
                                     <Button variant="outline" onClick={() => router.visit(service.url)}>
