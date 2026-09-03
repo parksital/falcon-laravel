@@ -12,7 +12,8 @@ import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import AuthSplitLayout from '@/layouts/auth/auth-split-layout';
 import { store } from '@/routes/onboarding/vendor';
-import { Head, useForm } from '@inertiajs/react';
+import { type SharedData } from '@/types';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { CheckIcon, ImageIcon, XIcon } from '@phosphor-icons/react';
 
 interface VendorOnboardingPageProps {
@@ -41,6 +42,7 @@ function slugify(text: string) {
 }
 
 export default function VendorOnboardingPage({ bookingPageBaseUrl, copy }: VendorOnboardingPageProps) {
+    const { name } = usePage<SharedData>().props;
     const form = useForm<VendorOnboardingForm>({
         business_name: '',
         logo: null,
@@ -74,8 +76,9 @@ export default function VendorOnboardingPage({ bookingPageBaseUrl, copy }: Vendo
 
             <main className="relative flex min-h-dvh w-full items-center justify-center px-6 py-8 lg:px-8">
                 <section className="flex w-full max-w-xl flex-col items-start gap-6">
-                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-0">
                         <h1 className="text-xl font-medium">{copy.heading}</h1>
+                        <p className="text-sm text-muted-foreground">{copy.description.replace(':appName', name)}</p>
                     </div>
 
                     <form
@@ -87,6 +90,41 @@ export default function VendorOnboardingPage({ bookingPageBaseUrl, copy }: Vendo
                         className="flex w-full flex-col gap-6"
                     >
                         <FieldGroup>
+                            <Field data-invalid={errors.business_name ? true : undefined}>
+                                <FieldLabel htmlFor="business-name">{copy.business_name_label}</FieldLabel>
+                                <Input
+                                    id="business-name"
+                                    value={data.business_name}
+                                    onChange={(event) => {
+                                        form.setData('business_name', event.target.value);
+                                        form.setData('slug', slugifyTyping(event.target.value));
+                                    }}
+                                    placeholder={copy.business_name_placeholder}
+                                    maxLength={120}
+                                    aria-invalid={Boolean(errors.business_name)}
+                                    autoFocus
+                                />
+                                <FieldDescription>{copy.business_name_help}</FieldDescription>
+                                <FieldError>{errors.business_name}</FieldError>
+                            </Field>
+
+                            <Field data-invalid={errors.slug ? true : undefined}>
+                                <FieldLabel htmlFor="booking-page-url">{copy.booking_page_url_label}</FieldLabel>
+                                <Input
+                                    id="booking-page-url"
+                                    value={data.slug}
+                                    onChange={(event) => form.setData('slug', event.target.value)}
+                                    onBlur={() => form.setData('slug', previewSlug)}
+                                    placeholder={copy.booking_page_url_placeholder}
+                                    maxLength={120}
+                                    aria-invalid={Boolean(errors.slug)}
+                                />
+                                <FieldDescription>
+                                    {copy.booking_page_url_help.replace(':url', previewBookingPageUrl)}
+                                </FieldDescription>
+                                <FieldError>{errors.slug}</FieldError>
+                            </Field>
+
                             <Field orientation="vertical" data-invalid={errors.logo ? true : undefined}>
                                 <div className="flex items-end gap-2">
                                     <label
@@ -134,40 +172,6 @@ export default function VendorOnboardingPage({ bookingPageBaseUrl, copy }: Vendo
                                 </FieldContent>
 
                                 <FieldError>{errors.logo}</FieldError>
-                            </Field>
-
-                            <Field data-invalid={errors.business_name ? true : undefined}>
-                                <FieldLabel htmlFor="business-name">{copy.business_name_label}</FieldLabel>
-                                <Input
-                                    id="business-name"
-                                    value={data.business_name}
-                                    onChange={(event) => {
-                                        form.setData('business_name', event.target.value);
-                                        form.setData('slug', slugifyTyping(event.target.value));
-                                    }}
-                                    placeholder={copy.business_name_placeholder}
-                                    maxLength={120}
-                                    aria-invalid={Boolean(errors.business_name)}
-                                    autoFocus
-                                />
-                                <FieldError>{errors.business_name}</FieldError>
-                            </Field>
-
-                            <Field data-invalid={errors.slug ? true : undefined}>
-                                <FieldLabel htmlFor="booking-page-url">{copy.booking_page_url_label}</FieldLabel>
-                                <Input
-                                    id="booking-page-url"
-                                    value={data.slug}
-                                    onChange={(event) => form.setData('slug', event.target.value)}
-                                    onBlur={() => form.setData('slug', previewSlug)}
-                                    placeholder={copy.booking_page_url_placeholder}
-                                    maxLength={120}
-                                    aria-invalid={Boolean(errors.slug)}
-                                />
-                                <FieldDescription>
-                                    {copy.booking_page_url_help.replace(':url', previewBookingPageUrl)}
-                                </FieldDescription>
-                                <FieldError>{errors.slug}</FieldError>
                             </Field>
                         </FieldGroup>
 
