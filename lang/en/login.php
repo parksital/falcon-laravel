@@ -1,15 +1,15 @@
 <?php
 
 return [
-    'title' => 'Log in',
-    'heading' => 'Log in to your account',
-    'description' => 'Enter your email and password below to log in',
-    'email_label' => 'Email address',
-    'email_placeholder' => 'email@example.com',
+    'title' => 'Sign in',
+    'heading' => 'Sign in to your business account',
+    'description' => 'Manage your services and public booking page.',
+    'email_label' => 'Email',
+    'email_placeholder' => 'name@example.com',
     'password_label' => 'Password',
-    'password_placeholder' => 'Password',
+    'password_placeholder' => '',
     'forgot_password' => 'Forgot password?',
-    'submit' => 'Log in',
-    'register_prompt' => "Don't have an account?",
-    'register_link' => 'Sign up',
+    'submit' => 'Sign in',
+    'register_prompt' => 'New to Huurmaar?',
+    'register_link' => 'Create your business account',
 ];

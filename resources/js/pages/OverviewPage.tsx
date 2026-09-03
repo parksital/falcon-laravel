@@ -33,6 +33,14 @@ import {
     FieldGroup,
     FieldLabel,
 } from '@/components/ui/field';
+import {
+    Empty,
+    EmptyContent,
+    EmptyDescription,
+    EmptyHeader,
+    EmptyMedia,
+    EmptyTitle,
+} from '@/components/ui/empty';
 import { useFileUpload } from '@/hooks/use-file-upload';
 import { Input } from '@/components/ui/input';
 import {
@@ -341,24 +349,26 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                         <div className="flex items-center justify-between">
                             <h2 className="text-2xl font-semibold">{copy.services_heading}</h2>
 
-                            <Button onClick={() => router.visit(create())}>
-                                <PlusIcon data-icon="inline-start" />
-                                {copy.services_add}
-                            </Button>
+                            {services.length > 0 ? (
+                                <Button onClick={() => router.visit(create())}>
+                                    <PlusIcon data-icon="inline-start" />
+                                    {copy.services_add}
+                                </Button>
+                            ) : null}
                         </div>
 
-                        <Table className="border">
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>{copy.services_table_name}</TableHead>
-                                    <TableHead>{copy.services_table_category}</TableHead>
-                                    <TableHead>{copy.services_table_prices}</TableHead>
-                                    <TableHead>{copy.services_table_status}</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {services.length > 0 ? (
-                                    services.map((service) => (
+                        {services.length > 0 ? (
+                            <Table className="border">
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>{copy.services_table_name}</TableHead>
+                                        <TableHead>{copy.services_table_category}</TableHead>
+                                        <TableHead>{copy.services_table_prices}</TableHead>
+                                        <TableHead>{copy.services_table_status}</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {services.map((service) => (
                                         <TableRow
                                             key={service.id}
                                             className="cursor-pointer"
@@ -381,19 +391,26 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                                                 </Badge>
                                             </TableCell>
                                         </TableRow>
-                                    ))
-                                ) : (
-                                    <TableRow>
-                                        <TableCell
-                                            colSpan={4}
-                                            className="text-center text-muted-foreground"
-                                        >
-                                            {copy.services_empty}
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        ) : (
+                            <Empty className="border">
+                                <EmptyHeader>
+                                    <EmptyMedia >
+                                        <h1 className="text-6xl">🌱</h1>
+                                    </EmptyMedia>
+                                    <EmptyTitle>{copy.services_empty_title}</EmptyTitle>
+                                    <EmptyDescription>{copy.services_empty}</EmptyDescription>
+                                </EmptyHeader>
+                                <EmptyContent>
+                                    <Button onClick={() => router.visit(create())}>
+                                        <PlusIcon data-icon="inline-start" />
+                                        {copy.services_add}
+                                    </Button>
+                                </EmptyContent>
+                            </Empty>
+                        )}
                     </section>
                 </div>
             </main>
@@ -436,6 +453,40 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
 
                         <div className="flex flex-1 flex-col overflow-y-auto p-4">
                             <FieldGroup>
+                                <Field data-invalid={vendorForm.errors.name ? true : undefined}>
+                                    <FieldLabel htmlFor="vendor-name">{copy.vendor_field_name}</FieldLabel>
+                                    <Input
+                                        id="vendor-name"
+                                        name="name"
+                                        required
+                                        maxLength={120}
+                                        aria-invalid={Boolean(vendorForm.errors.name)}
+                                        value={vendorForm.data.name}
+                                        onChange={(event) => vendorForm.setData('name', event.target.value)}
+                                    />
+                                    <FieldError>{vendorForm.errors.name}</FieldError>
+                                </Field>
+
+                                <Field data-invalid={vendorForm.errors.slug ? true : undefined}>
+                                    <FieldLabel htmlFor="vendor-slug">{copy.vendor_field_slug}</FieldLabel>
+                                    <InputGroup>
+                                        <InputGroupInput
+                                            id="vendor-slug"
+                                            name="slug"
+                                            required
+                                            maxLength={120}
+                                            aria-invalid={Boolean(vendorForm.errors.slug)}
+                                            value={vendorForm.data.slug}
+                                            onChange={(event) => vendorForm.setData('slug', slugifyTyping(event.target.value))}
+                                            onBlur={() => vendorForm.setData('slug', previewSlug)}
+                                        />
+                                    </InputGroup>
+                                    <FieldDescription>
+                                        {copy.vendor_field_slug_help.replace(':url', previewBookingPageUrl)}
+                                    </FieldDescription>
+                                    <FieldError>{vendorForm.errors.slug}</FieldError>
+                                </Field>
+
                                 <Field orientation="vertical" data-invalid={vendorForm.errors.logo ? true : undefined}>
                                     <div className="flex items-end gap-2">
                                         <label
@@ -484,40 +535,6 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                                     </FieldContent>
                                 </Field>
 
-                                <Field data-invalid={vendorForm.errors.name ? true : undefined}>
-                                    <FieldLabel htmlFor="vendor-name">{copy.vendor_field_name}</FieldLabel>
-                                    <Input
-                                        id="vendor-name"
-                                        name="name"
-                                        required
-                                        maxLength={120}
-                                        aria-invalid={Boolean(vendorForm.errors.name)}
-                                        value={vendorForm.data.name}
-                                        onChange={(event) => vendorForm.setData('name', event.target.value)}
-                                    />
-                                    <FieldError>{vendorForm.errors.name}</FieldError>
-                                </Field>
-
-                                <Field data-invalid={vendorForm.errors.slug ? true : undefined}>
-                                    <FieldLabel htmlFor="vendor-slug">{copy.vendor_field_slug}</FieldLabel>
-                                    <InputGroup>
-                                        <InputGroupInput
-                                            id="vendor-slug"
-                                            name="slug"
-                                            required
-                                            maxLength={120}
-                                            aria-invalid={Boolean(vendorForm.errors.slug)}
-                                            value={vendorForm.data.slug}
-                                            onChange={(event) => vendorForm.setData('slug', slugifyTyping(event.target.value))}
-                                            onBlur={() => vendorForm.setData('slug', previewSlug)}
-                                        />
-                                    </InputGroup>
-                                    <FieldDescription>
-                                        {copy.vendor_field_slug_help.replace(':url', previewBookingPageUrl)}
-                                    </FieldDescription>
-                                    <FieldError>{vendorForm.errors.slug}</FieldError>
-                                </Field>
-
                                 <Field data-invalid={vendorForm.errors.short_description ? true : undefined}>
                                     <FieldLabel htmlFor="vendor-about">
                                         {copy.vendor_field_about}
@@ -538,11 +555,11 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                         </div>
 
                         <SheetFooter>
-                            <Button type="button" variant="outline" onClick={requestCloseVendorEditor}>
-                                {copy.vendor_edit_cancel}
-                            </Button>
                             <Button type="submit" disabled={!vendorForm.isDirty || vendorForm.processing}>
                                 {copy.vendor_edit_save}
+                            </Button>
+                            <Button type="button" variant="outline" onClick={requestCloseVendorEditor}>
+                                {copy.vendor_edit_cancel}
                             </Button>
                         </SheetFooter>
                     </form>
