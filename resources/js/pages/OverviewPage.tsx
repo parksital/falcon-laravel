@@ -535,7 +535,7 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                                     </FieldContent>
                                 </Field>
 
-                                <Field data-invalid={vendorForm.errors.short_description ? true : undefined}>
+                                {/*<Field data-invalid={vendorForm.errors.short_description ? true : undefined}>
                                     <FieldLabel htmlFor="vendor-about">
                                         {copy.vendor_field_about}
                                     </FieldLabel>
@@ -549,7 +549,7 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                                     />
                                     <FieldDescription>{copy.vendor_field_about_help}</FieldDescription>
                                     <FieldError>{vendorForm.errors.short_description}</FieldError>
-                                </Field>
+                                </Field>*/}
 
                             </FieldGroup>
                         </div>
