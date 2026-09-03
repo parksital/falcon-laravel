@@ -31,8 +31,12 @@ export function ServicePricingCard({
     return (
         <Card>
             <CardHeader className="flex flex-row items-center gap-2">
-                <CardTitle className="text-lg">{title}</CardTitle>
-                <span className="font-mono text-base text-muted-foreground">·</span>
+                {title ? (
+                    <>
+                        <CardTitle className="text-lg">{title}</CardTitle>
+                        <span className="font-mono text-base text-muted-foreground">·</span>
+                    </>
+                ) : null}
                 <p className="font-mono text-base font-light text-muted-foreground">{formattedPrice}</p>
                 {priceLabel ? (
                     <Badge variant="secondary" className="ml-auto w-fit">{priceLabel}</Badge>

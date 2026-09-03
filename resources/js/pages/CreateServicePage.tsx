@@ -427,6 +427,7 @@ const CreateServicePage: CreateServicePageComponent = function CreateServicePage
                                                     placeholder={copy.custom_category_placeholder}
                                                     aria-invalid={Boolean(errors.custom_category)}
                                                 />
+                                                <FieldDescription>{copy.custom_category_help}</FieldDescription>
                                                 <FieldError>{errors.custom_category}</FieldError>
                                             </Field>
                                         ) : null}
@@ -755,16 +756,20 @@ const CreateServicePage: CreateServicePageComponent = function CreateServicePage
                                             </div>
 	                                            <CardHeader>
 	                                                <div className="flex flex-wrap gap-2">
-	                                                    <Badge variant="secondary">{selectedCategory || copy.review_empty_value}</Badge>
+	                                                    <Badge variant="secondary">{selectedCategory || copy.review_category_empty}</Badge>
 	                                                </div>
-                                                <CardTitle>{data.name || copy.review_service_name_fallback}</CardTitle>
+                                                {data.name ? (
+                                                    <CardTitle>{data.name}</CardTitle>
+                                                ) : (
+                                                    <CardDescription>{copy.review_service_name_missing}</CardDescription>
+                                                )}
                                             </CardHeader>
 
                                             <CardContent className="flex flex-col gap-4">
                                                 {visiblePricingOptions.map((pricingOption, index) => (
                                                     <ServicePricingCard
                                                         key={index}
-                                                        title={pricingOption.name || data.name || copy.review_service_name_fallback}
+                                                        title={pricingOption.name || data.name}
                                                         formattedPrice={formatPriceAmountDescription(pricingOption.price_in_minor, locale)}
                                                         priceLabel={pricingOptionPriceLabel(pricingOption)}
                                                         description={pricingOption.description}
