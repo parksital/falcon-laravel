@@ -61,7 +61,7 @@ class FortifyServiceProvider extends ServiceProvider
                 'password_placeholder' => __('login.password_placeholder'),
                 'forgot_password' => __('login.forgot_password'),
                 'submit' => __('login.submit'),
-                'register_prompt' => __('login.register_prompt'),
+                'register_prompt' => __('login.register_prompt', ['appName' => config('app.name')]),
                 'register_link' => __('login.register_link'),
             ],
         ]));

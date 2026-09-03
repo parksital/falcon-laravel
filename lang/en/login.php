@@ -10,6 +10,6 @@ return [
     'password_placeholder' => '',
     'forgot_password' => 'Forgot password?',
     'submit' => 'Sign in',
-    'register_prompt' => 'New to Huurmaar?',
+    'register_prompt' => 'New to :appName?',
     'register_link' => 'Create your business account',
 ];
