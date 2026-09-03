@@ -360,7 +360,7 @@ const CreateServicePage: CreateServicePageComponent = function CreateServicePage
         <>
             <Head title={copy.title} />
 
-            <main className="h-full w-full overflow-y-auto overflow-hidden p-6">
+            <main className="h-full w-full p-6">
                 <form
                     className="mx-auto flex max-w-xl flex-col gap-6"
                     inert={processing ? true : undefined}
@@ -763,7 +763,13 @@ const CreateServicePage: CreateServicePageComponent = function CreateServicePage
                                                 ) : (
                                                     <CardDescription>{copy.review_service_name_missing}</CardDescription>
                                                 )}
+
+                                                <p className="text-xs whitespace-pre-line text-muted-foreground">
+                                                    {data.has_description && data.description ? data.description : copy.review_no_description}
+                                                </p>
+
                                             </CardHeader>
+
 
                                             <CardContent className="flex flex-col gap-4">
                                                 {visiblePricingOptions.map((pricingOption, index) => (
@@ -779,9 +785,6 @@ const CreateServicePage: CreateServicePageComponent = function CreateServicePage
                                                         }))}
                                                     />
                                                 ))}
-                                                <p className="whitespace-pre-line text-muted-foreground">
-                                                    {data.has_description && data.description ? data.description : copy.review_no_description}
-                                                </p>
                                             </CardContent>
                                         </Card>
                                     </FieldGroup>
