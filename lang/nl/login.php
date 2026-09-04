@@ -3,7 +3,7 @@
 return [
     'title' => 'Inloggen',
     'heading' => 'Log in op je bedrijfsaccount',
-    'description' => 'Beheer je diensten en je openbare boekingspagina.',
+    'description' => 'Beheer je services en je openbare boekingspagina.',
     'email_label' => 'E-mailadres',
     'email_placeholder' => 'naam@voorbeeld.nl',
     'password_label' => 'Wachtwoord',
