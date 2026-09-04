@@ -91,7 +91,7 @@ class ServiceController extends Controller
 
         abort_unless($service->vendor_id === $vendor->id, 404);
 
-        $service->loadMissing(['customCategory', 'prices']);
+        $service->loadMissing(['customCategory', 'media', 'prices']);
         $categoryLabel = $service->category === 'other'
             ? $service->customCategory?->name
             : __("config-service-categories.{$service->category}");
@@ -110,6 +110,14 @@ class ServiceController extends Controller
                 'description' => $service->description,
                 'category_label' => $categoryLabel ?: $service->category,
                 'is_public' => (bool) $service->is_public,
+                'media' => $service->media
+                    ->map(fn ($media) => [
+                        'id' => $media->id,
+                        'url' => Storage::disk('r2')->url($media->path),
+                        'sort_order' => $media->sort_order,
+                    ])
+                    ->values()
+                    ->all(),
                 'pricing_options' => $service->prices
                     ->map(fn ($pricingOption) => [
                         'id' => $pricingOption->id,
@@ -123,6 +131,7 @@ class ServiceController extends Controller
                     ])
                     ->values()
                     ->all(),
+                    'formatted_created_at' => $service->created_at->translatedFormat(__('service-details.created_at_date_format'))
             ],
             'serviceCategories' => collect(array_keys(config('service_categories')))
                 ->map(fn (string $value) => [

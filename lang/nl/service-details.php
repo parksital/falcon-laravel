@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'details_title' => 'Details',
+    'details_created_at_label' => 'Aangemaakt op',
+    'details_category_label' => 'Categorie',
+    'details_status_label' => 'Status',
+    'created_at_date_format' => 'j F Y \o\m H:i',
+
     'edit_service_action' => 'Bewerk',
     'service_actions_label' => 'Meer service-acties',
     'add_price_action' => 'Voeg prijs toe',
@@ -29,6 +35,12 @@ return [
     'service_description_empty' => 'Nog geen beschrijving.',
     'service_description_placeholder' => 'Vertel klanten meer over :service',
     'service_description_fallback' => 'deze service',
+
+    'media_heading' => 'Foto’s',
+    'media_description' => 'Afbeeldingen die klanten op de openbare boekingspagina zien.',
+    'add_media_action' => "Foto's toevoegen",
+    'media_empty_title' => 'Nog geen foto’s',
+    'media_empty_description' => 'Voeg later foto’s toe zodat klanten een beter beeld krijgen van deze service.',
 
     'pricing_heading' => 'Prijzen',
     'pricing_option_description_empty' => 'Nog geen beschrijving.',

@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'details_title' => 'Details',
+    'details_created_at_label' => 'Created on',
+    'details_category_label' => 'Category',
+    'details_status_label' => 'Status',
+    'created_at_date_format' => 'F j, Y \a\t g:i A',
+
     'edit_service_action' => 'Edit',
     'service_actions_label' => 'More service actions',
     'add_price_action' => 'Add price',
@@ -29,6 +35,12 @@ return [
     'service_description_empty' => 'No description yet.',
     'service_description_placeholder' => 'Tell customers more about :service',
     'service_description_fallback' => 'this service',
+
+    'media_heading' => 'Photos',
+    'media_description' => 'Images customers see on the public booking page.',
+    'add_media_action' => 'Add Photos',
+    'media_empty_title' => 'No photos yet',
+    'media_empty_description' => 'Add photos later to help customers picture this service.',
 
     'pricing_heading' => 'Pricing',
     'pricing_option_description_empty' => 'No description yet.',

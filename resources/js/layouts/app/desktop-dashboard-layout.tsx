@@ -27,12 +27,11 @@ import { Toaster } from '@/components/ui/sonner';
 import { UserInfo } from '@/components/user-info';
 import { useInitials } from '@/hooks/use-initials';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
-import { cn } from '@/lib/utils';
 import { logout, overview } from '@/routes';
 import { update as updateLocale } from '@/routes/locale';
 import { type BreadcrumbItem as BreadcrumbItemType, SharedData } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
-import { DotIcon, SignOutIcon } from '@phosphor-icons/react';
+import { SignOutIcon } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { Fragment, useEffect, type PropsWithChildren } from 'react';
 
@@ -43,7 +42,6 @@ type DesktopDashboardLayoutProps = PropsWithChildren<{
 export default function DesktopDashboardLayout({ children, breadcrumbs = [] }: DesktopDashboardLayoutProps) {
     const page = usePage<SharedData>();
     const { auth, flash, layoutCopy, name } = page.props;
-    const currentPath = page.url.split('?')[0];
     const currentLocale =
         auth.user.preferred_locale === 'en' || auth.user.preferred_locale === 'nl'
             ? auth.user.preferred_locale
@@ -150,7 +148,10 @@ export default function DesktopDashboardLayout({ children, breadcrumbs = [] }: D
                 </div>
             </div>
 
-            <AppContent>{children}</AppContent>
+            <AppContent>
+                {children}
+            </AppContent>
+
             <Toaster />
         </AppShell>
     );
