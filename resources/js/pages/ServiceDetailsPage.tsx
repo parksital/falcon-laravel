@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
     Card,
+    CardContent,
     CardDescription,
     CardFooter,
     CardHeader,
@@ -38,6 +39,8 @@ import {
     FieldError,
     FieldGroup,
     FieldLabel,
+    FieldSet,
+    FieldTitle,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import {
@@ -68,9 +71,10 @@ import { overview } from '@/routes';
 import { destroy as destroyPricingOption, store as storePricingOption, update as updatePricingOption } from '@/routes/services/pricing-options';
 import { destroy as destroyService, show as showService, update as updateService } from '@/routes/services';
 import { Head, setLayoutProps, useForm } from '@inertiajs/react';
-import { DotsThreeIcon, MoneyIcon, PencilSimpleIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
+import { DotsThreeIcon, ImagesSquareIcon, MoneyIcon, PencilSimpleIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
 import { type ReactNode, useState } from 'react';
 import { type BreadcrumbItem } from '@/types';
+import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 
 interface ServiceDetailsPageProps {
     vendor: {
@@ -84,6 +88,11 @@ interface ServiceDetailsPageProps {
         description: string | null;
         category_label: string;
         is_public: boolean;
+        media: {
+            id: number;
+            url: string;
+            sort_order: number;
+        }[];
         pricing_options: {
             id: number;
             name: string;
@@ -92,6 +101,7 @@ interface ServiceDetailsPageProps {
             pricing_type: string;
             price_type_label: string;
         }[];
+        formatted_created_at: string
     };
     serviceCategories: {
         value: string;
@@ -254,149 +264,231 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
         <>
             <Head title={service.name} />
 
-            <main className="container mx-auto flex h-full w-full flex-1 flex-col gap-6 p-6">
-                <div className="grid items-start gap-6 lg:grid-cols-[minmax(16rem,1fr)_minmax(0,2fr)]">
-                    <div className="flex flex-col gap-3">
+            <main className="container mx-auto max-h-full w-full px-4 flex flex-col">
+
+                <header className='w-full py-4'>
+                    <div className='flex items-center gap-2'>
+                        <h1 className='text-xl font-semibold'>
+                            {service.name}
+                        </h1>
+
+                        <Badge variant="secondary">{service.category_label}</Badge>
+
+                        <Badge variant={service.is_public ? 'default' : 'secondary'}>
+                            {service.is_public ? copy.public_status : copy.draft_status}
+                        </Badge>
+
+                        <DropdownMenu modal={false}>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    className=''
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    aria-label={copy.service_actions_label}
+                                >
+                                    <DotsThreeIcon />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuGroup>
+                                    <DropdownMenuItem
+                                        variant="destructive"
+                                        onSelect={() => setIsDeleteServiceOpen(true)}
+                                    >
+                                        <TrashIcon/>
+                                        {copy.delete_service_action}
+                                    </DropdownMenuItem>
+                                </DropdownMenuGroup>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                </header>
+
+                <section className="mt-6 w-full flex items-start gap-6">
+                    <div className='flex-1 flex-col'>
                         <Card>
-                            <CardHeader>
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <Badge variant="secondary">{service.category_label}</Badge>
-                                    <Badge variant={service.is_public ? 'default' : 'secondary'}>
-                                        {service.is_public ? copy.public_status : copy.draft_status}
-                                    </Badge>
+                            <CardHeader className='flex flex-row justify-between'>
+                                <div>
+                                    <CardTitle>{copy.pricing_heading}</CardTitle>
+                                    <CardDescription className='sr-only'/>
                                 </div>
 
-                                <CardTitle>{service.name}</CardTitle>
-
-                                <CardDescription className="whitespace-pre-line">
-                                    {service.description
-                                        ? <span>{service.description}</span>
-                                        : <span>{copy.service_description_empty}</span>
-                                    }
-                                </CardDescription>
+                                {packagePricingOptions.length < 3 ? (
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={openAddPrice}
+                                    >
+                                        <PlusIcon data-icon="inline-start" />
+                                        {copy.add_price_action}
+                                    </Button>
+                                ) : null}
                             </CardHeader>
 
-                            <CardFooter className="gap-2 justify-end">
-                                <Button variant="outline" size="sm" onClick={openServiceEditor}>
-                                    {copy.edit_service_action}
-                                </Button>
+                            <CardContent>
+                                {packagePricingOptions.length ? (
+                                    <Table className='border'>
+                                        <TableBody>
+                                            {packagePricingOptions.map((pricingOption) => (
+                                                <TableRow key={pricingOption.id}>
+                                                    <TableCell>{pricingOption.name}</TableCell>
+                                                    <TableCell>{pricingOption.price_type_label}</TableCell>
+                                                    <TableCell>{formatPriceInMinor(pricingOption.price_in_minor, locale)}</TableCell>
+                                                    <TableCell className='text-right'>
+                                                        <DropdownMenu modal={false}>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="ghost"
+                                                                    size="icon-sm"
+                                                                    aria-label={copy.price_actions_label}
+                                                                >
+                                                                    <DotsThreeIcon />
+                                                                </Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="end" className="w-auto">
+                                                                <DropdownMenuGroup>
+                                                                    <DropdownMenuItem className="whitespace-nowrap" onSelect={() => openEditPrice(pricingOption)}>
+                                                                        <PencilSimpleIcon className='invisible' />
+                                                                        {copy.price_edit_action}
+                                                                    </DropdownMenuItem>
+                                                                    <DropdownMenuItem
+                                                                        className="whitespace-nowrap"
+                                                                        variant="destructive"
+                                                                        onSelect={() => openDeletePrice(pricingOption)}
+                                                                    >
+                                                                        <TrashIcon />
+                                                                        {copy.price_delete_action}
+                                                                    </DropdownMenuItem>
+                                                                </DropdownMenuGroup>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                ) : (
+                                    <Empty className="border">
+                                        <EmptyHeader>
+                                                <EmptyMedia variant={"icon"}>
+                                                    {/*<h1 className="text-6xl">🏝️</h1>*/}
+                                                    <MoneyIcon/>
+                                            </EmptyMedia>
+                                            <EmptyTitle>{copy.pricing_empty_title}</EmptyTitle>
+                                            <EmptyDescription>{copy.pricing_empty_description}</EmptyDescription>
+                                        </EmptyHeader>
+                                    </Empty>
+                                )}
 
-                                <DropdownMenu modal={false}>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="icon"
-                                            aria-label={copy.service_actions_label}
-                                        >
-                                            <DotsThreeIcon />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuGroup>
-                                            <DropdownMenuItem
-                                                variant="destructive"
-                                                onSelect={() => setIsDeleteServiceOpen(true)}
-                                            >
-                                                <TrashIcon/>
-                                                {copy.delete_service_action}
-                                            </DropdownMenuItem>
-                                        </DropdownMenuGroup>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </CardFooter>
+                            </CardContent>
                         </Card>
+
+                        <Card className='mt-12'>
+                            <CardHeader className='flex items-start justify-between'>
+                                <div>
+                                    <CardTitle>{copy.media_heading}</CardTitle>
+                                    <CardDescription>{copy.media_description}</CardDescription>
+                                </div>
+
+                                <Button variant={"outline"} onClick={() => console.log("implement me")}>
+                                    <PlusIcon/>
+                                    <span>{copy.add_media_action}</span>
+                                </Button>
+                            </CardHeader>
+
+                            <CardContent>
+                                {service.media.length ? (
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {service.media.map((media, index) => (
+                                            <div key={media.id} className="aspect-square overflow-hidden border">
+                                                <img src={media.url} alt={`${service.name} ${index + 1}`} className="size-full object-cover" />
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <Empty className="border">
+                                            <EmptyHeader>
+                                                <EmptyMedia variant={"icon"}>
+                                                    <ImagesSquareIcon/>
+                                                </EmptyMedia>
+                                            <EmptyTitle>{copy.media_empty_title}</EmptyTitle>
+                                            <EmptyDescription>{copy.media_empty_description}</EmptyDescription>
+                                        </EmptyHeader>
+                                    </Empty>
+                                )}
+                            </CardContent>
+                        </Card>
+
+
                     </div>
 
-                    <section className="flex min-w-0 flex-col gap-3">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-2xl font-semibold">{copy.pricing_heading}</h2>
+                    <aside className='flex-1 max-w-sm'>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>{copy.details_title}</CardTitle>
+                                <CardDescription className='sr-only'/>
+                            </CardHeader>
 
-                            {packagePricingOptions.length < 3 ? (
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={openAddPrice}
-                                >
-                                    <PlusIcon data-icon="inline-start" />
-                                    {copy.add_price_action}
-                                </Button>
-                            ) : null}
-                        </div>
+                            <CardContent>
+                                <FieldGroup>
+                                    <Field orientation={"vertical"}>
+                                        <FieldContent>
+                                            <FieldTitle>
+                                                {copy.details_created_at_label}
+                                            </FieldTitle>
+                                        </FieldContent>
 
-                        {packagePricingOptions.length ? (
-                            <div className="flex flex-col gap-2">
-                                {packagePricingOptions.map((pricingOption) => (
-                                    <Card key={pricingOption.id}>
-                                        <CardHeader className="gap-0">
-                                            <div className="flex items-center justify-between gap-2">
-                                                <div className="min-w-0 flex flex-row items-center gap-1">
-                                                    <CardTitle className="truncate text-base">{pricingOption.name}</CardTitle>
-                                                    <Badge variant="secondary" className="w-fit">
-                                                        {pricingOption.price_type_label}
-                                                    </Badge>
-                                                </div>
+                                        <p>
+                                            {service.formatted_created_at}
+                                        </p>
+                                    </Field>
 
-                                                <div className="flex shrink-0 items-center gap-2">
-                                                    <p className="font-mono text-base text-secondary-foreground">
-                                                        {formatPriceInMinor(pricingOption.price_in_minor, locale)}
-                                                    </p>
+                                    <Field orientation={"vertical"}>
+                                        <FieldContent>
+                                            <FieldTitle>
+                                                {copy.details_category_label}
+                                            </FieldTitle>
+                                        </FieldContent>
 
-                                                    <DropdownMenu modal={false}>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button
-                                                                type="button"
-                                                                variant="ghost"
-                                                                size="icon-sm"
-                                                                aria-label={copy.price_actions_label}
-                                                            >
-                                                                <DotsThreeIcon />
-                                                            </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end" className="w-auto">
-                                                            <DropdownMenuGroup>
-                                                                <DropdownMenuItem className="whitespace-nowrap" onSelect={() => openEditPrice(pricingOption)}>
-                                                                    <PencilSimpleIcon className='invisible' />
-                                                                    {copy.price_edit_action}
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuItem
-                                                                    className="whitespace-nowrap"
-                                                                    variant="destructive"
-                                                                    onSelect={() => openDeletePrice(pricingOption)}
-                                                                >
-                                                                    <TrashIcon />
-                                                                    {copy.price_delete_action}
-                                                                </DropdownMenuItem>
-                                                            </DropdownMenuGroup>
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
-                                                </div>
-                                            </div>
+                                        <Badge className='max-w-fit' variant={"secondary"}>
+                                            {service.category_label}
+                                        </Badge>
+                                    </Field>
 
-                                            <CardDescription className="whitespace-pre-line">
-                                                {pricingOption.description
-                                                    ? <span>{pricingOption.description}</span>
-                                                    : <span>{copy.pricing_option_description_empty}</span>
-                                                }
-                                            </CardDescription>
-                                        </CardHeader>
-                                    </Card>
-                                ))}
-                            </div>
-                        ) : (
-                            <Empty className="border">
-                                <EmptyHeader>
-                                        <EmptyMedia variant={"icon"}>
-                                            {/*<h1 className="text-6xl">🏝️</h1>*/}
-                                            <MoneyIcon/>
-                                    </EmptyMedia>
-                                    <EmptyTitle>{copy.pricing_empty_title}</EmptyTitle>
-                                    <EmptyDescription>{copy.pricing_empty_description}</EmptyDescription>
-                                </EmptyHeader>
-                            </Empty>
-                        )}
-                    </section>
-                </div>
+                                    <Field orientation={"vertical"}>
+                                        <FieldContent>
+                                            <FieldTitle>
+                                                {copy.details_status_label}
+                                            </FieldTitle>
+                                        </FieldContent>
+
+                                        <Badge className='max-w-fit' variant={service.is_public ? 'default' : 'secondary'}>
+                                            {service.is_public ? copy.public_status : copy.draft_status}
+                                        </Badge>
+                                    </Field>
+
+                                    <Field>
+                                        <FieldContent>
+                                            <FieldTitle>
+                                                Description
+                                            </FieldTitle>
+                                        </FieldContent>
+
+                                        {service.description
+                                            ? <span className="whitespace-pre-line">{service.description}</span>
+                                            : <span className='text-muted-foreground'>{copy.service_description_empty}</span>
+                                        }
+                                    </Field>
+
+                                </FieldGroup>
+
+                            </CardContent>
+                        </Card>
+                    </aside>
+
+                </section>
             </main>
 
             <Sheet open={isAddPriceOpen} onOpenChange={setIsAddPriceOpen}>
@@ -489,12 +581,12 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
                         </div>
 
                         <SheetFooter>
-                            <Button type="button" variant="outline" onClick={closeAddPrice}>
-                                {copy.price_add_cancel}
-                            </Button>
                             <Button type="submit" disabled={addPriceForm.processing}>
                                 {addPriceForm.processing ? <Spinner data-icon="inline-start" /> : null}
                                 {copy.price_add_save}
+                            </Button>
+                            <Button type="button" variant="outline" onClick={closeAddPrice}>
+                                {copy.price_add_cancel}
                             </Button>
                         </SheetFooter>
                     </form>
@@ -593,12 +685,12 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
                         </div>
 
                         <SheetFooter>
-                            <Button type="button" variant="outline" onClick={closeEditPrice}>
-                                {copy.price_edit_cancel}
-                            </Button>
                             <Button type="submit" disabled={!editPriceForm.isDirty || editPriceForm.processing}>
                                 {editPriceForm.processing ? <Spinner data-icon="inline-start" /> : null}
                                 {copy.price_edit_save}
+                            </Button>
+                            <Button type="button" variant="outline" onClick={closeEditPrice}>
+                                {copy.price_edit_cancel}
                             </Button>
                         </SheetFooter>
                     </form>
@@ -736,11 +828,11 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
                         </div>
 
                         <SheetFooter>
-                            <Button type="button" variant="outline" onClick={closeServiceEditor}>
-                                {copy.service_edit_cancel}
-                            </Button>
                             <Button type="submit" disabled={!editForm.isDirty || editForm.processing}>
                                 {editForm.processing ? <Spinner /> : copy.service_edit_save}
+                            </Button>
+                            <Button type="button" variant="outline" onClick={closeServiceEditor}>
+                                {copy.service_edit_cancel}
                             </Button>
                         </SheetFooter>
                     </form>
