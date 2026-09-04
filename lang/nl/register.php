@@ -3,7 +3,7 @@
 return [
     'title' => 'Account aanmaken',
     'heading' => 'Maak je bedrijfsaccount aan',
-    'description' => 'Beheer je diensten en maak ze vindbaar.',
+    'description' => 'Beheer je services en maak ze vindbaar.',
     'name_label' => 'Naam',
     'name_placeholder' => 'Volledige naam',
     'email_label' => 'E-mailadres',

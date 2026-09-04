@@ -1,69 +1,15 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
-import {
-    AlertDialog,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuGroup,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-    Empty,
-    EmptyDescription,
-    EmptyHeader,
-    EmptyMedia,
-    EmptyTitle,
-} from '@/components/ui/empty';
-import {
-    Field,
-    FieldContent,
-    FieldDescription,
-    FieldError,
-    FieldGroup,
-    FieldLabel,
-    FieldSet,
-    FieldTitle,
-} from '@/components/ui/field';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
+import { Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldTitle } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import {
-    InputGroup,
-    InputGroupAddon,
-    InputGroupInput,
-} from '@/components/ui/input-group';
-import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetFooter,
-    SheetHeader,
-    SheetTitle,
-} from '@/components/ui/sheet';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
@@ -72,9 +18,14 @@ import { destroy as destroyPricingOption, store as storePricingOption, update as
 import { destroy as destroyService, show as showService, update as updateService } from '@/routes/services';
 import { Head, setLayoutProps, useForm } from '@inertiajs/react';
 import { DotsThreeIcon, ImagesSquareIcon, MoneyIcon, PencilSimpleIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
-import { type ReactNode, useState } from 'react';
+import { useState } from 'react';
 import { type BreadcrumbItem } from '@/types';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
+
+interface PriceType {
+    value: string;
+    label: string;
+}
 
 interface ServiceDetailsPageProps {
     vendor: {
@@ -101,7 +52,7 @@ interface ServiceDetailsPageProps {
             pricing_type: string;
             price_type_label: string;
         }[];
-        formatted_created_at: string
+        formatted_created_at: string;
     };
     serviceCategories: {
         value: string;
@@ -136,11 +87,7 @@ function formatPriceAmountDescription(priceAmount: string, locale: string) {
     return formatPriceInMinor(Number(priceAmountToMinor(priceAmount) || 0), locale);
 }
 
-type ServiceDetailsPageComponent = ((props: ServiceDetailsPageProps) => ReactNode) & {
-    layout?: typeof AppLayout;
-};
-
-const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsPage({
+function ServiceDetailsPage({
     vendor,
     service,
     serviceCategories,
@@ -167,8 +114,9 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
         name: '',
         description: '',
         price_in_minor: '',
-        pricing_type: 'package',
+        pricing_type: '',
     });
+
     const editPriceForm = useForm({
         name: '',
         description: '',
@@ -314,7 +262,7 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
                                     <CardDescription className='sr-only'/>
                                 </div>
 
-                                {packagePricingOptions.length < 3 ? (
+                                {/*{packagePricingOptions.length < 3 ? (
                                     <Button
                                         variant="outline"
                                         size="sm"
@@ -323,7 +271,7 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
                                         <PlusIcon data-icon="inline-start" />
                                         {copy.add_price_action}
                                     </Button>
-                                ) : null}
+                                ) : null}*/}
                             </CardHeader>
 
                             <CardContent>
@@ -392,10 +340,10 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
                                     <CardDescription>{copy.media_description}</CardDescription>
                                 </div>
 
-                                <Button variant={"outline"} onClick={() => console.log("implement me")}>
+                                {/*<Button variant={"outline"} onClick={() => console.log("implement me")}>
                                     <PlusIcon/>
                                     <span>{copy.add_media_action}</span>
-                                </Button>
+                                </Button>*/}
                             </CardHeader>
 
                             <CardContent>
@@ -436,18 +384,6 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
                                     <Field orientation={"vertical"}>
                                         <FieldContent>
                                             <FieldTitle>
-                                                {copy.details_created_at_label}
-                                            </FieldTitle>
-                                        </FieldContent>
-
-                                        <p>
-                                            {service.formatted_created_at}
-                                        </p>
-                                    </Field>
-
-                                    <Field orientation={"vertical"}>
-                                        <FieldContent>
-                                            <FieldTitle>
                                                 {copy.details_category_label}
                                             </FieldTitle>
                                         </FieldContent>
@@ -480,6 +416,18 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
                                             ? <span className="whitespace-pre-line">{service.description}</span>
                                             : <span className='text-muted-foreground'>{copy.service_description_empty}</span>
                                         }
+                                    </Field>
+
+                                    <Field orientation={"horizontal"}>
+                                        <FieldContent>
+                                            <FieldTitle>
+                                                {copy.details_created_at_label}
+                                            </FieldTitle>
+                                        </FieldContent>
+
+                                        <p>
+                                            {service.formatted_created_at}
+                                        </p>
                                     </Field>
 
                                 </FieldGroup>
@@ -528,7 +476,28 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
                         </SheetHeader>
 
                         <div className="flex flex-1 flex-col overflow-y-auto p-4">
-                            <FieldGroup>
+                                <FieldGroup>
+                                <Field data-invalid={addPriceForm.errors.pricing_type ? true : undefined}>
+                                    <FieldContent>
+                                        <FieldTitle>{copy.price_field_type}</FieldTitle>
+                                        <FieldDescription>{copy.price_field_type_description}</FieldDescription>
+                                    </FieldContent>
+
+                                    <Select value={addPriceForm.data.pricing_type} onValueChange={(value: string) => {
+                                        addPriceForm.setData('pricing_type', value);
+                                    }}>
+                                        <SelectTrigger id="add-price-pricing-type" className="w-full" aria-invalid={Boolean(addPriceForm.errors.pricing_type)}>
+                                            <SelectValue placeholder={copy.price_field_type_placeholder} />
+                                        </SelectTrigger>
+
+                                        <SelectContent position='popper'>
+                                            <SelectGroup>
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+                                    <FieldError>{addPriceForm.errors.pricing_type}</FieldError>
+                                </Field>
+
                                 <Field data-invalid={addPriceForm.errors.name ? true : undefined}>
                                     <FieldLabel htmlFor="add-price-name">{copy.price_field_name}</FieldLabel>
                                     <Input
@@ -936,7 +905,7 @@ const ServiceDetailsPage: ServiceDetailsPageComponent = function ServiceDetailsP
             </AlertDialog>
         </>
     );
-};
+}
 
 ServiceDetailsPage.layout = AppLayout;
 
