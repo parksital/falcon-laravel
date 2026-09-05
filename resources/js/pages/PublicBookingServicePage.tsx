@@ -28,6 +28,28 @@ function interpolate(value: string, replacements: Record<string, string>) {
     );
 }
 
+function formattedPricingOptionPrice(
+    pricingOption: PublicBookingServicePageProps['service']['pricing_options'][number],
+    copy: PublicBookingServicePageProps['copy'],
+) {
+    if (pricingOption.pricing_mode !== 'variable' || ! pricingOption.pricing_unit_label) {
+        return pricingOption.formatted_price;
+    }
+
+    return `${pricingOption.formatted_price} ${interpolate(copy.per_unit, { unit: pricingOption.pricing_unit_label })}`;
+}
+
+function formattedServicePrice(
+    service: PublicBookingServicePageProps['service'],
+    copy: PublicBookingServicePageProps['copy'],
+) {
+    if (service.pricing_mode !== 'variable' || ! service.pricing_unit_label) {
+        return service.formatted_price ?? '';
+    }
+
+    return `${service.formatted_price} ${interpolate(copy.per_unit, { unit: service.pricing_unit_label })}`;
+}
+
 export default function PublicBookingServicePage({ copy, vendor, service, locale, seo }: PublicBookingServicePageProps) {
     const { layoutCopy } = usePage<SharedData>().props;
     const breadcrumbs: BreadcrumbItem[] = [
@@ -132,10 +154,7 @@ export default function PublicBookingServicePage({ copy, vendor, service, locale
                                     <ServicePricingCard
                                         key={pricingOption.id}
                                         title={pricingOption.name}
-                                        formattedPrice={pricingOption.formatted_price}
-                                        priceLabel={pricingOption.pricing_type !== 'package' ? interpolate(copy.per_unit, {
-                                            unit: pricingOption.price_type_label,
-                                        }) : pricingOption.price_type_label}
+                                        formattedPrice={formattedPricingOptionPrice(pricingOption, copy)}
                                         description={pricingOption.description}
                                         features={pricingOption.features.map((feature) => ({
                                             key: feature.id,
@@ -149,10 +168,7 @@ export default function PublicBookingServicePage({ copy, vendor, service, locale
                     ) : service.formatted_price ? (
                         <ServicePricingCard
                             title={service.name}
-                            formattedPrice={service.formatted_price}
-                            priceLabel={service.pricing_type !== 'package' && service.price_type_label ? interpolate(copy.per_unit, {
-                                unit: service.price_type_label,
-                            }) : service.price_type_label}
+                            formattedPrice={formattedServicePrice(service, copy)}
                         />
                         ) : null}
                 </section>

@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import AppLayout from '@/layouts/app-layout';
 import { overview } from '@/routes';
 import { destroy as destroyPricingOption, store as storePricingOption, update as updatePricingOption } from '@/routes/services/pricing-options';
@@ -22,9 +23,22 @@ import { useState } from 'react';
 import { type BreadcrumbItem } from '@/types';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 
-interface PriceType {
-    value: string;
+type PricingMode = 'fixed' | 'variable';
+type PricingUnit = 'person' | 'item' | 'hour';
+type PricingUnitFormValue = '' | PricingUnit;
+
+interface PricingUnitOption {
+    value: PricingUnit;
     label: string;
+    priceUnit: string;
+}
+
+interface PricingOptionForm {
+    name: string;
+    description: string;
+    price_in_minor: string;
+    pricing_mode: PricingMode;
+    pricing_unit: PricingUnitFormValue;
 }
 
 interface ServiceDetailsPageProps {
@@ -49,8 +63,11 @@ interface ServiceDetailsPageProps {
             name: string;
             description: string | null;
             price_in_minor: number;
-            pricing_type: string;
-            price_type_label: string;
+            currency: string;
+            pricing_mode: PricingMode;
+            pricing_mode_label: string;
+            pricing_unit: PricingUnit | null;
+            pricing_unit_label: string | null;
         }[];
         formatted_created_at: string;
     };
@@ -87,6 +104,16 @@ function formatPriceAmountDescription(priceAmount: string, locale: string) {
     return formatPriceInMinor(Number(priceAmountToMinor(priceAmount) || 0), locale);
 }
 
+function formatPricingOptionPrice(pricingOption: ServiceDetailsPageProps['service']['pricing_options'][number], locale: string) {
+    const formattedPrice = formatPriceInMinor(pricingOption.price_in_minor, locale);
+
+    if (pricingOption.pricing_mode === 'variable' && pricingOption.pricing_unit_label) {
+        return `${formattedPrice} / ${pricingOption.pricing_unit_label.toLowerCase()}`;
+    }
+
+    return formattedPrice;
+}
+
 function ServiceDetailsPage({
     vendor,
     service,
@@ -109,19 +136,25 @@ function ServiceDetailsPage({
     const [isDeletePriceOpen, setIsDeletePriceOpen] = useState(false);
     const [editingPricingOptionId, setEditingPricingOptionId] = useState<number | null>(null);
     const [deletingPricingOptionId, setDeletingPricingOptionId] = useState<number | null>(null);
-    const packagePricingOptions = service.pricing_options.filter((pricingOption) => pricingOption.pricing_type === 'package');
-    const addPriceForm = useForm({
+    const pricingUnits: PricingUnitOption[] = [
+        { value: 'person', label: copy.pricing_unit_person_label, priceUnit: copy.pricing_unit_person_price_unit },
+        { value: 'item', label: copy.pricing_unit_item_label, priceUnit: copy.pricing_unit_item_price_unit },
+        { value: 'hour', label: copy.pricing_unit_hour_label, priceUnit: copy.pricing_unit_hour_price_unit },
+    ];
+    const addPriceForm = useForm<PricingOptionForm>({
         name: '',
         description: '',
         price_in_minor: '',
-        pricing_type: '',
+        pricing_mode: 'fixed',
+        pricing_unit: '' as PricingUnitFormValue,
     });
 
-    const editPriceForm = useForm({
+    const editPriceForm = useForm<PricingOptionForm>({
         name: '',
         description: '',
         price_in_minor: '',
-        pricing_type: 'package',
+        pricing_mode: 'fixed',
+        pricing_unit: '' as PricingUnitFormValue,
     });
     const deletePriceForm = useForm({});
 
@@ -166,7 +199,8 @@ function ServiceDetailsPage({
             name: '',
             description: '',
             price_in_minor: '',
-            pricing_type: 'package',
+            pricing_mode: 'fixed',
+            pricing_unit: '',
         });
 
         addPriceForm.reset();
@@ -181,11 +215,12 @@ function ServiceDetailsPage({
     }
 
     function openEditPrice(pricingOption: ServiceDetailsPageProps['service']['pricing_options'][number]) {
-        const pricingOptionDetails = {
+        const pricingOptionDetails: PricingOptionForm = {
             name: pricingOption.name,
             description: pricingOption.description ?? '',
             price_in_minor: minorToPriceAmount(pricingOption.price_in_minor),
-            pricing_type: pricingOption.pricing_type,
+            pricing_mode: pricingOption.pricing_mode,
+            pricing_unit: pricingOption.pricing_unit ?? '',
         };
 
         setEditingPricingOptionId(pricingOption.id);
@@ -262,7 +297,7 @@ function ServiceDetailsPage({
                                     <CardDescription className='sr-only'/>
                                 </div>
 
-                                {/*{packagePricingOptions.length < 3 ? (
+                                {service.pricing_options.length < 3 ? (
                                     <Button
                                         variant="outline"
                                         size="sm"
@@ -271,18 +306,18 @@ function ServiceDetailsPage({
                                         <PlusIcon data-icon="inline-start" />
                                         {copy.add_price_action}
                                     </Button>
-                                ) : null}*/}
+                                ) : null}
                             </CardHeader>
 
                             <CardContent>
-                                {packagePricingOptions.length ? (
+                                {service.pricing_options.length ? (
                                     <Table className='border'>
                                         <TableBody>
-                                            {packagePricingOptions.map((pricingOption) => (
+                                            {service.pricing_options.map((pricingOption) => (
                                                 <TableRow key={pricingOption.id}>
                                                     <TableCell>{pricingOption.name}</TableCell>
-                                                    <TableCell>{pricingOption.price_type_label}</TableCell>
-                                                    <TableCell>{formatPriceInMinor(pricingOption.price_in_minor, locale)}</TableCell>
+                                                    <TableCell>{pricingOption.pricing_mode_label}</TableCell>
+                                                    <TableCell>{formatPricingOptionPrice(pricingOption, locale)}</TableCell>
                                                     <TableCell className='text-right'>
                                                         <DropdownMenu modal={false}>
                                                             <DropdownMenuTrigger asChild>
@@ -372,7 +407,7 @@ function ServiceDetailsPage({
 
                     </div>
 
-                    <aside className='flex-1 max-w-sm'>
+                    <aside className='flex-1 max-w-xs'>
                         <Card>
                             <CardHeader>
                                 <CardTitle>{copy.details_title}</CardTitle>
@@ -381,7 +416,20 @@ function ServiceDetailsPage({
 
                             <CardContent>
                                 <FieldGroup>
-                                    <Field orientation={"vertical"}>
+
+                                    <Field orientation={"horizontal"}>
+                                        <FieldContent>
+                                            <FieldTitle>
+                                                {copy.details_created_at_label}
+                                            </FieldTitle>
+                                        </FieldContent>
+
+                                        <p>
+                                            {service.formatted_created_at}
+                                        </p>
+                                    </Field>
+
+                                    <Field orientation={"horizontal"}>
                                         <FieldContent>
                                             <FieldTitle>
                                                 {copy.details_category_label}
@@ -393,7 +441,7 @@ function ServiceDetailsPage({
                                         </Badge>
                                     </Field>
 
-                                    <Field orientation={"vertical"}>
+                                    <Field orientation={"horizontal"}>
                                         <FieldContent>
                                             <FieldTitle>
                                                 {copy.details_status_label}
@@ -417,19 +465,6 @@ function ServiceDetailsPage({
                                             : <span className='text-muted-foreground'>{copy.service_description_empty}</span>
                                         }
                                     </Field>
-
-                                    <Field orientation={"horizontal"}>
-                                        <FieldContent>
-                                            <FieldTitle>
-                                                {copy.details_created_at_label}
-                                            </FieldTitle>
-                                        </FieldContent>
-
-                                        <p>
-                                            {service.formatted_created_at}
-                                        </p>
-                                    </Field>
-
                                 </FieldGroup>
 
                             </CardContent>
@@ -449,6 +484,7 @@ function ServiceDetailsPage({
                             addPriceForm.transform((formData) => ({
                                 ...formData,
                                 price_in_minor: priceAmountToMinor(formData.price_in_minor),
+                                pricing_unit: formData.pricing_mode === 'variable' ? formData.pricing_unit : '',
                             }));
 
                             addPriceForm.post(storePricingOption(service.id).url, {
@@ -462,7 +498,8 @@ function ServiceDetailsPage({
                                         name: '',
                                         description: '',
                                         price_in_minor: '',
-                                        pricing_type: 'package',
+                                        pricing_mode: 'fixed',
+                                        pricing_unit: '',
                                     });
                                     addPriceForm.reset();
                                     addPriceForm.clearErrors();
@@ -476,28 +513,7 @@ function ServiceDetailsPage({
                         </SheetHeader>
 
                         <div className="flex flex-1 flex-col overflow-y-auto p-4">
-                                <FieldGroup>
-                                <Field data-invalid={addPriceForm.errors.pricing_type ? true : undefined}>
-                                    <FieldContent>
-                                        <FieldTitle>{copy.price_field_type}</FieldTitle>
-                                        <FieldDescription>{copy.price_field_type_description}</FieldDescription>
-                                    </FieldContent>
-
-                                    <Select value={addPriceForm.data.pricing_type} onValueChange={(value: string) => {
-                                        addPriceForm.setData('pricing_type', value);
-                                    }}>
-                                        <SelectTrigger id="add-price-pricing-type" className="w-full" aria-invalid={Boolean(addPriceForm.errors.pricing_type)}>
-                                            <SelectValue placeholder={copy.price_field_type_placeholder} />
-                                        </SelectTrigger>
-
-                                        <SelectContent position='popper'>
-                                            <SelectGroup>
-                                            </SelectGroup>
-                                        </SelectContent>
-                                    </Select>
-                                    <FieldError>{addPriceForm.errors.pricing_type}</FieldError>
-                                </Field>
-
+                            <FieldGroup>
                                 <Field data-invalid={addPriceForm.errors.name ? true : undefined}>
                                     <FieldLabel htmlFor="add-price-name">{copy.price_field_name}</FieldLabel>
                                     <Input
@@ -510,6 +526,57 @@ function ServiceDetailsPage({
                                     />
                                     <FieldError>{addPriceForm.errors.name}</FieldError>
                                 </Field>
+
+                                <Field data-invalid={addPriceForm.errors.pricing_mode ? true : undefined}>
+                                    <FieldLabel>{copy.pricing_mode_label}</FieldLabel>
+                                    <FieldDescription>{copy.pricing_mode_description}</FieldDescription>
+                                    <ToggleGroup
+                                        type="single"
+                                        variant="outline"
+                                        className="w-full"
+                                        value={addPriceForm.data.pricing_mode}
+                                        onValueChange={(value) => {
+                                            if (! value) {
+                                                return;
+                                            }
+
+                                            addPriceForm.setData({
+                                                ...addPriceForm.data,
+                                                pricing_mode: value as PricingMode,
+                                                pricing_unit: value === 'variable' ? addPriceForm.data.pricing_unit : '',
+                                            });
+                                        }}
+                                    >
+                                        <ToggleGroupItem value="fixed" className="flex-1">
+                                            {copy.pricing_mode_fixed_label}
+                                        </ToggleGroupItem>
+                                        <ToggleGroupItem value="variable" className="flex-1">
+                                            {copy.pricing_mode_variable_label}
+                                        </ToggleGroupItem>
+                                    </ToggleGroup>
+                                    <FieldError>{addPriceForm.errors.pricing_mode}</FieldError>
+                                </Field>
+
+                                {addPriceForm.data.pricing_mode === 'variable' ? (
+                                    <Field data-invalid={addPriceForm.errors.pricing_unit ? true : undefined}>
+                                        <FieldLabel>{copy.pricing_unit_label}</FieldLabel>
+                                        <Select value={addPriceForm.data.pricing_unit} onValueChange={(value) => addPriceForm.setData('pricing_unit', value as PricingUnitFormValue)}>
+                                            <SelectTrigger className="w-full" aria-invalid={Boolean(addPriceForm.errors.pricing_unit)}>
+                                                <SelectValue placeholder={copy.pricing_unit_placeholder} />
+                                            </SelectTrigger>
+                                            <SelectContent position="popper">
+                                                <SelectGroup>
+                                                    {pricingUnits.map((pricingUnit) => (
+                                                        <SelectItem key={pricingUnit.value} value={pricingUnit.value}>
+                                                            {pricingUnit.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                        <FieldError>{addPriceForm.errors.pricing_unit}</FieldError>
+                                    </Field>
+                                ) : null}
 
                                 <Field data-invalid={addPriceForm.errors.price_in_minor ? true : undefined}>
                                     <FieldLabel htmlFor="add-price-amount">{copy.price_field_amount}</FieldLabel>
@@ -525,7 +592,9 @@ function ServiceDetailsPage({
                                             onChange={(event) => addPriceForm.setData('price_in_minor', normalizePriceAmount(event.target.value))}
                                         />
                                         <InputGroupAddon align="inline-end">
-                                            {formatPriceAmountDescription(addPriceForm.data.price_in_minor, locale)}
+                                            {addPriceForm.data.pricing_mode === 'variable' && addPriceForm.data.pricing_unit
+                                                ? `${formatPriceAmountDescription(addPriceForm.data.price_in_minor, locale)} / ${pricingUnits.find((pricingUnit) => pricingUnit.value === addPriceForm.data.pricing_unit)?.priceUnit || ''}`
+                                                : formatPriceAmountDescription(addPriceForm.data.price_in_minor, locale)}
                                         </InputGroupAddon>
                                     </InputGroup>
                                     <FieldError>{addPriceForm.errors.price_in_minor}</FieldError>
@@ -576,6 +645,7 @@ function ServiceDetailsPage({
                             editPriceForm.transform((formData) => ({
                                 ...formData,
                                 price_in_minor: priceAmountToMinor(formData.price_in_minor),
+                                pricing_unit: formData.pricing_mode === 'variable' ? formData.pricing_unit : '',
                             }));
 
                             editPriceForm.patch(updatePricingOption({
@@ -602,6 +672,60 @@ function ServiceDetailsPage({
 
                         <div className="flex flex-1 flex-col overflow-y-auto p-4">
                             <FieldGroup>
+                                <Field data-invalid={editPriceForm.errors.pricing_mode ? true : undefined}>
+                                    <FieldContent>
+                                        <FieldTitle>{copy.pricing_mode_label}</FieldTitle>
+                                        <FieldDescription>{copy.pricing_mode_description}</FieldDescription>
+                                    </FieldContent>
+
+                                    <ToggleGroup
+                                        type="single"
+                                        variant="outline"
+                                        className="w-full"
+                                        value={editPriceForm.data.pricing_mode}
+                                        onValueChange={(value) => {
+                                            if (! value) {
+                                                return;
+                                            }
+
+                                            editPriceForm.setData({
+                                                ...editPriceForm.data,
+                                                pricing_mode: value as PricingMode,
+                                                pricing_unit: value === 'variable' ? editPriceForm.data.pricing_unit : '',
+                                            });
+                                        }}
+                                    >
+                                        <ToggleGroupItem value="fixed" className="flex-1">
+                                            {copy.pricing_mode_fixed_label}
+                                        </ToggleGroupItem>
+                                        <ToggleGroupItem value="variable" className="flex-1">
+                                            {copy.pricing_mode_variable_label}
+                                        </ToggleGroupItem>
+                                    </ToggleGroup>
+                                    <FieldError>{editPriceForm.errors.pricing_mode}</FieldError>
+                                </Field>
+
+                                {editPriceForm.data.pricing_mode === 'variable' ? (
+                                    <Field data-invalid={editPriceForm.errors.pricing_unit ? true : undefined}>
+                                        <FieldLabel>{copy.pricing_unit_label}</FieldLabel>
+                                        <Select value={editPriceForm.data.pricing_unit} onValueChange={(value) => editPriceForm.setData('pricing_unit', value as PricingUnitFormValue)}>
+                                            <SelectTrigger className="w-full" aria-invalid={Boolean(editPriceForm.errors.pricing_unit)}>
+                                                <SelectValue placeholder={copy.pricing_unit_placeholder} />
+                                            </SelectTrigger>
+                                            <SelectContent position="popper">
+                                                <SelectGroup>
+                                                    {pricingUnits.map((pricingUnit) => (
+                                                        <SelectItem key={pricingUnit.value} value={pricingUnit.value}>
+                                                            {pricingUnit.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                        <FieldError>{editPriceForm.errors.pricing_unit}</FieldError>
+                                    </Field>
+                                ) : null}
+
                                 <Field data-invalid={editPriceForm.errors.name ? true : undefined}>
                                     <FieldLabel htmlFor="edit-price-name">{copy.price_field_name}</FieldLabel>
                                     <Input
@@ -630,6 +754,7 @@ function ServiceDetailsPage({
                                         />
                                         <InputGroupAddon align="inline-end">
                                             {formatPriceAmountDescription(editPriceForm.data.price_in_minor, locale)}
+                                            {editPriceForm.data.pricing_mode === 'variable' && editPriceForm.data.pricing_unit ? ` / ${pricingUnits.find((pricingUnit) => pricingUnit.value === editPriceForm.data.pricing_unit)?.priceUnit || ''}` : null}
                                         </InputGroupAddon>
                                     </InputGroup>
                                     <FieldError>{editPriceForm.errors.price_in_minor}</FieldError>

@@ -2,9 +2,6 @@
 
 return [
     'photobooths' => [
-        'price_types' => [
-            'package',
-        ],
         'price_features' => [
             'attendant',
             'prints',
@@ -16,29 +13,9 @@ return [
         ],
     ],
 
-    'photography' => [
-        'price_types' => [
-            'hour',
-        ],
-    ],
+    'photography' => [],
 
-    'foodtrucks' => [
-        'price_types' => [
-            'package',
-            'hour',
-            'person',
-            'day',
-            'event',
-        ],
-    ],
+    'foodtrucks' => [],
 
-    'other' => [
-        'price_types' => [
-            'package',
-            'hour',
-            'person',
-            'day',
-            'event',
-        ],
-    ],
+    'other' => [],
 ];

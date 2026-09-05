@@ -24,15 +24,12 @@ Route::get('/index', function () {
         })
         ->all();
 
-    $priceTypeLabels = collect(config('service_categories'))
-        ->pluck('price_types')
-        ->flatten()
-        ->unique()
+    $pricingUnitLabels = collect(config('service_pricing_units'))
         ->mapWithKeys(function (string $value) {
-            $translation = __("config-service-price-types.{$value}");
+            $translation = __("config-service-pricing-units.{$value}");
 
             return [
-                $value => $translation === "config-service-price-types.{$value}" ? $value : $translation,
+                $value => $translation === "config-service-pricing-units.{$value}" ? $value : $translation,
             ];
         })
         ->all();
@@ -77,7 +74,7 @@ Route::get('/index', function () {
 
     return Inertia::render('IndexPage', [
         'services' => $publicServices
-            ->map(function (Service $service) use ($serviceCategoryLabels, $priceTypeLabels) {
+            ->map(function (Service $service) use ($serviceCategoryLabels, $pricingUnitLabels) {
                 $price = $service->prices->first();
 
                 return [
@@ -89,8 +86,9 @@ Route::get('/index', function () {
                         : $serviceCategoryLabels[$service->category] ?? $service->category,
                     'description' => $service->description,
                     'price_in_minor' => $price?->price_in_minor,
-                    'pricing_type' => $price?->pricing_type,
-                    'price_type_label' => $price?->pricing_type ? ($priceTypeLabels[$price->pricing_type] ?? $price->pricing_type) : null,
+                    'pricing_mode' => $price?->pricing_mode,
+                    'pricing_unit' => $price?->pricing_unit,
+                    'pricing_unit_label' => $price?->pricing_unit ? ($pricingUnitLabels[$price->pricing_unit] ?? $price->pricing_unit) : null,
                     'vendor' => [
                         'name' => $service->vendor?->name,
                         'location' => $service->vendor?->location,
@@ -213,17 +211,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
                     'label' => $serviceCategoryLabels[$value] ?? $value,
                 ])
                 ->values()
-                ->all(),
-            'priceTypesByCategory' => collect(array_keys(config('service_categories')))
-                ->mapWithKeys(fn (string $category) => [
-                    $category => collect(config("service_categories.{$category}.price_types", []))
-                        ->map(fn (string $value) => [
-                            'value' => $value,
-                            'label' => __("config-service-price-types.{$value}"),
-                        ])
-                        ->values()
-                        ->all(),
-                ])
                 ->all(),
             'copy' => __('overview'),
         ]);

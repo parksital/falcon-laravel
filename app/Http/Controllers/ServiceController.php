@@ -47,20 +47,6 @@ class ServiceController extends Controller
                 ])
                 ->values()
                 ->all(),
-            'priceTypesByCategory' => collect(array_keys(config('service_categories')))
-                ->mapWithKeys(function (string $category) {
-                    return [
-                        $category => collect($this->priceTypesForCategory($category))
-                            ->map(fn (string $value) => [
-                                'value' => $value,
-                                'label' => __("create-service.price_type_{$value}_label"),
-                                'priceTypeLabel' => __("config-service-price-types.{$value}"),
-                            ])
-                            ->values()
-                            ->all(),
-                    ];
-                })
-                ->all(),
             'priceFeaturesByCategory' => collect(array_keys(config('service_categories')))
                 ->mapWithKeys(function (string $category) {
                     return [
@@ -124,10 +110,11 @@ class ServiceController extends Controller
                         'name' => $pricingOption->name,
                         'description' => $pricingOption->description,
                         'price_in_minor' => $pricingOption->price_in_minor,
-                        'pricing_type' => $pricingOption->pricing_type,
-                        'price_type_label' => __("config-service-price-types.{$pricingOption->pricing_type}") === "config-service-price-types.{$pricingOption->pricing_type}"
-                            ? $pricingOption->pricing_type
-                            : __("config-service-price-types.{$pricingOption->pricing_type}"),
+                        'currency' => $pricingOption->currency,
+                        'pricing_mode' => $pricingOption->pricing_mode,
+                        'pricing_mode_label' => $this->pricingModeLabel($pricingOption->pricing_mode),
+                        'pricing_unit' => $pricingOption->pricing_unit,
+                        'pricing_unit_label' => $this->pricingUnitLabel($pricingOption->pricing_unit),
                     ])
                     ->values()
                     ->all(),
@@ -179,7 +166,10 @@ class ServiceController extends Controller
                     'name' => $pricingOptionData['name'] ?? 'Price '.($sortOrder + 1),
                     'description' => $pricingOptionData['description'] ?? null,
                     'price_in_minor' => $pricingOptionData['price_in_minor'],
-                    'pricing_type' => $pricingOptionData['pricing_type'],
+                    'pricing_mode' => $pricingOptionData['pricing_mode'],
+                    'pricing_unit' => $pricingOptionData['pricing_mode'] === 'variable'
+                        ? $pricingOptionData['pricing_unit']
+                        : null,
                     'sort_order' => $sortOrder,
                 ]);
 
@@ -266,7 +256,10 @@ class ServiceController extends Controller
                             ? $pricingOptionData['description']
                             : $pricingOption?->description,
                         'price_in_minor' => $pricingOptionData['price_in_minor'],
-                        'pricing_type' => $pricingOptionData['pricing_type'],
+                        'pricing_mode' => $pricingOptionData['pricing_mode'],
+                        'pricing_unit' => $pricingOptionData['pricing_mode'] === 'variable'
+                            ? $pricingOptionData['pricing_unit']
+                            : null,
                         'sort_order' => $sortOrder,
                     ];
 
@@ -294,12 +287,9 @@ class ServiceController extends Controller
 
         $validated = $request->validated();
 
-        if (
-            $validated['pricing_type'] === 'package'
-            && $service->prices()->where('pricing_type', 'package')->count() >= 3
-        ) {
+        if ($service->prices()->count() >= 3) {
             throw ValidationException::withMessages([
-                'pricing_type' => __('service-details.validation_package_limit'),
+                'pricing_mode' => __('service-details.validation_price_limit'),
             ]);
         }
 
@@ -309,7 +299,10 @@ class ServiceController extends Controller
             'name' => $validated['name'] ?? 'Price '.($sortOrder + 1),
             'description' => $validated['description'] ?? null,
             'price_in_minor' => $validated['price_in_minor'],
-            'pricing_type' => $validated['pricing_type'],
+            'pricing_mode' => $validated['pricing_mode'],
+            'pricing_unit' => $validated['pricing_mode'] === 'variable'
+                ? $validated['pricing_unit']
+                : null,
             'sort_order' => $sortOrder,
         ]);
 
@@ -333,7 +326,10 @@ class ServiceController extends Controller
             'name' => $validated['name'] ?? 'Price '.($pricingOption->sort_order + 1),
             'description' => $validated['description'] ?? null,
             'price_in_minor' => $validated['price_in_minor'],
-            'pricing_type' => $validated['pricing_type'],
+            'pricing_mode' => $validated['pricing_mode'],
+            'pricing_unit' => $validated['pricing_mode'] === 'variable'
+                ? $validated['pricing_unit']
+                : null,
         ]);
 
         return to_route('services.show', $service)->with('success', __('service-details.price_updated'));
@@ -395,9 +391,28 @@ class ServiceController extends Controller
         return $slug;
     }
 
-    private function priceTypesForCategory(string $category): array
+    private function pricingModeLabel(?string $mode): ?string
     {
-        return config("service_categories.{$category}.price_types", []);
+        if (! $mode) {
+            return null;
+        }
+
+        return match ($mode) {
+            'fixed' => __('service-details.pricing_mode_fixed_label'),
+            'variable' => __('service-details.pricing_mode_variable_label'),
+            default => $mode,
+        };
+    }
+
+    private function pricingUnitLabel(?string $unit): ?string
+    {
+        if (! $unit) {
+            return null;
+        }
+
+        $translation = __("config-service-pricing-units.{$unit}");
+
+        return $translation === "config-service-pricing-units.{$unit}" ? $unit : $translation;
     }
 
     private function priceFeaturesForCategory(string $category): array

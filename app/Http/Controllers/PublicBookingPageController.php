@@ -109,8 +109,10 @@ class PublicBookingPageController extends Controller
             'description' => $service->description,
             'price_in_minor' => $price?->price_in_minor,
             'formatted_price' => $price?->price_in_minor !== null ? $this->formatPrice($price->price_in_minor) : null,
-            'pricing_type' => $price?->pricing_type,
-            'price_type_label' => $price?->pricing_type ? ($this->priceTypeLabels()[$price->pricing_type] ?? $price->pricing_type) : null,
+            'pricing_mode' => $price?->pricing_mode,
+            'pricing_mode_label' => $this->pricingModeLabel($price?->pricing_mode),
+            'pricing_unit' => $price?->pricing_unit,
+            'pricing_unit_label' => $this->pricingUnitLabel($price?->pricing_unit),
             'url' => route('public.booking.service.show', [$vendor->slug, $service->slug]),
             'pricing_options' => $service->prices
                 ->map(fn ($price) => $this->pricePayload($price))
@@ -135,8 +137,10 @@ class PublicBookingPageController extends Controller
             'description' => $price->description,
             'price_in_minor' => $price->price_in_minor,
             'formatted_price' => $this->formatPrice($price->price_in_minor),
-            'pricing_type' => $price->pricing_type,
-            'price_type_label' => $this->priceTypeLabels()[$price->pricing_type] ?? $price->pricing_type,
+            'pricing_mode' => $price->pricing_mode,
+            'pricing_mode_label' => $this->pricingModeLabel($price->pricing_mode),
+            'pricing_unit' => $price->pricing_unit,
+            'pricing_unit_label' => $this->pricingUnitLabel($price->pricing_unit),
             'features' => $price->features
                 ->map(fn ($feature) => [
                     'id' => $feature->id,
@@ -260,20 +264,28 @@ class PublicBookingPageController extends Controller
             ->all();
     }
 
-    private function priceTypeLabels(): array
+    private function pricingModeLabel(?string $mode): ?string
     {
-        return collect(config('service_categories'))
-            ->pluck('price_types')
-            ->flatten()
-            ->unique()
-            ->mapWithKeys(function (string $value) {
-                $translation = __("config-service-price-types.{$value}");
+        if (! $mode) {
+            return null;
+        }
 
-                return [
-                    $value => $translation === "config-service-price-types.{$value}" ? $value : $translation,
-                ];
-            })
-            ->all();
+        return match ($mode) {
+            'fixed' => __('public-booking.pricing_mode_fixed_label'),
+            'variable' => __('public-booking.pricing_mode_variable_label'),
+            default => $mode,
+        };
+    }
+
+    private function pricingUnitLabel(?string $unit): ?string
+    {
+        if (! $unit) {
+            return null;
+        }
+
+        $translation = __("config-service-pricing-units.{$unit}");
+
+        return $translation === "config-service-pricing-units.{$unit}" ? $unit : $translation;
     }
 
     private function priceFeatureLabels(): array

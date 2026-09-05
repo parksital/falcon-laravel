@@ -66,8 +66,15 @@ return [
     'service_field_description_placeholder' => 'What does this service include?',
     'service_field_price_in_minor' => 'Amount',
     'service_field_price_placeholder' => '650',
-    'service_field_unit' => 'Per',
-    'service_field_unit_placeholder' => 'Select',
+    'service_field_pricing_mode' => 'Pricing',
+    'service_field_pricing_mode_placeholder' => 'Choose pricing',
+    'service_field_pricing_mode_fixed' => 'Fixed',
+    'service_field_pricing_mode_variable' => 'Variable',
+    'service_field_unit' => 'Unit',
+    'service_field_unit_placeholder' => 'Choose unit',
+    'service_field_unit_person' => 'Person',
+    'service_field_unit_item' => 'Item',
+    'service_field_unit_hour' => 'Hour',
 
     'service_pricing_label' => 'Pricing',
 

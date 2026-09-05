@@ -15,7 +15,7 @@ import {
     EmptyTitle,
 } from '@/components/ui/empty';
 import { Link } from '@inertiajs/react';
-import { ArrowRightIcon } from '@phosphor-icons/react';
+import { ArrowRightIcon, ImageIcon } from '@phosphor-icons/react';
 import { type PublicBookingPageProps, type Service } from './types';
 
 function interpolate(value: string, replacements: Record<string, string>) {
@@ -32,8 +32,8 @@ function servicePriceSummary(service: Service, copy: PublicBookingPageProps['cop
 
     if (! lowestPrice) return null;
 
-    const unit = lowestPrice.pricing_type !== 'package'
-        ? ` ${interpolate(copy.per_unit, { unit: lowestPrice.price_type_label })}`
+    const unit = lowestPrice.pricing_mode === 'variable' && lowestPrice.pricing_unit_label
+        ? ` ${interpolate(copy.per_unit, { unit: lowestPrice.pricing_unit_label })}`
         : '';
 
     return {
@@ -79,11 +79,12 @@ export default function DesktopPublicBookingPage({ copy, vendor, services, local
                         {services.map((service) => (
                             <Link key={service.id} href={service.url} className="flex h-full flex-col text-left">
                                 <Card id={`service-${service.slug}`} className='pt-0'>
-                                    {service.media[0] ? (
-                                        <div className="aspect-[16/9] overflow-hidden border-b">
+                                    <div className="aspect-[16/9] w-full border-b bg-muted/40 overflow-hidden">
+                                        {service.media[0] && (
                                             <img src={service.media[0].url} alt={service.name} className="size-full object-cover" />
-                                        </div>
-                                    ) : null}
+                                        )}
+                                    </div>
+
                                     <CardHeader>
                                         <Badge variant="secondary">{service.category_label}</Badge>
                                         <CardTitle>{service.name}</CardTitle>

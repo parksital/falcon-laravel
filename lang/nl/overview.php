@@ -66,8 +66,15 @@ return [
     'service_field_description_placeholder' => 'Wat is bij deze service inbegrepen?',
     'service_field_price_in_minor' => 'Bedrag',
     'service_field_price_placeholder' => '650',
-    'service_field_unit' => 'Per',
-    'service_field_unit_placeholder' => 'Selecteer',
+    'service_field_pricing_mode' => 'Prijs',
+    'service_field_pricing_mode_placeholder' => 'Kies prijssoort',
+    'service_field_pricing_mode_fixed' => 'Vast',
+    'service_field_pricing_mode_variable' => 'Variabel',
+    'service_field_unit' => 'Eenheid',
+    'service_field_unit_placeholder' => 'Kies eenheid',
+    'service_field_unit_person' => 'Persoon',
+    'service_field_unit_item' => 'Item',
+    'service_field_unit_hour' => 'Uur',
 
     'service_pricing_label' => 'Prijzen',
 

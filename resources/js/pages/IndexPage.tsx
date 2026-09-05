@@ -31,8 +31,9 @@ type Service = {
     category_label: string;
     description: string | null;
     price_in_minor: number | null;
-    pricing_type: string | null;
-    price_type_label: string | null;
+    pricing_mode: 'fixed' | 'variable' | null;
+    pricing_unit: 'person' | 'item' | 'hour' | null;
+    pricing_unit_label: string | null;
     vendor: {
         name: string | null;
         location: string | null;
@@ -158,8 +159,8 @@ export default function IndexPage({ services, locale, copy }: IndexPageProps) {
                                     <CardContent className="flex flex-col gap-4">
                                         <p className="font-medium">
                                             {formatPriceInMinor(service.price_in_minor, locale, copy)}{' '}
-                                            {service.price_in_minor !== null && service.pricing_type !== 'package' && service.price_type_label ? interpolate(copy.per_unit, {
-                                                unit: service.price_type_label,
+                                            {service.price_in_minor !== null && service.pricing_mode === 'variable' && service.pricing_unit_label ? interpolate(copy.per_unit, {
+                                                unit: service.pricing_unit_label,
                                             }) : null}
                                         </p>
                                         {service.description ? (

@@ -16,7 +16,9 @@ class ServicePrice extends Model
         'name',
         'description',
         'price_in_minor',
-        'pricing_type',
+        'currency',
+        'pricing_mode',
+        'pricing_unit',
         'sort_order',
     ];
 

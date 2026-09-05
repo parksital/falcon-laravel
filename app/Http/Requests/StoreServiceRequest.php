@@ -19,6 +19,8 @@ class StoreServiceRequest extends FormRequest
                 filled($pricingOption['name'] ?? null)
                 || filled($pricingOption['description'] ?? null)
                 || filled($pricingOption['price_in_minor'] ?? null)
+                || filled($pricingOption['pricing_mode'] ?? null)
+                || filled($pricingOption['pricing_unit'] ?? null)
                 || ! empty($pricingOption['features'] ?? [])
             ))
             ->values()
@@ -36,7 +38,6 @@ class StoreServiceRequest extends FormRequest
      */
     public function rules(): array
     {
-        $priceTypes = $this->priceTypesForCategory($this->string('category')->toString());
         $priceFeatures = $this->priceFeaturesForCategory($this->string('category')->toString());
 
         return [
@@ -48,7 +49,8 @@ class StoreServiceRequest extends FormRequest
             'pricing_options.*.name' => ['nullable', 'string', 'max:120'],
             'pricing_options.*.description' => ['nullable', 'string', 'max:2000'],
             'pricing_options.*.price_in_minor' => ['required', 'integer', 'min:0', 'max:4294967295'],
-            'pricing_options.*.pricing_type' => ['required', 'string', Rule::in($priceTypes)],
+            'pricing_options.*.pricing_mode' => ['required', 'string', Rule::in(['fixed', 'variable'])],
+            'pricing_options.*.pricing_unit' => ['nullable', 'string', Rule::in($this->pricingUnits())],
             'pricing_options.*.features' => ['sometimes', 'array'],
             'pricing_options.*.features.*.feature_key' => ['required', 'string', Rule::in($priceFeatures)],
             'pricing_options.*.features.*.is_included' => ['boolean'],
@@ -56,6 +58,24 @@ class StoreServiceRequest extends FormRequest
             'media' => ['sometimes', 'array', 'max:3'],
             'media.*' => ['image', 'max:4096'],
             'is_public' => ['boolean'],
+        ];
+    }
+
+    /**
+     * Get the after validation callables for the request.
+     *
+     * @return array<int, callable>
+     */
+    public function after(): array
+    {
+        return [
+            function ($validator) {
+                foreach ($this->input('pricing_options', []) as $index => $pricingOption) {
+                    if (($pricingOption['pricing_mode'] ?? null) === 'variable' && blank($pricingOption['pricing_unit'] ?? null)) {
+                        $validator->errors()->add("pricing_options.{$index}.pricing_unit", __('create-service.validation_pricing_unit_required'));
+                    }
+                }
+            },
         ];
     }
 
@@ -71,9 +91,10 @@ class StoreServiceRequest extends FormRequest
             'category.required' => __('create-service.validation_category_required'),
             'category.in' => __('create-service.validation_category_required'),
             'custom_category.required_if' => __('create-service.validation_custom_category_required'),
-            'pricing_options.max' => __('create-service.validation_package_limit'),
-            'pricing_options.*.pricing_type.required' => __('create-service.validation_price_type_required'),
-            'pricing_options.*.pricing_type.in' => __('create-service.validation_price_type_invalid'),
+            'pricing_options.max' => __('create-service.validation_price_limit'),
+            'pricing_options.*.pricing_mode.required' => __('create-service.validation_pricing_mode_required'),
+            'pricing_options.*.pricing_mode.in' => __('create-service.validation_pricing_mode_invalid'),
+            'pricing_options.*.pricing_unit.in' => __('create-service.validation_pricing_unit_invalid'),
             'pricing_options.*.features.*.feature_key.in' => __('create-service.validation_price_feature_invalid'),
             'pricing_options.*.price_in_minor.required' => __('create-service.validation_price_required'),
             'pricing_options.*.price_in_minor.integer' => __('create-service.validation_price_invalid'),
@@ -85,9 +106,9 @@ class StoreServiceRequest extends FormRequest
         ];
     }
 
-    private function priceTypesForCategory(string $category): array
+    private function pricingUnits(): array
     {
-        return config("service_categories.{$category}.price_types", []);
+        return config('service_pricing_units');
     }
 
     private function priceFeaturesForCategory(string $category): array

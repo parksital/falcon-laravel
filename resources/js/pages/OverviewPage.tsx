@@ -123,10 +123,6 @@ interface OverviewPageProps {
         value: string;
         label: string;
     }[];
-    priceTypesByCategory: Record<string, {
-        value: string;
-        label: string;
-    }[]>;
     copy: Record<string, string>;
 }
 
@@ -168,7 +164,8 @@ function slugify(text: string) {
 type EditPricingOption = {
     id: number | null;
     price_in_minor: string;
-    pricing_type: string;
+    pricing_mode: 'fixed' | 'variable';
+    pricing_unit: '' | 'person' | 'item' | 'hour';
 };
 
 type OverviewPageComponent = ((props: OverviewPageProps) => ReactNode) & {
@@ -186,7 +183,6 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
     vendor,
     services,
     serviceCategories,
-    priceTypesByCategory,
     copy,
 }: OverviewPageProps) {
     setLayoutProps<{ breadcrumbs: BreadcrumbItem[] }>({
@@ -232,7 +228,11 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
 
     const editingService = services.find((service) => service.id === editingServiceId);
     const editFormErrors = editForm.errors as Record<string, string | undefined>;
-    const editPriceTypes = priceTypesByCategory[editForm.data.category] || [];
+    const pricingUnits = [
+        { value: 'person', label: copy.service_field_unit_person },
+        { value: 'item', label: copy.service_field_unit_item },
+        { value: 'hour', label: copy.service_field_unit_hour },
+    ];
     const previewSlug = slugify(vendorForm.data.slug);
     const previewBookingPageUrl = `${vendor.public_url.slice(0, -vendor.slug.length)}${previewSlug}`;
     const shouldShowPricingSection = false;
@@ -606,6 +606,7 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                                 pricing_options: formData.pricing_options.map((pricingOption) => ({
                                     ...pricingOption,
                                     price_in_minor: priceAmountToMinor(pricingOption.price_in_minor),
+                                    pricing_unit: pricingOption.pricing_mode === 'variable' ? pricingOption.pricing_unit : '',
                                 })),
                             }));
 
@@ -657,12 +658,6 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                                             ...editForm.data,
                                             category: value,
                                             custom_category: value === 'other' ? editForm.data.custom_category : '',
-                                            pricing_options: editForm.data.pricing_options.map((pricingOption) => ({
-                                                ...pricingOption,
-                                                pricing_type: priceTypesByCategory[value]?.some((priceType) => priceType.value === pricingOption.pricing_type)
-                                                    ? pricingOption.pricing_type
-                                                    : priceTypesByCategory[value]?.[0]?.value || '',
-                                            })),
                                         })}
                                     >
                                         <SelectTrigger
@@ -722,11 +717,12 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                                 <Field>
                                     <FieldLabel>{copy.service_pricing_label}</FieldLabel>
 
-                                    <div className="grid grid-cols-[minmax(0,1fr)_8rem] gap-2">
+                                    <div className="grid grid-cols-[minmax(0,1fr)_8rem_8rem] gap-2">
                                         <FieldLabel>
                                             {copy.service_field_price_in_minor}
                                         </FieldLabel>
 
+                                        <FieldLabel>{copy.service_field_pricing_mode}</FieldLabel>
                                         <FieldLabel>{copy.service_field_unit}</FieldLabel>
                                     </div>
 
@@ -734,7 +730,7 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                                         {editForm.data.pricing_options.map((pricingOption, index) => (
                                             <div
                                                 key={pricingOption.id ?? `new-${index}`}
-                                                className="grid grid-cols-[minmax(0,1fr)_8rem] gap-2"
+                                                className="grid grid-cols-[minmax(0,1fr)_8rem_8rem] gap-2"
                                             >
                                                 <Field data-invalid={editFormErrors[`pricing_options.${index}.price_in_minor`] ? true : undefined}>
                                                     <InputGroup>
@@ -764,13 +760,13 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                                                     <InputError message={editFormErrors[`pricing_options.${index}.price_in_minor`]} />
                                                 </Field>
 
-                                                <Field data-invalid={editFormErrors[`pricing_options.${index}.pricing_type`] ? true : undefined}>
+                                                <Field data-invalid={editFormErrors[`pricing_options.${index}.pricing_mode`] ? true : undefined}>
                                                     <Select
-                                                        value={pricingOption.pricing_type}
+                                                        value={pricingOption.pricing_mode}
                                                         onValueChange={(value) => {
                                                             const pricingOptions = editForm.data.pricing_options.map((option, optionIndex) =>
                                                                 optionIndex === index
-                                                                    ? { ...option, pricing_type: value }
+                                                                    ? { ...option, pricing_mode: value as EditPricingOption['pricing_mode'], pricing_unit: value === 'variable' ? option.pricing_unit : '' }
                                                                     : option,
                                                             );
 
@@ -778,21 +774,50 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                                                         }}
                                                     >
                                                         <SelectTrigger
-                                                            aria-invalid={Boolean(editFormErrors[`pricing_options.${index}.pricing_type`])}
+                                                            aria-invalid={Boolean(editFormErrors[`pricing_options.${index}.pricing_mode`])}
+                                                        >
+                                                            <SelectValue placeholder={copy.service_field_pricing_mode_placeholder} />
+                                                        </SelectTrigger>
+                                                        <SelectContent position="popper">
+                                                            <SelectGroup>
+                                                                <SelectItem value="fixed">{copy.service_field_pricing_mode_fixed}</SelectItem>
+                                                                <SelectItem value="variable">{copy.service_field_pricing_mode_variable}</SelectItem>
+                                                            </SelectGroup>
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <InputError message={editFormErrors[`pricing_options.${index}.pricing_mode`]} />
+                                                </Field>
+
+                                                <Field data-invalid={editFormErrors[`pricing_options.${index}.pricing_unit`] ? true : undefined}>
+                                                    <Select
+                                                        value={pricingOption.pricing_unit}
+                                                        disabled={pricingOption.pricing_mode !== 'variable'}
+                                                        onValueChange={(value) => {
+                                                            const pricingOptions = editForm.data.pricing_options.map((option, optionIndex) =>
+                                                                optionIndex === index
+                                                                    ? { ...option, pricing_unit: value as EditPricingOption['pricing_unit'] }
+                                                                    : option,
+                                                            );
+
+                                                            editForm.setData('pricing_options', pricingOptions);
+                                                        }}
+                                                    >
+                                                        <SelectTrigger
+                                                            aria-invalid={Boolean(editFormErrors[`pricing_options.${index}.pricing_unit`])}
                                                         >
                                                             <SelectValue placeholder={copy.service_field_unit_placeholder} />
                                                         </SelectTrigger>
                                                         <SelectContent position="popper">
                                                             <SelectGroup>
-                                                                {editPriceTypes.map((priceType) => (
-                                                                    <SelectItem key={priceType.value} value={priceType.value}>
-                                                                        {priceType.label}
+                                                                {pricingUnits.map((pricingUnit) => (
+                                                                    <SelectItem key={pricingUnit.value} value={pricingUnit.value}>
+                                                                        {pricingUnit.label}
                                                                     </SelectItem>
                                                                 ))}
                                                             </SelectGroup>
                                                         </SelectContent>
                                                     </Select>
-                                                    <InputError message={editFormErrors[`pricing_options.${index}.pricing_type`]} />
+                                                    <InputError message={editFormErrors[`pricing_options.${index}.pricing_unit`]} />
                                                 </Field>
                                             </div>
                                         ))}

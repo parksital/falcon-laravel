@@ -32,8 +32,8 @@ function servicePriceSummary(service: Service, copy: PublicBookingPageProps['cop
 
     if (! lowestPrice) return null;
 
-    const unit = lowestPrice.pricing_type !== 'package'
-        ? ` ${interpolate(copy.per_unit, { unit: lowestPrice.price_type_label })}`
+    const unit = lowestPrice.pricing_mode === 'variable' && lowestPrice.pricing_unit_label
+        ? ` ${interpolate(copy.per_unit, { unit: lowestPrice.pricing_unit_label })}`
         : '';
 
     return {
