@@ -672,12 +672,22 @@ function ServiceDetailsPage({
 
                         <div className="flex flex-1 flex-col overflow-y-auto p-4">
                             <FieldGroup>
-                                <Field data-invalid={editPriceForm.errors.pricing_mode ? true : undefined}>
-                                    <FieldContent>
-                                        <FieldTitle>{copy.pricing_mode_label}</FieldTitle>
-                                        <FieldDescription>{copy.pricing_mode_description}</FieldDescription>
-                                    </FieldContent>
+                                <Field data-invalid={editPriceForm.errors.name ? true : undefined}>
+                                    <FieldLabel htmlFor="edit-price-name">{copy.price_field_name}</FieldLabel>
+                                    <Input
+                                        id="edit-price-name"
+                                        maxLength={120}
+                                        placeholder={copy.price_name_placeholder}
+                                        aria-invalid={Boolean(editPriceForm.errors.name)}
+                                        value={editPriceForm.data.name}
+                                        onChange={(event) => editPriceForm.setData('name', event.target.value)}
+                                    />
+                                    <FieldError>{editPriceForm.errors.name}</FieldError>
+                                </Field>
 
+                                <Field data-invalid={editPriceForm.errors.pricing_mode ? true : undefined}>
+                                    <FieldLabel>{copy.pricing_mode_label}</FieldLabel>
+                                    <FieldDescription>{copy.pricing_mode_description}</FieldDescription>
                                     <ToggleGroup
                                         type="single"
                                         variant="outline"
@@ -726,19 +736,6 @@ function ServiceDetailsPage({
                                     </Field>
                                 ) : null}
 
-                                <Field data-invalid={editPriceForm.errors.name ? true : undefined}>
-                                    <FieldLabel htmlFor="edit-price-name">{copy.price_field_name}</FieldLabel>
-                                    <Input
-                                        id="edit-price-name"
-                                        maxLength={120}
-                                        placeholder={copy.price_name_placeholder}
-                                        aria-invalid={Boolean(editPriceForm.errors.name)}
-                                        value={editPriceForm.data.name}
-                                        onChange={(event) => editPriceForm.setData('name', event.target.value)}
-                                    />
-                                    <FieldError>{editPriceForm.errors.name}</FieldError>
-                                </Field>
-
                                 <Field data-invalid={editPriceForm.errors.price_in_minor ? true : undefined}>
                                     <FieldLabel htmlFor="edit-price-amount">{copy.price_field_amount}</FieldLabel>
                                     <InputGroup>
@@ -753,8 +750,9 @@ function ServiceDetailsPage({
                                             onChange={(event) => editPriceForm.setData('price_in_minor', normalizePriceAmount(event.target.value))}
                                         />
                                         <InputGroupAddon align="inline-end">
-                                            {formatPriceAmountDescription(editPriceForm.data.price_in_minor, locale)}
-                                            {editPriceForm.data.pricing_mode === 'variable' && editPriceForm.data.pricing_unit ? ` / ${pricingUnits.find((pricingUnit) => pricingUnit.value === editPriceForm.data.pricing_unit)?.priceUnit || ''}` : null}
+                                            {editPriceForm.data.pricing_mode === 'variable' && editPriceForm.data.pricing_unit
+                                                ? `${formatPriceAmountDescription(editPriceForm.data.price_in_minor, locale)} / ${pricingUnits.find((pricingUnit) => pricingUnit.value === editPriceForm.data.pricing_unit)?.priceUnit || ''}`
+                                                : formatPriceAmountDescription(editPriceForm.data.price_in_minor, locale)}
                                         </InputGroupAddon>
                                     </InputGroup>
                                     <FieldError>{editPriceForm.errors.price_in_minor}</FieldError>
