@@ -15,8 +15,8 @@ class Service extends Model
     protected $fillable = [
         'vendor_id',
         'uuid',
+        'public_id',
         'name',
-        'slug',
         'category',
         'description',
         'is_public',

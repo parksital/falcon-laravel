@@ -1,6 +1,5 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -18,7 +17,7 @@ import { overview } from '@/routes';
 import { destroy as destroyPricingOption, store as storePricingOption, update as updatePricingOption } from '@/routes/services/pricing-options';
 import { destroy as destroyService, show as showService, update as updateService } from '@/routes/services';
 import { Head, setLayoutProps, useForm } from '@inertiajs/react';
-import { DotsThreeIcon, ImagesSquareIcon, MoneyIcon, PencilSimpleIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
+import { DotsThreeIcon, FileDashedIcon, GlobeSimpleIcon, ImagesSquareIcon, MoneyIcon, PencilIcon, PencilSimpleIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { type BreadcrumbItem } from '@/types';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
@@ -48,8 +47,6 @@ interface ServiceDetailsPageProps {
     service: {
         id: number;
         name: string;
-        category: string;
-        custom_category: string | null;
         description: string | null;
         category_label: string;
         is_public: boolean;
@@ -71,10 +68,6 @@ interface ServiceDetailsPageProps {
         }[];
         formatted_created_at: string;
     };
-    serviceCategories: {
-        value: string;
-        label: string;
-    }[];
     locale: string;
     copy: Record<string, string>;
 }
@@ -117,7 +110,6 @@ function formatPricingOptionPrice(pricingOption: ServiceDetailsPageProps['servic
 function ServiceDetailsPage({
     vendor,
     service,
-    serviceCategories,
     locale,
     copy,
 }: ServiceDetailsPageProps) {
@@ -136,6 +128,7 @@ function ServiceDetailsPage({
     const [isDeletePriceOpen, setIsDeletePriceOpen] = useState(false);
     const [editingPricingOptionId, setEditingPricingOptionId] = useState<number | null>(null);
     const [deletingPricingOptionId, setDeletingPricingOptionId] = useState<number | null>(null);
+    const [serviceEditAction, setServiceEditAction] = useState<'save' | 'draft' | 'publish' | null>(null);
     const pricingUnits: PricingUnitOption[] = [
         { value: 'person', label: copy.pricing_unit_person_label, priceUnit: copy.pricing_unit_person_price_unit },
         { value: 'item', label: copy.pricing_unit_item_label, priceUnit: copy.pricing_unit_item_price_unit },
@@ -160,8 +153,6 @@ function ServiceDetailsPage({
 
     const editForm = useForm({
         name: service.name,
-        category: service.category,
-        custom_category: service.custom_category ?? '',
         description: service.description ?? '',
         is_public: service.is_public,
     });
@@ -176,8 +167,6 @@ function ServiceDetailsPage({
     function openServiceEditor() {
         const serviceDetails = {
             name: service.name,
-            category: service.category,
-            custom_category: service.custom_category ?? '',
             description: service.description ?? '',
             is_public: service.is_public,
         };
@@ -192,6 +181,31 @@ function ServiceDetailsPage({
         setIsEditServiceOpen(false);
         editForm.reset();
         editForm.clearErrors();
+    }
+
+    function submitServiceEdit(action: 'save' | 'draft' | 'publish', isPublic: boolean) {
+        editForm.transform((data) => ({
+            ...data,
+            is_public: isPublic,
+        }));
+
+        editForm.patch(updateService(service.id).url, {
+            preserveScroll: true,
+            onStart: () => {
+                setServiceEditAction(action);
+            },
+            onBefore: () => {
+                editForm.clearErrors();
+            },
+            onSuccess: () => {
+                setIsEditServiceOpen(false);
+                editForm.setDefaults();
+                editForm.clearErrors();
+            },
+            onFinish: () => {
+                setServiceEditAction(null);
+            },
+        });
     }
 
     function openAddPrice() {
@@ -248,47 +262,17 @@ function ServiceDetailsPage({
             <Head title={service.name} />
 
             <main className="container mx-auto max-h-full w-full px-4 flex flex-col">
-
                 <header className='w-full py-4'>
                     <div className='flex items-center gap-2'>
                         <h1 className='text-xl font-semibold'>
                             {service.name}
                         </h1>
 
-                        <Badge variant="secondary">{service.category_label}</Badge>
-
-                        <Badge variant={service.is_public ? 'default' : 'secondary'}>
-                            {service.is_public ? copy.public_status : copy.draft_status}
-                        </Badge>
-
-                        <DropdownMenu modal={false}>
-                            <DropdownMenuTrigger asChild>
-                                <Button
-                                    className=''
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    aria-label={copy.service_actions_label}
-                                >
-                                    <DotsThreeIcon />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuGroup>
-                                    <DropdownMenuItem
-                                        variant="destructive"
-                                        onSelect={() => setIsDeleteServiceOpen(true)}
-                                    >
-                                        <TrashIcon/>
-                                        {copy.delete_service_action}
-                                    </DropdownMenuItem>
-                                </DropdownMenuGroup>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        {/* Other elements */}
                     </div>
                 </header>
 
-                <section className="mt-6 w-full flex items-start gap-6">
+                <section className="mt-6 pb-12 w-full flex flex-col-reverse lg:flex-row items-start gap-6">
                     <div className='flex-1 flex-col'>
                         <Card>
                             <CardHeader className='flex flex-row justify-between'>
@@ -368,7 +352,7 @@ function ServiceDetailsPage({
                             </CardContent>
                         </Card>
 
-                        <Card className='mt-12'>
+                        <Card className='mt-6'>
                             <CardHeader className='flex items-start justify-between'>
                                 <div>
                                     <CardTitle>{copy.media_heading}</CardTitle>
@@ -407,11 +391,44 @@ function ServiceDetailsPage({
 
                     </div>
 
-                    <aside className='flex-1 max-w-xs'>
+                    <aside className='w-full lg:flex-1 lg:max-w-xs'>
                         <Card>
-                            <CardHeader>
-                                <CardTitle>{copy.details_title}</CardTitle>
-                                <CardDescription className='sr-only'/>
+                            <CardHeader className='flex items-start gap-2 justify-between'>
+                                <div>
+                                    <CardTitle>{copy.details_title}</CardTitle>
+                                    <CardDescription className='sr-only'/>
+                                </div>
+
+                                <DropdownMenu modal={false}>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button
+                                            className=''
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            aria-label={copy.service_actions_label}
+                                        >
+                                            <DotsThreeIcon />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="w-auto" align="end">
+                                        <DropdownMenuGroup>
+                                            <DropdownMenuItem className="whitespace-nowrap" onClick={openServiceEditor}>
+                                                <PencilIcon className="invisible" />
+                                                {copy.edit_service_action}
+                                            </DropdownMenuItem>
+
+                                            <DropdownMenuItem
+                                                className="whitespace-nowrap"
+                                                variant="destructive"
+                                                onSelect={() => setIsDeleteServiceOpen(true)}
+                                            >
+                                                <TrashIcon />
+                                                {copy.delete_service_action}
+                                            </DropdownMenuItem>
+                                        </DropdownMenuGroup>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </CardHeader>
 
                             <CardContent>
@@ -795,18 +812,7 @@ function ServiceDetailsPage({
                         className="flex min-h-0 flex-1 flex-col"
                         onSubmit={(event) => {
                             event.preventDefault();
-
-                            editForm.patch(updateService(service.id).url, {
-                                preserveScroll: true,
-                                onBefore: () => {
-                                    editForm.clearErrors();
-                                },
-                                onSuccess: () => {
-                                    setIsEditServiceOpen(false);
-                                    editForm.setDefaults();
-                                    editForm.clearErrors();
-                                },
-                            });
+                            submitServiceEdit(service.is_public ? 'save' : 'draft', service.is_public);
                         }}
                     >
                         <SheetHeader>
@@ -816,6 +822,33 @@ function ServiceDetailsPage({
 
                         <div className="flex flex-1 flex-col overflow-y-auto p-4">
                             <FieldGroup>
+                                <Field orientation={"horizontal"}>
+                                    <FieldContent>
+                                        <FieldLabel>{copy.service_edit_category_label}</FieldLabel>
+                                        <FieldDescription>{copy.service_edit_category_description}</FieldDescription>
+                                    </FieldContent>
+                                    <Badge className="max-w-fit" variant="secondary">
+                                        {service.category_label}
+                                    </Badge>
+                                </Field>
+
+                                <Field orientation={"horizontal"}>
+                                    <FieldContent>
+                                        <FieldLabel>{copy.details_status_label}</FieldLabel>
+                                    </FieldContent>
+
+                                    {service.is_public ? (
+                                        <Badge className="max-w-fit" variant="default">
+                                            {copy.public_status}
+                                        </Badge>
+                                    ) : (
+                                        <Badge className="max-w-fit" variant="secondary">
+                                            {copy.draft_status}
+                                        </Badge>
+                                    )}
+                                    <FieldError>{editForm.errors.is_public}</FieldError>
+                                </Field>
+
                                 <Field data-invalid={editForm.errors.name ? true : undefined}>
                                     <FieldLabel htmlFor="edit-service-name">{copy.service_field_name}</FieldLabel>
                                     <Input
@@ -831,56 +864,6 @@ function ServiceDetailsPage({
                                     <FieldError>{editForm.errors.name}</FieldError>
                                 </Field>
 
-                                <Field data-invalid={editForm.errors.category ? true : undefined}>
-                                    <FieldLabel htmlFor="edit-service-category">{copy.service_field_category}</FieldLabel>
-                                    <Select
-                                        name="category"
-                                        required
-                                        value={editForm.data.category}
-                                        onValueChange={(value) => editForm.setData({
-                                            ...editForm.data,
-                                            category: value,
-                                            custom_category: value === 'other' ? editForm.data.custom_category : '',
-                                        })}
-                                    >
-                                        <SelectTrigger
-                                            id="edit-service-category"
-                                            className="w-full"
-                                            aria-invalid={Boolean(editForm.errors.category)}
-                                        >
-                                            <SelectValue placeholder={copy.service_field_category_placeholder} />
-                                        </SelectTrigger>
-                                        <SelectContent position="popper">
-                                            <SelectGroup>
-                                                {serviceCategories.map((serviceCategory) => (
-                                                    <SelectItem key={serviceCategory.value} value={serviceCategory.value}>
-                                                        {serviceCategory.label}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectGroup>
-                                        </SelectContent>
-                                    </Select>
-                                    <FieldError>{editForm.errors.category}</FieldError>
-                                </Field>
-
-                                {editForm.data.category === 'other' ? (
-                                    <Field data-invalid={editForm.errors.custom_category ? true : undefined}>
-                                        <FieldLabel htmlFor="edit-service-custom-category">
-                                            {copy.service_field_custom_category}
-                                        </FieldLabel>
-                                        <Input
-                                            id="edit-service-custom-category"
-                                            name="custom_category"
-                                            required
-                                            maxLength={120}
-                                            placeholder={copy.custom_category_placeholder}
-                                            aria-invalid={Boolean(editForm.errors.custom_category)}
-                                            value={editForm.data.custom_category}
-                                            onChange={(event) => editForm.setData('custom_category', event.target.value)}
-                                        />
-                                        <FieldError>{editForm.errors.custom_category}</FieldError>
-                                    </Field>
-                                ) : null}
 
                                 <Field data-invalid={editForm.errors.description ? true : undefined}>
                                     <FieldLabel htmlFor="edit-service-description">{copy.service_field_description}</FieldLabel>
@@ -897,36 +880,34 @@ function ServiceDetailsPage({
                                     />
                                     <FieldError>{editForm.errors.description}</FieldError>
                                 </Field>
-
-                                <Field orientation="horizontal">
-                                    <Checkbox
-                                        id="edit-service-is-public"
-                                        name="is_public"
-                                        checked={editForm.data.is_public}
-                                        onCheckedChange={(checked) => editForm.setData('is_public', checked === true)}
-                                    />
-                                    <FieldContent>
-                                        <FieldLabel htmlFor="edit-service-is-public">
-                                            {copy.service_edit_visibility_label}
-                                        </FieldLabel>
-                                        <FieldDescription>
-                                            {editForm.data.is_public
-                                                ? copy.service_edit_public_description
-                                                : copy.service_edit_private_description}
-                                        </FieldDescription>
-                                    </FieldContent>
-                                </Field>
                             </FieldGroup>
                         </div>
 
-                        <SheetFooter>
-                            <Button type="submit" disabled={!editForm.isDirty || editForm.processing}>
-                                {editForm.processing ? <Spinner /> : copy.service_edit_save}
-                            </Button>
-                            <Button type="button" variant="outline" onClick={closeServiceEditor}>
-                                {copy.service_edit_cancel}
-                            </Button>
-                        </SheetFooter>
+                        {service.is_public ? (
+                            <SheetFooter>
+                                <Button type="submit" disabled={!editForm.isDirty || editForm.processing}>
+                                    {serviceEditAction === 'save' ? <Spinner data-icon="inline-start" /> : null}
+                                    {copy.service_edit_save}
+                                </Button>
+                                <Button type="button" variant="outline" onClick={closeServiceEditor}>
+                                    {copy.service_edit_cancel}
+                                </Button>
+                            </SheetFooter>
+                        ) : (
+                            <SheetFooter>
+                                <Button type="submit" variant="outline" disabled={!editForm.isDirty || editForm.processing}>
+                                    {serviceEditAction === 'draft' ? <Spinner data-icon="inline-start" /> : <FileDashedIcon data-icon="inline-start" />}
+                                    {copy.service_edit_save_draft}
+                                </Button>
+                                <Button type="button" disabled={editForm.processing} onClick={() => submitServiceEdit('publish', true)}>
+                                    {serviceEditAction === 'publish' ? <Spinner data-icon="inline-start" /> : <GlobeSimpleIcon data-icon="inline-start" />}
+                                    {copy.service_edit_save_and_publish}
+                                </Button>
+                                <Button type="button" variant="outline" onClick={closeServiceEditor}>
+                                    {copy.service_edit_cancel}
+                                </Button>
+                            </SheetFooter>
+                        )}
                     </form>
                 </SheetContent>
             </Sheet>

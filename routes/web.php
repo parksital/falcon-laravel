@@ -45,7 +45,7 @@ Route::get('/index', function () {
             $offer = [
                 '@type' => 'Offer',
                 'position' => $index + 1,
-                'url' => route('public.booking.service.show', [$service->vendor->slug, $service->slug]),
+                'url' => route('public.booking.service.show', [$service->vendor->slug, $service->public_id]),
                 'itemOffered' => [
                     '@type' => 'Service',
                     'name' => $service->name,
@@ -93,7 +93,7 @@ Route::get('/index', function () {
                         'name' => $service->vendor?->name,
                         'location' => $service->vendor?->location,
                     ],
-                    'url' => route('public.booking.service.show', [$service->vendor->slug, $service->slug]),
+                    'url' => route('public.booking.service.show', [$service->vendor->slug, $service->public_id]),
                 ];
             })
             ->all(),
@@ -115,11 +115,11 @@ Route::get('/index', function () {
     ]]);
 })->name('index');
 
-Route::get('/book/{vendorSlug}/services/{serviceSlug}', fn (string $vendorSlug, string $serviceSlug) => redirect()->route(
+Route::get('/book/{vendorSlug}/services/{servicePublicId}', fn (string $vendorSlug, string $servicePublicId) => redirect()->route(
     'public.booking.service.show',
-    ['vendorSlug' => $vendorSlug, 'serviceSlug' => $serviceSlug],
+    ['vendorSlug' => $vendorSlug, 'servicePublicId' => $servicePublicId],
     301,
-));
+))->where('servicePublicId', 'svc_[a-z0-9]{10}');
 Route::get('/book/{vendorSlug}', fn (string $vendorSlug) => redirect()->route(
     'public.booking.show',
     ['vendorSlug' => $vendorSlug],
@@ -271,10 +271,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 });
 
-Route::get('/{vendorSlug}/services/{serviceSlug}', [PublicBookingPageController::class, 'showService'])
+Route::get('/{vendorSlug}/services/{servicePublicId}', [PublicBookingPageController::class, 'showService'])
     ->where([
         'vendorSlug' => '[a-z0-9_]+(?:-[a-z0-9_]+)*',
-        'serviceSlug' => '[a-z0-9]+(?:-[a-z0-9]+)*',
+        'servicePublicId' => 'svc_[a-z0-9]{10}',
     ])
     ->name('public.booking.service.show');
 
