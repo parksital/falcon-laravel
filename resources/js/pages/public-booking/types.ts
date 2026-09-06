@@ -39,8 +39,8 @@ export type ServicePricingOption = {
 
 export type Service = {
     id: number;
+    public_id: string;
     name: string;
-    slug: string;
     category: string;
     category_label: string;
     description: string | null;

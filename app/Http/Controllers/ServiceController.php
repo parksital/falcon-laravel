@@ -91,8 +91,6 @@ class ServiceController extends Controller
             'service' => [
                 'id' => $service->id,
                 'name' => $service->name,
-                'category' => $service->category,
-                'custom_category' => $service->customCategory?->name,
                 'description' => $service->description,
                 'category_label' => $categoryLabel ?: $service->category,
                 'is_public' => (bool) $service->is_public,
@@ -120,15 +118,6 @@ class ServiceController extends Controller
                     ->all(),
                     'formatted_created_at' => $service->created_at->translatedFormat(__('service-details.created_at_date_format'))
             ],
-            'serviceCategories' => collect(array_keys(config('service_categories')))
-                ->map(fn (string $value) => [
-                    'value' => $value,
-                    'label' => __("config-service-categories.{$value}") === "config-service-categories.{$value}"
-                        ? $value
-                        : __("config-service-categories.{$value}"),
-                ])
-                ->values()
-                ->all(),
             'locale' => app()->getLocale(),
             'copy' => __('service-details'),
         ]);
@@ -143,13 +132,12 @@ class ServiceController extends Controller
         }
 
         $validated = $request->validated();
-        $slug = $this->makeSlug($vendor, $validated['name']);
 
-        $service = DB::transaction(function () use ($request, $vendor, $validated, $slug) {
+        $service = DB::transaction(function () use ($request, $vendor, $validated) {
             $service = $vendor->services()->create([
                 'uuid' => Str::uuid(),
+                'public_id' => $this->makePublicId(),
                 'name' => $validated['name'],
-                'slug' => $slug,
                 'category' => $validated['category'],
                 'description' => $validated['description'] ?? null,
                 'is_public' => $validated['is_public'] ?? true,
@@ -207,24 +195,13 @@ class ServiceController extends Controller
         abort_unless($service->vendor_id === $vendor->id, 404);
 
         $validated = $request->validated();
-        $slug = $this->makeSlug($vendor, $validated['name'], $service);
 
-        DB::transaction(function () use ($service, $validated, $slug) {
+        DB::transaction(function () use ($service, $validated) {
             $service->update([
                 'name' => $validated['name'],
-                'slug' => $slug,
-                'category' => $validated['category'],
                 'description' => $validated['description'] ?? null,
-                'is_public' => $validated['is_public'] ?? false,
+                'is_public' => $validated['is_public'] ?? $service->is_public,
             ]);
-
-            if ($validated['category'] === 'other') {
-                $service->customCategory()->updateOrCreate([], [
-                    'name' => $validated['custom_category'],
-                ]);
-            } else {
-                $service->customCategory()->delete();
-            }
 
             if (array_key_exists('pricing_options', $validated)) {
                 $prices = $service->prices()->get()->keyBy('id');
@@ -372,23 +349,13 @@ class ServiceController extends Controller
         return to_route('overview')->with('success', __('overview.delete_service_deleted'));
     }
 
-    private function makeSlug(Vendor $vendor, string $name, ?Service $service = null): string
+    private function makePublicId(): string
     {
-        $baseSlug = Str::slug($name) ?: 'service';
-        $slug = $baseSlug;
-        $suffix = 1;
+        do {
+            $publicId = 'svc_'.Str::lower(Str::random(10));
+        } while (Service::query()->where('public_id', $publicId)->exists());
 
-        while (
-            $vendor->services()
-                ->where('slug', $slug)
-                ->when($service, fn ($query) => $query->whereKeyNot($service->id))
-                ->exists()
-        ) {
-            $slug = $baseSlug.'-'.$suffix;
-            $suffix++;
-        }
-
-        return $slug;
+        return $publicId;
     }
 
     private function pricingModeLabel(?string $mode): ?string

@@ -78,7 +78,7 @@ export default function DesktopPublicBookingPage({ copy, vendor, services, local
                     <div className="grid gap-3 grid-cols-2">
                         {services.map((service) => (
                             <Link key={service.id} href={service.url} className="flex h-full flex-col text-left">
-                                <Card id={`service-${service.slug}`} className='pt-0'>
+                                <Card id={`service-${service.public_id}`} className='pt-0'>
                                     <div className="aspect-[16/9] w-full border-b bg-muted/40 overflow-hidden">
                                         {service.media[0] && (
                                             <img src={service.media[0].url} alt={service.name} className="size-full object-cover" />

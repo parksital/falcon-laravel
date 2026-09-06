@@ -27,7 +27,7 @@ class PublicBookingPageController extends Controller
         return $this->renderVendor($vendor);
     }
 
-    public function showService(string $vendorSlug, string $serviceSlug): Response
+    public function showService(string $vendorSlug, string $servicePublicId): Response
     {
         $vendor = Vendor::query()
             ->where('slug', $vendorSlug)
@@ -39,7 +39,7 @@ class PublicBookingPageController extends Controller
             }])
             ->firstOrFail();
 
-        $service = $vendor->services->firstWhere('slug', $serviceSlug);
+        $service = $vendor->services->firstWhere('public_id', $servicePublicId);
 
         abort_unless($service, 404);
 
@@ -100,8 +100,8 @@ class PublicBookingPageController extends Controller
 
         return [
             'id' => $service->id,
+            'public_id' => $service->public_id,
             'name' => $service->name,
-            'slug' => $service->slug,
             'category' => $service->category,
             'category_label' => $service->category === 'other'
                 ? ($service->customCategory?->name ?? $this->serviceCategoryLabels()['other'] ?? $service->category)
@@ -113,7 +113,7 @@ class PublicBookingPageController extends Controller
             'pricing_mode_label' => $this->pricingModeLabel($price?->pricing_mode),
             'pricing_unit' => $price?->pricing_unit,
             'pricing_unit_label' => $this->pricingUnitLabel($price?->pricing_unit),
-            'url' => route('public.booking.service.show', [$vendor->slug, $service->slug]),
+            'url' => route('public.booking.service.show', [$vendor->slug, $service->public_id]),
             'pricing_options' => $service->prices
                 ->map(fn ($price) => $this->pricePayload($price))
                 ->values()
@@ -182,7 +182,7 @@ class PublicBookingPageController extends Controller
                 'location' => $vendor->location,
             ]));
         $canonical = $service
-            ? route('public.booking.service.show', [$vendor->slug, $service->slug])
+            ? route('public.booking.service.show', [$vendor->slug, $service->public_id])
             : route('public.booking.show', $vendor->slug);
 
         return [
@@ -217,7 +217,7 @@ class PublicBookingPageController extends Controller
                         ->all();
                     $offer = [
                         '@type' => 'Offer',
-                        'url' => route('public.booking.service.show', [$vendor->slug, $service->slug]),
+                        'url' => route('public.booking.service.show', [$vendor->slug, $service->public_id]),
                         'itemOffered' => [
                             '@type' => 'Service',
                             'name' => $service->name,

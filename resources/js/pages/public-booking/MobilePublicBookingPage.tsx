@@ -78,7 +78,7 @@ export default function MobilePublicBookingPage({ copy, vendor, services, locale
                 {services.length > 0 ? (
                     <div className="grid gap-3">
                         {services.map((service) => (
-                            <Card key={service.id} id={`service-${service.slug}`}>
+                            <Card key={service.id} id={`service-${service.public_id}`}>
                                 <Link href={service.url} className="flex h-full flex-col text-left">
                                     {service.media[0] ? (
                                         <div className="aspect-[4/3] overflow-hidden border-b">

@@ -17,8 +17,6 @@ class UpdateServiceRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:120'],
-            'category' => ['required', 'string', Rule::in(array_keys(config('service_categories')))],
-            'custom_category' => ['nullable', 'required_if:category,other', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:2000'],
             'pricing_options' => ['sometimes', 'array', 'min:1', 'max:3'],
             'pricing_options.*.id' => ['nullable', 'integer', 'distinct'],
@@ -40,6 +38,10 @@ class UpdateServiceRequest extends FormRequest
     {
         return [
             function ($validator) {
+                if ($this->route('service')?->is_public && $this->has('is_public') && $this->boolean('is_public') === false) {
+                    $validator->errors()->add('is_public', __('service-details.validation_service_status_fixed'));
+                }
+
                 foreach ($this->input('pricing_options', []) as $index => $pricingOption) {
                     if (($pricingOption['pricing_mode'] ?? null) === 'variable' && blank($pricingOption['pricing_unit'] ?? null)) {
                         $validator->errors()->add("pricing_options.{$index}.pricing_unit", __('create-service.validation_pricing_unit_required'));
