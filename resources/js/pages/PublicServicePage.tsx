@@ -15,24 +15,12 @@ function interpolate(value: string, replacements: Record<string, string>) {
 
 function formattedPricingOptionPrice(
     pricingOption: PublicServicePageProps['service']['pricing_options'][number],
-    copy: PublicServicePageProps['copy'],
 ) {
-    if (pricingOption.pricing_mode !== 'variable' || ! pricingOption.pricing_unit_label) {
-        return pricingOption.formatted_price;
-    }
-
-    return `${pricingOption.formatted_price} ${interpolate(copy.per_unit, { unit: pricingOption.pricing_unit_label })}`;
+    return pricingOption.formatted_price;
 }
 
-function formattedServicePrice(
-    service: PublicServicePageProps['service'],
-    copy: PublicServicePageProps['copy'],
-) {
-    if (service.pricing_mode !== 'variable' || ! service.pricing_unit_label) {
-        return service.formatted_price ?? '';
-    }
-
-    return `${service.formatted_price} ${interpolate(copy.per_unit, { unit: service.pricing_unit_label })}`;
+function formattedServicePrice(service: PublicServicePageProps['service']) {
+    return service.formatted_price ?? '';
 }
 
 export default function PublicServicePage({ copy, vendor, service, seo }: PublicServicePageProps) {
@@ -96,7 +84,8 @@ export default function PublicServicePage({ copy, vendor, service, seo }: Public
                                     <ServicePricingCard
                                         key={pricingOption.id}
                                         title={pricingOption.name}
-                                        formattedPrice={formattedPricingOptionPrice(pricingOption, copy)}
+                                        formattedPrice={formattedPricingOptionPrice(pricingOption)}
+                                        priceLabel={pricingOption.pricing_mode === 'variable' ? pricingOption.pricing_unit_label : pricingOption.pricing_mode_label}
                                         description={pricingOption.description}
                                         features={pricingOption.features.map((feature) => ({
                                             key: feature.id,
@@ -110,7 +99,9 @@ export default function PublicServicePage({ copy, vendor, service, seo }: Public
                     ) : service.formatted_price ? (
                         <ServicePricingCard
                             title={service.name}
-                            formattedPrice={formattedServicePrice(service, copy)}
+                            formattedPrice={formattedServicePrice(service)}
+                            priceLabel={service.pricing_mode === 'variable' ? service.pricing_unit_label : service.pricing_mode_label}
+                            variant="dashboard"
                         />
                         ) : null}
                 </section>

@@ -6,7 +6,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-
 interface ServicePricingCardFeature {
     key: string | number;
     label: string;
@@ -19,6 +18,7 @@ interface ServicePricingCardProps {
     priceLabel?: string | null;
     description?: string | null;
     features?: ServicePricingCardFeature[];
+    variant?: 'default' | 'dashboard';
 }
 
 export function ServicePricingCard({
@@ -28,36 +28,36 @@ export function ServicePricingCard({
     description,
     features = [],
 }: ServicePricingCardProps) {
+
     return (
-        <Card>
-            <CardHeader className="flex flex-row items-center gap-2">
-                {title ? (
-                    <>
-                        <CardTitle className="text-lg">{title}</CardTitle>
-                        <span className="font-mono text-base text-muted-foreground">·</span>
-                    </>
-                ) : null}
-                <p className="font-mono text-base font-light text-muted-foreground">{formattedPrice}</p>
+        <div className="flex flex-col gap-0 border p-4">
+
+            {title ? (
+                <h3 className="text-base">{title}</h3>
+            ) : null}
+
+            <div className='flex items-center gap-1'>
+                <p className="text-sm">{formattedPrice}</p>
+
                 {priceLabel ? (
-                    <Badge variant="secondary" className="ml-auto w-fit">{priceLabel}</Badge>
+                    <Badge variant="secondary">{priceLabel}</Badge>
                 ) : null}
-            </CardHeader>
+            </div>
+
 
             {features.length > 0 ? (
-                <CardContent className="flex flex-wrap gap-2">
+                <div className="mt-4 flex flex-wrap gap-2">
                     {features.map((feature) => (
-                        <Badge key={feature.key} variant="secondary">
+                        <Badge key={feature.key} variant="outline">
                             {feature.value ? `${feature.label}: ${feature.value}` : feature.label}
                         </Badge>
                     ))}
-                </CardContent>
+                </div>
             ) : null}
 
             {description ? (
-                <CardFooter className="border-t">
-                    <p className="whitespace-pre-line text-sm text-muted-foreground">{description}</p>
-                </CardFooter>
+                <p className="whitespace-pre-line text-sm text-muted-foreground">{description}</p>
             ) : null}
-        </Card>
+        </div>
     );
 }
