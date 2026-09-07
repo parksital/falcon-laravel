@@ -1,11 +1,5 @@
 import { Badge } from '@/components/ui/badge';
-import {
-    Card,
-    CardContent,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+
 interface ServicePricingCardFeature {
     key: string | number;
     label: string;
@@ -18,7 +12,6 @@ interface ServicePricingCardProps {
     priceLabel?: string | null;
     description?: string | null;
     features?: ServicePricingCardFeature[];
-    variant?: 'default' | 'dashboard';
 }
 
 export function ServicePricingCard({

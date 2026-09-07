@@ -335,15 +335,7 @@ function ServiceDetailsPage({
                                         {service.pricing_options.map((pricingOption) => (
                                             <div key={pricingOption.id} className="flex flex-col gap-1 border p-4">
                                                 <div className="flex items-center gap-3">
-                                                    <p className="text-sm ">{pricingOption.formatted_amount}</p>
-
-                                                    {pricingOption.pricing_mode === 'fixed' && (
-                                                            <Badge variant="secondary">{pricingOption.pricing_mode_label}</Badge>
-                                                    )}
-
-                                                    {pricingOption.pricing_mode === 'variable' && (
-                                                        <Badge variant="secondary">{pricingOption.pricing_unit_label}</Badge>
-                                                    )}
+                                                    <h3 className="text-base ">{pricingOption.name}</h3>
 
                                                     <div className='flex-1'/>
 
@@ -377,11 +369,23 @@ function ServiceDetailsPage({
                                                     </DropdownMenu>
                                                 </div>
 
-                                                <h3 className="text-base ">{pricingOption.name}</h3>
+
+                                                <div className='flex items-center gap-2'>
+                                                    <p className="text-sm ">{pricingOption.formatted_amount}</p>
+
+                                                    {pricingOption.pricing_mode === 'fixed' && (
+                                                        <Badge variant="secondary">{pricingOption.pricing_mode_label}</Badge>
+                                                    )}
+
+                                                    {pricingOption.pricing_mode === 'variable' && (
+                                                        <Badge variant="secondary">{pricingOption.pricing_unit_label}</Badge>
+                                                    )}
+                                                </div>
+
 
 
                                                 {pricingOption.features.length > 0 && (
-                                                    <div className="flex flex-wrap gap-2">
+                                                    <div className="mt-2 flex flex-wrap gap-2">
                                                         {pricingOption.features.map((feature) => (
                                                             <Badge key={feature.id} variant="outline">
                                                                 {feature.value ? `${feature.label}: ${feature.value}` : feature.label}
