@@ -50,7 +50,7 @@ class PublicBookingPageController extends Controller
     {
         $seo = $this->seo($vendor);
 
-        return Inertia::render('PublicBookingPage', [
+        return Inertia::render('PublicVendorPage', [
             'copy' => __('public-booking'),
             'vendor' => $this->vendorPayload($vendor),
             'services' => $vendor->services->map(fn (Service $service) => $this->servicePayload($vendor, $service))->values()->all(),
@@ -67,7 +67,7 @@ class PublicBookingPageController extends Controller
     {
         $seo = $this->seo($vendor, $service);
 
-        return Inertia::render('PublicBookingServicePage', [
+        return Inertia::render('PublicServicePage', [
             'copy' => __('public-booking'),
             'vendor' => $this->vendorPayload($vendor),
             'service' => $this->servicePayload($vendor, $service),

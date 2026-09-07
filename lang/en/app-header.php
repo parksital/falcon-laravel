@@ -7,5 +7,7 @@ return [
     'language' => 'Language',
     'language_english' => 'English',
     'language_dutch' => 'Nederlands',
+    'nav_login' => 'Log in',
+    'nav_register' => 'List your business',
     'logout' => 'Log out',
 ];
