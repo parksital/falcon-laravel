@@ -87,6 +87,8 @@ class ServiceController extends Controller
             $categoryLabel = $service->category;
         }
 
+        $priceFeatureLabels = $this->priceFeatureLabels();
+
         return Inertia::render('ServiceDetailsPage', [
             'vendor' => $vendor->only('name'),
             'service' => [
@@ -131,6 +133,13 @@ class ServiceController extends Controller
                     ->all(),
                     'formatted_created_at' => $service->created_at->translatedFormat(__('service-details.created_at_date_format'))
             ],
+            'priceFeatures' => collect($this->priceFeaturesForCategory($service->category))
+                ->map(fn (string $value) => [
+                    'value' => $value,
+                    'label' => $priceFeatureLabels[$value] ?? $value,
+                ])
+                ->values()
+                ->all(),
             'locale' => app()->getLocale(),
             'copy' => __('service-details'),
         ]);
@@ -285,16 +294,27 @@ class ServiceController extends Controller
 
         $sortOrder = ($service->prices()->max('sort_order') ?? -1) + 1;
 
-        $service->prices()->create([
-            'name' => $validated['name'] ?? 'Price '.($sortOrder + 1),
-            'description' => $validated['description'] ?? null,
-            'price_in_minor' => $validated['price_in_minor'],
-            'pricing_mode' => $validated['pricing_mode'],
-            'pricing_unit' => $validated['pricing_mode'] === 'variable'
-                ? $validated['pricing_unit']
-                : null,
-            'sort_order' => $sortOrder,
-        ]);
+        DB::transaction(function () use ($service, $validated, $sortOrder) {
+            $price = $service->prices()->create([
+                'name' => $validated['name'] ?? 'Price '.($sortOrder + 1),
+                'description' => $validated['description'] ?? null,
+                'price_in_minor' => $validated['price_in_minor'],
+                'pricing_mode' => $validated['pricing_mode'],
+                'pricing_unit' => $validated['pricing_mode'] === 'variable'
+                    ? $validated['pricing_unit']
+                    : null,
+                'sort_order' => $sortOrder,
+            ]);
+
+            foreach ($validated['features'] ?? [] as $featureSortOrder => $featureData) {
+                $price->features()->create([
+                    'feature_key' => $featureData['feature_key'],
+                    'is_included' => $featureData['is_included'] ?? true,
+                    'value' => $featureData['value'] ?? null,
+                    'sort_order' => $featureSortOrder,
+                ]);
+            }
+        });
 
         return to_route('services.show', $service)->with('success', __('service-details.price_saved'));
     }
@@ -312,15 +332,28 @@ class ServiceController extends Controller
 
         $validated = $request->validated();
 
-        $pricingOption->update([
-            'name' => $validated['name'] ?? 'Price '.($pricingOption->sort_order + 1),
-            'description' => $validated['description'] ?? null,
-            'price_in_minor' => $validated['price_in_minor'],
-            'pricing_mode' => $validated['pricing_mode'],
-            'pricing_unit' => $validated['pricing_mode'] === 'variable'
-                ? $validated['pricing_unit']
-                : null,
-        ]);
+        DB::transaction(function () use ($pricingOption, $validated) {
+            $pricingOption->update([
+                'name' => $validated['name'] ?? 'Price '.($pricingOption->sort_order + 1),
+                'description' => $validated['description'] ?? null,
+                'price_in_minor' => $validated['price_in_minor'],
+                'pricing_mode' => $validated['pricing_mode'],
+                'pricing_unit' => $validated['pricing_mode'] === 'variable'
+                    ? $validated['pricing_unit']
+                    : null,
+            ]);
+
+            $pricingOption->features()->delete();
+
+            foreach ($validated['features'] ?? [] as $featureSortOrder => $featureData) {
+                $pricingOption->features()->create([
+                    'feature_key' => $featureData['feature_key'],
+                    'is_included' => $featureData['is_included'] ?? true,
+                    'value' => $featureData['value'] ?? null,
+                    'sort_order' => $featureSortOrder,
+                ]);
+            }
+        });
 
         return to_route('services.show', $service)->with('success', __('service-details.price_updated'));
     }
