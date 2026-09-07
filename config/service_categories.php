@@ -17,5 +17,7 @@ return [
 
     'foodtrucks' => [],
 
+    'kids_activities' => [],
+
     'other' => [],
 ];
