@@ -31,7 +31,9 @@ export type PublicServiceCardService = {
 
 type PublicServiceCardProps = {
     copy: Record<string, string>;
+    presentation?: 'default' | 'mobile';
     service: PublicServiceCardService;
+    showFooter?: boolean;
 };
 
 function interpolate(value: string, replacements: Record<string, string>) {
@@ -41,7 +43,7 @@ function interpolate(value: string, replacements: Record<string, string>) {
     );
 }
 
-function servicePriceSummary(service: PublicServiceCardService, copy: PublicServiceCardProps['copy']) {
+function servicePriceSummary(service: PublicServiceCardService, copy: PublicServiceCardProps['copy'], presentation: PublicServiceCardProps['presentation']) {
     const lowestPrice = service.pricing_options
         .toSorted((first, second) => first.price_in_minor - second.price_in_minor)
         [0];
@@ -52,6 +54,14 @@ function servicePriceSummary(service: PublicServiceCardService, copy: PublicServ
         ? ` ${interpolate(copy.per_unit, { unit: lowestPrice.pricing_unit_label })}`
         : '';
 
+    if (presentation === 'mobile' && service.pricing_options.length === 1) {
+        return {
+            price: `${lowestPrice.formatted_price}${unit}`,
+            count: null,
+            hasMultiplePrices: false,
+        };
+    }
+
     return {
         price: `${copy.starting_from} ${lowestPrice.formatted_price}${unit}`,
         count: interpolate(copy.prices_count, {
@@ -61,8 +71,8 @@ function servicePriceSummary(service: PublicServiceCardService, copy: PublicServ
     };
 }
 
-export function PublicServiceCard({ copy, service }: PublicServiceCardProps) {
-    const priceSummary = servicePriceSummary(service, copy);
+export function PublicServiceCard({ copy, presentation = 'default', service, showFooter = true }: PublicServiceCardProps) {
+    const priceSummary = servicePriceSummary(service, copy, presentation);
 
     return (
         <Link href={service.url} className="flex h-full flex-col text-left">
@@ -74,8 +84,17 @@ export function PublicServiceCard({ copy, service }: PublicServiceCardProps) {
                 </div>
 
                 <CardHeader>
-                    <Badge variant="secondary">{service.category_label}</Badge>
-                    <CardTitle>{service.name}</CardTitle>
+                    {presentation === 'mobile' ? (
+                        <>
+                            <Badge variant="secondary">{service.category_label}</Badge>
+                            <CardTitle>{service.name}</CardTitle>
+                        </>
+                    ) : (
+                        <>
+                            <Badge variant="secondary">{service.category_label}</Badge>
+                            <CardTitle>{service.name}</CardTitle>
+                        </>
+                    )}
                     {service.description ? (
                         <CardDescription className="line-clamp-2">{service.description}</CardDescription>
                     ) : null}
@@ -94,10 +113,12 @@ export function PublicServiceCard({ copy, service }: PublicServiceCardProps) {
                     ) : null}
                 </CardContent>
 
-                <CardFooter className="mt-auto justify-between text-sm text-muted-foreground">
-                    <span>{copy.view_service}</span>
-                    <ArrowRightIcon aria-hidden="true" />
-                </CardFooter>
+                {showFooter ? (
+                    <CardFooter className="mt-auto justify-between text-sm text-muted-foreground">
+                        <span>{copy.view_service}</span>
+                        <ArrowRightIcon aria-hidden="true" />
+                    </CardFooter>
+                ) : null}
             </Card>
         </Link>
     );

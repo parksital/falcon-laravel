@@ -49,7 +49,7 @@ export default function MobilePublicVendorPage({ copy, vendor, services }: Publi
                 {services.length > 0 ? (
                     <div className="grid gap-4">
                         {services.map((service) => (
-                            <PublicServiceCard key={service.id} copy={copy} service={service} />
+                            <PublicServiceCard key={service.id} copy={copy} presentation="mobile" service={service} showFooter={false} />
                         ))}
                     </div>
                 ) : (

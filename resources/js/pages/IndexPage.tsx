@@ -45,7 +45,7 @@ export default function IndexPage({ services, copy }: IndexPageProps) {
                         </Card>
 
                         {services.map((service) => (
-                            <PublicServiceCard key={service.id} copy={copy} service={service} />
+                            <PublicServiceCard key={service.id} copy={copy} presentation="mobile" service={service} showFooter={false} />
                         ))}
 
                         {services.length === 0 ? (
