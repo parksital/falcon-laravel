@@ -6,6 +6,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import PublicLayout from '@/layouts/public/public-layout';
 import { PublicServiceCard } from '@/pages/public-booking/public-service-card';
 import { type Service } from '@/pages/public-booking/types';
@@ -18,6 +19,8 @@ type IndexPageProps = {
 };
 
 export default function IndexPage({ services, copy }: IndexPageProps) {
+    const isMobile = useMediaQuery('(max-width: 640px)');
+
     return (
         <PublicLayout>
             <Head title={copy.title}>
@@ -33,16 +36,19 @@ export default function IndexPage({ services, copy }: IndexPageProps) {
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        <Card className="self-start">
-                            <CardHeader>
-                                <CardTitle>{copy.cta_title}</CardTitle>
-                            </CardHeader>
-                            <CardFooter className="mt-auto justify-end">
-                                <Button onClick={() => router.visit(register())}>
-                                    {copy.cta_button}
-                                </Button>
-                            </CardFooter>
-                        </Card>
+                        {! isMobile ? (
+                            <Card className="self-start">
+                                <CardHeader>
+                                    <CardTitle>{copy.cta_title}</CardTitle>
+                                    <CardDescription>{copy.cta_description}</CardDescription>
+                                </CardHeader>
+                                <CardFooter className="mt-auto justify-end">
+                                    <Button onClick={() => router.visit(register())}>
+                                        {copy.cta_button}
+                                    </Button>
+                                </CardFooter>
+                            </Card>
+                        ) : null}
 
                         {services.map((service) => (
                             <PublicServiceCard key={service.id} copy={copy} presentation="mobile" service={service} showFooter={false} />
