@@ -58,7 +58,7 @@ return [
     'pricing_unit_item_price_unit' => 'item',
     'pricing_unit_hour_label' => 'Hour',
     'pricing_unit_hour_price_unit' => 'hour',
-    'pricing_option_description_empty' => 'No description yet.',
+    'pricing_option_description_empty' => 'No additional notes',
     'price_actions_label' => 'More price actions',
     'price_edit_action' => 'Edit price',
     'price_delete_action' => 'Delete price',

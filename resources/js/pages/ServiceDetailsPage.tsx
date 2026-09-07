@@ -20,7 +20,6 @@ import { Head, setLayoutProps, useForm } from '@inertiajs/react';
 import { DotsThreeIcon, FileDashedIcon, GlobeSimpleIcon, ImagesSquareIcon, MoneyIcon, PencilIcon, PencilSimpleIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { type BreadcrumbItem } from '@/types';
-import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 
 type PricingMode = 'fixed' | 'variable';
 type PricingUnit = 'person' | 'item' | 'hour';
@@ -60,11 +59,20 @@ interface ServiceDetailsPageProps {
             name: string;
             description: string | null;
             price_in_minor: number;
+            formatted_amount: string;
             currency: string;
             pricing_mode: PricingMode;
             pricing_mode_label: string;
             pricing_unit: PricingUnit | null;
             pricing_unit_label: string | null;
+            features: {
+                id: number;
+                feature_key: string;
+                label: string;
+                is_included: boolean;
+                value: string | null;
+                sort_order: number;
+            }[];
         }[];
         formatted_created_at: string;
     };
@@ -95,16 +103,6 @@ function priceAmountToMinor(value: string) {
 
 function formatPriceAmountDescription(priceAmount: string, locale: string) {
     return formatPriceInMinor(Number(priceAmountToMinor(priceAmount) || 0), locale);
-}
-
-function formatPricingOptionPrice(pricingOption: ServiceDetailsPageProps['service']['pricing_options'][number], locale: string) {
-    const formattedPrice = formatPriceInMinor(pricingOption.price_in_minor, locale);
-
-    if (pricingOption.pricing_mode === 'variable' && pricingOption.pricing_unit_label) {
-        return `${formattedPrice} / ${pricingOption.pricing_unit_label.toLowerCase()}`;
-    }
-
-    return formattedPrice;
 }
 
 function ServiceDetailsPage({
@@ -274,68 +272,89 @@ function ServiceDetailsPage({
 
                 <section className="mt-6 pb-12 w-full flex flex-col-reverse lg:flex-row items-start gap-6">
                     <div className='flex-1 flex-col'>
-                        <Card>
-                            <CardHeader className='flex flex-row justify-between'>
-                                <div>
-                                    <CardTitle>{copy.pricing_heading}</CardTitle>
-                                    <CardDescription className='sr-only'/>
-                                </div>
+                        <div>
+                            <div className='flex flex-row items-center justify-between'>
+                                <h1 className='text-lg font-semibold'>{copy.pricing_heading}</h1>
+                                <p className='text-muted-foreground text-base invisible'></p>
 
-                                {service.pricing_options.length < 3 ? (
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={openAddPrice}
-                                    >
-                                        <PlusIcon data-icon="inline-start" />
-                                        {copy.add_price_action}
-                                    </Button>
-                                ) : null}
-                            </CardHeader>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={service.pricing_options.length >= 3}
+                                    onClick={openAddPrice}
+                                >
+                                    <PlusIcon data-icon="inline-start" />
+                                    {copy.add_price_action}
+                                </Button>
+                            </div>
 
-                            <CardContent>
+                            <div className='mt-4'>
                                 {service.pricing_options.length ? (
-                                    <Table className='border'>
-                                        <TableBody>
-                                            {service.pricing_options.map((pricingOption) => (
-                                                <TableRow key={pricingOption.id}>
-                                                    <TableCell>{pricingOption.name}</TableCell>
-                                                    <TableCell>{pricingOption.pricing_mode_label}</TableCell>
-                                                    <TableCell>{formatPricingOptionPrice(pricingOption, locale)}</TableCell>
-                                                    <TableCell className='text-right'>
-                                                        <DropdownMenu modal={false}>
-                                                            <DropdownMenuTrigger asChild>
-                                                                <Button
-                                                                    type="button"
-                                                                    variant="ghost"
-                                                                    size="icon-sm"
-                                                                    aria-label={copy.price_actions_label}
+                                    <div className="flex flex-col gap-4">
+                                        {service.pricing_options.map((pricingOption) => (
+                                            <div key={pricingOption.id} className="flex flex-col gap-1 border p-4">
+                                                <div className="flex items-center gap-3">
+                                                    <p className="text-sm ">{pricingOption.formatted_amount}</p>
+
+                                                    {pricingOption.pricing_mode === 'fixed' && (
+                                                            <Badge variant="secondary">{pricingOption.pricing_mode_label}</Badge>
+                                                    )}
+
+                                                    {pricingOption.pricing_mode === 'variable' && (
+                                                        <Badge variant="secondary">{pricingOption.pricing_unit_label}</Badge>
+                                                    )}
+
+                                                    <div className='flex-1'/>
+
+                                                    <DropdownMenu modal={false}>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button
+                                                                type="button"
+                                                                variant="ghost"
+                                                                size="icon-sm"
+                                                                aria-label={copy.price_actions_label}
+                                                            >
+                                                                <DotsThreeIcon />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end" className="w-auto">
+                                                            <DropdownMenuGroup>
+                                                                <DropdownMenuItem className="whitespace-nowrap" onSelect={() => openEditPrice(pricingOption)}>
+                                                                    <PencilSimpleIcon className='invisible' />
+                                                                    {copy.price_edit_action}
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem
+                                                                    className="whitespace-nowrap"
+                                                                    variant="destructive"
+                                                                    onSelect={() => openDeletePrice(pricingOption)}
                                                                 >
-                                                                    <DotsThreeIcon />
-                                                                </Button>
-                                                            </DropdownMenuTrigger>
-                                                            <DropdownMenuContent align="end" className="w-auto">
-                                                                <DropdownMenuGroup>
-                                                                    <DropdownMenuItem className="whitespace-nowrap" onSelect={() => openEditPrice(pricingOption)}>
-                                                                        <PencilSimpleIcon className='invisible' />
-                                                                        {copy.price_edit_action}
-                                                                    </DropdownMenuItem>
-                                                                    <DropdownMenuItem
-                                                                        className="whitespace-nowrap"
-                                                                        variant="destructive"
-                                                                        onSelect={() => openDeletePrice(pricingOption)}
-                                                                    >
-                                                                        <TrashIcon />
-                                                                        {copy.price_delete_action}
-                                                                    </DropdownMenuItem>
-                                                                </DropdownMenuGroup>
-                                                            </DropdownMenuContent>
-                                                        </DropdownMenu>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
+                                                                    <TrashIcon />
+                                                                    {copy.price_delete_action}
+                                                                </DropdownMenuItem>
+                                                            </DropdownMenuGroup>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </div>
+
+                                                <h3 className="text-base ">{pricingOption.name}</h3>
+
+
+                                                {pricingOption.features.length > 0 && (
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {pricingOption.features.map((feature) => (
+                                                            <Badge key={feature.id} variant="outline">
+                                                                {feature.value ? `${feature.label}: ${feature.value}` : feature.label}
+                                                            </Badge>
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                <p className="mt-2 whitespace-pre-line text-xs text-muted-foreground">
+                                                    {pricingOption.description || copy.pricing_option_description_empty}
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
                                 ) : (
                                     <Empty className="border">
                                         <EmptyHeader>
@@ -349,8 +368,8 @@ function ServiceDetailsPage({
                                     </Empty>
                                 )}
 
-                            </CardContent>
-                        </Card>
+                            </div>
+                        </div>
 
                         <Card className='mt-6'>
                             <CardHeader className='flex items-start justify-between'>

@@ -58,7 +58,7 @@ return [
     'pricing_unit_item_price_unit' => 'item',
     'pricing_unit_hour_label' => 'Uur',
     'pricing_unit_hour_price_unit' => 'uur',
-    'pricing_option_description_empty' => 'Nog geen beschrijving.',
+    'pricing_option_description_empty' => 'Geen aanvullende informatie',
     'price_actions_label' => 'Meer prijsacties',
     'price_edit_action' => 'Prijs bewerken',
     'price_delete_action' => 'Prijs verwijderen',

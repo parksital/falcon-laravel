@@ -11,6 +11,7 @@ use App\Models\Vendor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Number;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
@@ -77,7 +78,7 @@ class ServiceController extends Controller
 
         abort_unless($service->vendor_id === $vendor->id, 404);
 
-        $service->loadMissing(['customCategory', 'media', 'prices']);
+        $service->loadMissing(['customCategory', 'media', 'prices.features']);
         $categoryLabel = $service->category === 'other'
             ? $service->customCategory?->name
             : __("config-service-categories.{$service->category}");
@@ -108,11 +109,23 @@ class ServiceController extends Controller
                         'name' => $pricingOption->name,
                         'description' => $pricingOption->description,
                         'price_in_minor' => $pricingOption->price_in_minor,
+                        'formatted_amount' => Number::currency($pricingOption->price_in_minor / 100, 'EUR', app()->getLocale()),
                         'currency' => $pricingOption->currency,
                         'pricing_mode' => $pricingOption->pricing_mode,
                         'pricing_mode_label' => $this->pricingModeLabel($pricingOption->pricing_mode),
                         'pricing_unit' => $pricingOption->pricing_unit,
                         'pricing_unit_label' => $this->pricingUnitLabel($pricingOption->pricing_unit),
+                        'features' => $pricingOption->features
+                            ->map(fn ($feature) => [
+                                'id' => $feature->id,
+                                'feature_key' => $feature->feature_key,
+                                'label' => $this->priceFeatureLabels()[$feature->feature_key] ?? $feature->feature_key,
+                                'is_included' => $feature->is_included,
+                                'value' => $feature->value,
+                                'sort_order' => $feature->sort_order,
+                            ])
+                            ->values()
+                            ->all(),
                     ])
                     ->values()
                     ->all(),
@@ -380,6 +393,23 @@ class ServiceController extends Controller
         $translation = __("config-service-pricing-units.{$unit}");
 
         return $translation === "config-service-pricing-units.{$unit}" ? $unit : $translation;
+    }
+
+    private function priceFeatureLabels(): array
+    {
+        return collect(config('service_categories'))
+            ->pluck('price_features')
+            ->flatten()
+            ->filter()
+            ->unique()
+            ->mapWithKeys(function (string $value) {
+                $translation = __("config-service-price-features.{$value}");
+
+                return [
+                    $value => $translation === "config-service-price-features.{$value}" ? $value : $translation,
+                ];
+            })
+            ->all();
     }
 
     private function priceFeaturesForCategory(string $category): array
