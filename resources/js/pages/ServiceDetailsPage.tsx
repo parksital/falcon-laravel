@@ -2,9 +2,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
-import { Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldTitle } from '@/components/ui/field';
+import { Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet, FieldTitle } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -37,6 +38,18 @@ interface PricingOptionForm {
     price_in_minor: string;
     pricing_mode: PricingMode;
     pricing_unit: PricingUnitFormValue;
+    features: PriceFeatureForm[];
+}
+
+interface PriceFeatureForm {
+    feature_key: string;
+    is_included: boolean;
+    value: string;
+}
+
+interface SelectOption {
+    value: string;
+    label: string;
 }
 
 interface ServiceDetailsPageProps {
@@ -76,6 +89,7 @@ interface ServiceDetailsPageProps {
         }[];
         formatted_created_at: string;
     };
+    priceFeatures: SelectOption[];
     locale: string;
     copy: Record<string, string>;
 }
@@ -108,6 +122,7 @@ function formatPriceAmountDescription(priceAmount: string, locale: string) {
 function ServiceDetailsPage({
     vendor,
     service,
+    priceFeatures,
     locale,
     copy,
 }: ServiceDetailsPageProps) {
@@ -138,6 +153,7 @@ function ServiceDetailsPage({
         price_in_minor: '',
         pricing_mode: 'fixed',
         pricing_unit: '' as PricingUnitFormValue,
+        features: [],
     });
 
     const editPriceForm = useForm<PricingOptionForm>({
@@ -146,6 +162,7 @@ function ServiceDetailsPage({
         price_in_minor: '',
         pricing_mode: 'fixed',
         pricing_unit: '' as PricingUnitFormValue,
+        features: [],
     });
     const deletePriceForm = useForm({});
 
@@ -161,6 +178,24 @@ function ServiceDetailsPage({
 
     const editingPricingOption = service.pricing_options.find((pricingOption) => pricingOption.id === editingPricingOptionId);
     const deletingPricingOption = service.pricing_options.find((pricingOption) => pricingOption.id === deletingPricingOptionId);
+
+    function changeAddPriceFeature(featureKey: string, isIncluded: boolean) {
+        addPriceForm.setData('features', isIncluded
+            ? [
+                ...addPriceForm.data.features.filter((feature) => feature.feature_key !== featureKey),
+                { feature_key: featureKey, is_included: true, value: '' },
+            ]
+            : addPriceForm.data.features.filter((feature) => feature.feature_key !== featureKey));
+    }
+
+    function changeEditPriceFeature(featureKey: string, isIncluded: boolean) {
+        editPriceForm.setData('features', isIncluded
+            ? [
+                ...editPriceForm.data.features.filter((feature) => feature.feature_key !== featureKey),
+                { feature_key: featureKey, is_included: true, value: '' },
+            ]
+            : editPriceForm.data.features.filter((feature) => feature.feature_key !== featureKey));
+    }
 
     function openServiceEditor() {
         const serviceDetails = {
@@ -213,6 +248,7 @@ function ServiceDetailsPage({
             price_in_minor: '',
             pricing_mode: 'fixed',
             pricing_unit: '',
+            features: [],
         });
 
         addPriceForm.reset();
@@ -233,6 +269,11 @@ function ServiceDetailsPage({
             price_in_minor: minorToPriceAmount(pricingOption.price_in_minor),
             pricing_mode: pricingOption.pricing_mode,
             pricing_unit: pricingOption.pricing_unit ?? '',
+            features: pricingOption.features.map((feature) => ({
+                feature_key: feature.feature_key,
+                is_included: feature.is_included,
+                value: feature.value ?? '',
+            })),
         };
 
         setEditingPricingOptionId(pricingOption.id);
@@ -521,6 +562,13 @@ function ServiceDetailsPage({
                                 ...formData,
                                 price_in_minor: priceAmountToMinor(formData.price_in_minor),
                                 pricing_unit: formData.pricing_mode === 'variable' ? formData.pricing_unit : '',
+                                features: formData.features
+                                    .filter((feature) => feature.is_included)
+                                    .map((feature) => ({
+                                        feature_key: feature.feature_key,
+                                        is_included: feature.is_included,
+                                        value: feature.value,
+                                    })),
                             }));
 
                             addPriceForm.post(storePricingOption(service.id).url, {
@@ -536,6 +584,7 @@ function ServiceDetailsPage({
                                         price_in_minor: '',
                                         pricing_mode: 'fixed',
                                         pricing_unit: '',
+                                        features: [],
                                     });
                                     addPriceForm.reset();
                                     addPriceForm.clearErrors();
@@ -636,6 +685,26 @@ function ServiceDetailsPage({
                                     <FieldError>{addPriceForm.errors.price_in_minor}</FieldError>
                                 </Field>
 
+                                {priceFeatures.length > 0 ? (
+                                    <FieldSet>
+                                        <FieldLegend>{copy.price_features_label}</FieldLegend>
+                                        <FieldGroup data-slot="checkbox-group" className="flex flex-row flex-wrap gap-3">
+                                            {priceFeatures.map((feature) => (
+                                                <Field key={feature.value} orientation="horizontal" className="w-auto">
+                                                    <Checkbox
+                                                        id={`add-price-feature-${feature.value}`}
+                                                        checked={addPriceForm.data.features.some((selectedFeature) => selectedFeature.feature_key === feature.value)}
+                                                        onCheckedChange={(checked) => changeAddPriceFeature(feature.value, checked === true)}
+                                                    />
+                                                    <FieldLabel htmlFor={`add-price-feature-${feature.value}`}>
+                                                        {feature.label}
+                                                    </FieldLabel>
+                                                </Field>
+                                            ))}
+                                        </FieldGroup>
+                                    </FieldSet>
+                                ) : null}
+
                                 <Field data-invalid={addPriceForm.errors.description ? true : undefined}>
                                     <FieldLabel htmlFor="add-price-description">{copy.price_field_description}</FieldLabel>
                                     <Textarea
@@ -682,6 +751,13 @@ function ServiceDetailsPage({
                                 ...formData,
                                 price_in_minor: priceAmountToMinor(formData.price_in_minor),
                                 pricing_unit: formData.pricing_mode === 'variable' ? formData.pricing_unit : '',
+                                features: formData.features
+                                    .filter((feature) => feature.is_included)
+                                    .map((feature) => ({
+                                        feature_key: feature.feature_key,
+                                        is_included: feature.is_included,
+                                        value: feature.value,
+                                    })),
                             }));
 
                             editPriceForm.patch(updatePricingOption({
@@ -702,7 +778,7 @@ function ServiceDetailsPage({
                         }}
                     >
                         <SheetHeader>
-                            <SheetTitle>{copy.price_edit_title}</SheetTitle>
+                            <SheetTitle>{copy.price_edit_title.replace(':service', service.name)}</SheetTitle>
                             <SheetDescription>{copy.price_edit_description}</SheetDescription>
                         </SheetHeader>
 
@@ -793,6 +869,26 @@ function ServiceDetailsPage({
                                     </InputGroup>
                                     <FieldError>{editPriceForm.errors.price_in_minor}</FieldError>
                                 </Field>
+
+                                {priceFeatures.length > 0 ? (
+                                    <FieldSet>
+                                        <FieldLegend>{copy.price_features_label}</FieldLegend>
+                                        <FieldGroup data-slot="checkbox-group" className="flex flex-row flex-wrap gap-3">
+                                            {priceFeatures.map((feature) => (
+                                                <Field key={feature.value} orientation="horizontal" className="w-auto">
+                                                    <Checkbox
+                                                        id={`edit-price-feature-${feature.value}`}
+                                                        checked={editPriceForm.data.features.some((selectedFeature) => selectedFeature.feature_key === feature.value)}
+                                                        onCheckedChange={(checked) => changeEditPriceFeature(feature.value, checked === true)}
+                                                    />
+                                                    <FieldLabel htmlFor={`edit-price-feature-${feature.value}`}>
+                                                        {feature.label}
+                                                    </FieldLabel>
+                                                </Field>
+                                            ))}
+                                        </FieldGroup>
+                                    </FieldSet>
+                                ) : null}
 
                                 <Field data-invalid={editPriceForm.errors.description ? true : undefined}>
                                     <FieldLabel htmlFor="edit-price-description">{copy.price_field_description}</FieldLabel>
