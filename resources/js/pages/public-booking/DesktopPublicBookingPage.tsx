@@ -1,12 +1,3 @@
-import { Badge } from '@/components/ui/badge';
-import {
-    Card,
-    CardContent,
-    CardFooter,
-    CardHeader,
-    CardDescription,
-    CardTitle,
-} from '@/components/ui/card';
 import {
     Empty,
     EmptyDescription,
@@ -14,9 +5,8 @@ import {
     EmptyMedia,
     EmptyTitle,
 } from '@/components/ui/empty';
-import { Link } from '@inertiajs/react';
-import { ArrowRightIcon, ImageIcon } from '@phosphor-icons/react';
-import { type PublicBookingPageProps, type Service } from './types';
+import { PublicServiceCard } from './public-service-card';
+import { type PublicVendorPageProps } from './types';
 
 function interpolate(value: string, replacements: Record<string, string>) {
     return Object.entries(replacements).reduce(
@@ -25,27 +15,7 @@ function interpolate(value: string, replacements: Record<string, string>) {
     );
 }
 
-function servicePriceSummary(service: Service, copy: PublicBookingPageProps['copy']) {
-    const lowestPrice = service.pricing_options
-        .toSorted((first, second) => first.price_in_minor - second.price_in_minor)
-        [0];
-
-    if (! lowestPrice) return null;
-
-    const unit = lowestPrice.pricing_mode === 'variable' && lowestPrice.pricing_unit_label
-        ? ` ${interpolate(copy.per_unit, { unit: lowestPrice.pricing_unit_label })}`
-        : '';
-
-    return {
-        price: `${copy.starting_from} ${lowestPrice.formatted_price}${unit}`,
-        count: interpolate(copy.prices_count, {
-            count: `${service.pricing_options.length}`,
-        }),
-        hasMultiplePrices: service.pricing_options.length > 1,
-    }
-}
-
-export default function DesktopPublicBookingPage({ copy, vendor, services, locale }: PublicBookingPageProps) {
+export default function DesktopPublicBookingPage({ copy, vendor, services }: PublicVendorPageProps) {
     return (
         <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 px-6 py-12">
             <section className="flex flex-col gap-3">
@@ -75,43 +45,9 @@ export default function DesktopPublicBookingPage({ copy, vendor, services, local
                     {copy.services_heading}
                 </h2>
                 {services.length > 0 ? (
-                    <div className="grid gap-3 grid-cols-2">
+                    <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
                         {services.map((service) => (
-                            <Link key={service.id} href={service.url} className="flex h-full flex-col text-left">
-                                <Card id={`service-${service.public_id}`} className='pt-0'>
-                                    <div className="aspect-[16/9] w-full border-b bg-muted/40 overflow-hidden">
-                                        {service.media[0] && (
-                                            <img src={service.media[0].url} alt={service.name} className="size-full object-cover" />
-                                        )}
-                                    </div>
-
-                                    <CardHeader>
-                                        <Badge variant="secondary">{service.category_label}</Badge>
-                                        <CardTitle>{service.name}</CardTitle>
-                                        {service.description ? (
-                                            <CardDescription className="line-clamp-2">{service.description}</CardDescription>
-                                        ) : null}
-                                    </CardHeader>
-                                    <CardContent className="flex flex-1 flex-col gap-3">
-                                        {servicePriceSummary(service, copy) ? (
-                                            <div className="flex flex-wrap items-center gap-2 font-medium">
-                                                {servicePriceSummary(service, copy)?.hasMultiplePrices ? (
-                                                    <>
-                                                        <span>{servicePriceSummary(service, copy)?.count}</span>
-                                                        <span className="text-muted-foreground">&middot;</span>
-                                                    </>
-                                                ) : null}
-                                                <span>{servicePriceSummary(service, copy)?.price}</span>
-                                            </div>
-                                        ) : null}
-                                    </CardContent>
-
-                                    <CardFooter className="mt-auto justify-between text-sm text-muted-foreground">
-                                        <span>{copy.view_service}</span>
-                                        <ArrowRightIcon aria-hidden="true" />
-                                    </CardFooter>
-                                </Card>
-                            </Link>
+                            <PublicServiceCard key={service.id} copy={copy} service={service} />
                         ))}
                     </div>
                 ) : (

@@ -1,25 +1,10 @@
 import { Badge } from '@/components/ui/badge';
 import { ServicePricingCard } from '@/components/service-pricing-card';
 import { Button } from '@/components/ui/button';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuGroup,
-    DropdownMenuLabel,
-    DropdownMenuRadioGroup,
-    DropdownMenuRadioItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-    NativeSelect,
-    NativeSelectOption,
-} from '@/components/ui/native-select';
-import PublicBookingShell from '@/layouts/public/public-booking-shell';
-import { type PublicBookingServicePageProps } from '@/pages/public-booking/types';
-import { update as updateLocale } from '@/routes/locale';
-import { type BreadcrumbItem, SharedData } from '@/types';
-import { Head, router, usePage } from '@inertiajs/react';
-import { GlobeIcon } from '@phosphor-icons/react';
+import PublicLayout from '@/layouts/public/public-layout';
+import { type PublicServicePageProps } from '@/pages/public-booking/types';
+import { type BreadcrumbItem } from '@/types';
+import { Head, Link } from '@inertiajs/react';
 
 function interpolate(value: string, replacements: Record<string, string>) {
     return Object.entries(replacements).reduce(
@@ -29,8 +14,8 @@ function interpolate(value: string, replacements: Record<string, string>) {
 }
 
 function formattedPricingOptionPrice(
-    pricingOption: PublicBookingServicePageProps['service']['pricing_options'][number],
-    copy: PublicBookingServicePageProps['copy'],
+    pricingOption: PublicServicePageProps['service']['pricing_options'][number],
+    copy: PublicServicePageProps['copy'],
 ) {
     if (pricingOption.pricing_mode !== 'variable' || ! pricingOption.pricing_unit_label) {
         return pricingOption.formatted_price;
@@ -40,8 +25,8 @@ function formattedPricingOptionPrice(
 }
 
 function formattedServicePrice(
-    service: PublicBookingServicePageProps['service'],
-    copy: PublicBookingServicePageProps['copy'],
+    service: PublicServicePageProps['service'],
+    copy: PublicServicePageProps['copy'],
 ) {
     if (service.pricing_mode !== 'variable' || ! service.pricing_unit_label) {
         return service.formatted_price ?? '';
@@ -50,63 +35,16 @@ function formattedServicePrice(
     return `${service.formatted_price} ${interpolate(copy.per_unit, { unit: service.pricing_unit_label })}`;
 }
 
-export default function PublicBookingServicePage({ copy, vendor, service, locale, seo }: PublicBookingServicePageProps) {
-    const { layoutCopy } = usePage<SharedData>().props;
+export default function PublicServicePage({ copy, vendor, service, seo }: PublicServicePageProps) {
     const breadcrumbs: BreadcrumbItem[] = [
         { title: vendor.name, href: vendor.url },
         { title: service.name, href: service.url },
     ];
 
-    function changeLocale(nextLocale: string) {
-        if (nextLocale !== locale) {
-            router.patch(updateLocale.url(), { locale: nextLocale }, {
-                preserveScroll: true,
-                preserveState: true,
-            });
-        }
-    }
-
-    const languageSwitcher = (
-        <>
-            <div className="sm:hidden">
-                <NativeSelect
-                    value={locale}
-                    aria-label={layoutCopy.language}
-                    onChange={(event) => changeLocale(event.target.value)}
-                >
-                    <NativeSelectOption value="en">{layoutCopy.language_english}</NativeSelectOption>
-                    <NativeSelectOption value="nl">{layoutCopy.language_dutch}</NativeSelectOption>
-                </NativeSelect>
-            </div>
-
-            <div className="hidden sm:block">
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button type="button" variant="outline" size="sm">
-                            <GlobeIcon data-icon="inline-start" />
-                            {locale === 'nl' ? layoutCopy.language_dutch : layoutCopy.language_english}
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuGroup>
-                            <DropdownMenuLabel>{layoutCopy.language}</DropdownMenuLabel>
-                            <DropdownMenuRadioGroup value={locale} onValueChange={changeLocale}>
-                                <DropdownMenuRadioItem value="en">
-                                    {layoutCopy.language_english}
-                                </DropdownMenuRadioItem>
-                                <DropdownMenuRadioItem value="nl">
-                                    {layoutCopy.language_dutch}
-                                </DropdownMenuRadioItem>
-                            </DropdownMenuRadioGroup>
-                        </DropdownMenuGroup>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
-        </>
-    );
+    const [serviceByVendorPrefix, serviceByVendorSuffix] = copy.service_by_vendor.split(':vendor');
 
     return (
-        <PublicBookingShell breadcrumbs={breadcrumbs} headerAction={languageSwitcher}>
+        <PublicLayout breadcrumbs={breadcrumbs}>
             <Head title={seo.title}>
                 <meta name="description" content={seo.description} />
                 <link rel="canonical" href={seo.canonical} />
@@ -123,9 +61,13 @@ export default function PublicBookingServicePage({ copy, vendor, service, locale
                                 <p className="text-sm text-muted-foreground">{vendor.location}</p>
                             </div>
                             <h1 className="text-3xl font-semibold text-foreground">{service.name}</h1>
-                            <p className="text-sm text-muted-foreground">
-                                {interpolate(copy.service_by_vendor, { vendor: vendor.name })}
-                            </p>
+                            <div className="flex items-center text-sm text-muted-foreground gap-1">
+                                <span>{serviceByVendorPrefix}</span>
+                                <Button asChild variant="link" className="h-auto p-0 text-sm">
+                                    <Link href={vendor.url}>{vendor.name}</Link>
+                                </Button>
+                                <span>{serviceByVendorSuffix}</span>
+                            </div>
                         </div>
                     </section>
 
@@ -173,6 +115,6 @@ export default function PublicBookingServicePage({ copy, vendor, service, locale
                         ) : null}
                 </section>
             </main>
-        </PublicBookingShell>
+        </PublicLayout>
     );
 }

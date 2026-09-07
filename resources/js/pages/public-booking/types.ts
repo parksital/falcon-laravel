@@ -55,7 +55,7 @@ export type Service = {
     media: ServiceMedia[];
 };
 
-export type PublicBookingPageProps = {
+export type PublicVendorPageProps = {
     copy: Record<string, string>;
     vendor: Vendor;
     services: Service[];
@@ -67,7 +67,7 @@ export type PublicBookingPageProps = {
     };
 };
 
-export type PublicBookingServicePageProps = {
+export type PublicServicePageProps = {
     copy: Record<string, string>;
     vendor: Vendor;
     service: Service;

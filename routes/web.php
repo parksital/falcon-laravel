@@ -11,6 +11,7 @@ use App\Models\Service;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Number;
 use Inertia\Inertia;
 
 Route::get('/index', function () {
@@ -34,7 +35,7 @@ Route::get('/index', function () {
         })
         ->all();
     $publicServices = Service::query()
-        ->with(['customCategory', 'vendor', 'prices'])
+        ->with(['customCategory', 'vendor', 'media', 'prices'])
         ->where('is_public', true)
         ->orderBy('name')
         ->get();
@@ -74,11 +75,12 @@ Route::get('/index', function () {
 
     return Inertia::render('IndexPage', [
         'services' => $publicServices
-            ->map(function (Service $service) use ($serviceCategoryLabels, $pricingUnitLabels) {
+            ->map(function (Service $service) use ($copy, $serviceCategoryLabels, $pricingUnitLabels) {
                 $price = $service->prices->first();
 
                 return [
                     'id' => $service->id,
+                    'public_id' => $service->public_id,
                     'name' => $service->name,
                     'category' => $service->category,
                     'category_label' => $service->category === 'other'
@@ -87,13 +89,34 @@ Route::get('/index', function () {
                     'description' => $service->description,
                     'price_in_minor' => $price?->price_in_minor,
                     'pricing_mode' => $price?->pricing_mode,
+                    'pricing_mode_label' => $price?->pricing_mode ? ($copy["pricing_mode_{$price->pricing_mode}_label"] ?? $price->pricing_mode) : null,
                     'pricing_unit' => $price?->pricing_unit,
                     'pricing_unit_label' => $price?->pricing_unit ? ($pricingUnitLabels[$price->pricing_unit] ?? $price->pricing_unit) : null,
-                    'vendor' => [
-                        'name' => $service->vendor?->name,
-                        'location' => $service->vendor?->location,
-                    ],
+                    'formatted_price' => $price?->price_in_minor !== null ? Number::currency($price->price_in_minor / 100, 'EUR', app()->getLocale()) : null,
                     'url' => route('public.booking.service.show', [$service->vendor->slug, $service->public_id]),
+                    'pricing_options' => $service->prices
+                        ->map(fn ($price) => [
+                            'id' => $price->id,
+                            'name' => $price->name,
+                            'description' => $price->description,
+                            'price_in_minor' => $price->price_in_minor,
+                            'formatted_price' => Number::currency($price->price_in_minor / 100, 'EUR', app()->getLocale()),
+                            'pricing_mode' => $price->pricing_mode,
+                            'pricing_mode_label' => $copy["pricing_mode_{$price->pricing_mode}_label"] ?? $price->pricing_mode,
+                            'pricing_unit' => $price->pricing_unit,
+                            'pricing_unit_label' => $price->pricing_unit ? ($pricingUnitLabels[$price->pricing_unit] ?? $price->pricing_unit) : null,
+                            'features' => [],
+                        ])
+                        ->values()
+                        ->all(),
+                    'media' => $service->media
+                        ->map(fn ($media) => [
+                            'id' => $media->id,
+                            'url' => Storage::disk('r2')->url($media->path),
+                            'sort_order' => $media->sort_order,
+                        ])
+                        ->values()
+                        ->all(),
                 ];
             })
             ->all(),
@@ -127,6 +150,8 @@ Route::get('/book/{vendorSlug}', fn (string $vendorSlug) => redirect()->route(
 ));
 Route::patch('locale', [LocaleController::class, 'update'])->name('locale.update');
 
+Route::redirect('/', '/index')->name('home');
+
 Route::middleware('auth')->group(function () {
     Route::get('settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('settings/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -147,14 +172,6 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/', function (Request $request) {
-        if (! $request->user()->vendor()->exists()) {
-            return to_route('onboarding');
-        }
-
-        return to_route('overview');
-    })->name('home');
-
     Route::get('/dashboard', function (Request $request) {
         if (! $request->user()->vendor()->exists()) {
             return to_route('onboarding');
