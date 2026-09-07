@@ -19,7 +19,6 @@ import {
 import {
     Sheet,
     SheetContent,
-    SheetFooter,
     SheetHeader,
     SheetTitle,
     SheetTrigger,
@@ -164,17 +163,8 @@ function PublicMobileHeader() {
                         </SheetHeader>
 
                         <div className="flex flex-col items-stretch gap-2 px-4">
-                            <Button asChild variant="outline" size="lg">
-                                <Link href={login()}>{layoutCopy.nav_login}</Link>
-                            </Button>
-                            <Button asChild size="lg">
-                                <Link href={register()}>{layoutCopy.nav_register}</Link>
-                            </Button>
-                        </div>
-
-                        <SheetFooter>
                             <LanguageSwitcher showLabel size="lg" />
-                        </SheetFooter>
+                        </div>
                     </SheetContent>
                 </Sheet>
             </div>
