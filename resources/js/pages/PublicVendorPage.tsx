@@ -1,7 +1,7 @@
 import { useMediaQuery } from '@/hooks/use-media-query';
 import PublicLayout from '@/layouts/public/public-layout';
 import DesktopPublicBookingPage from '@/pages/public-booking/DesktopPublicBookingPage';
-import MobilePublicBookingPage from '@/pages/public-booking/MobilePublicBookingPage';
+import MobilePublicVendorPage from '@/pages/public-booking/MobilePublicVendorPage';
 import { type PublicVendorPageProps } from '@/pages/public-booking/types';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
@@ -20,7 +20,7 @@ export default function PublicVendorPage(props: PublicVendorPageProps) {
             </Head>
 
             {isMobile ? (
-                <MobilePublicBookingPage {...props} />
+                <MobilePublicVendorPage {...props} />
             ) : (
                 <DesktopPublicBookingPage {...props} />
             )}

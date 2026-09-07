@@ -8,7 +8,7 @@ type MobilePublicLayoutProps = {
 export default function MobilePublicLayout({ children }: MobilePublicLayoutProps) {
     return (
         <AppShell>
-            <div className="min-h-screen w-full bg-background text-foreground">
+            <div className="h-dvh w-full overflow-y-auto overscroll-contain bg-background text-foreground">
                 {children}
             </div>
         </AppShell>
