@@ -1,13 +1,11 @@
 <?php
 
 return [
-    'video_360' => '360-video',
     'attendant' => 'Boothbegeleiding',
-    'prints' => 'Onbeperkt printen',
+    'prints' => 'Prints',
     'props' => 'Props',
     'backdrop' => 'Backdrop',
-    'instant_sharing' => 'Direct delen',
-    'digital_gallery' => 'Digitale oplevering',
-    'custom_template' => 'Eigen frame en startscherm',
+    'digital_gallery' => 'Digitale galerij',
+    'custom_template' => 'Eigen ontwerp',
     'travel_included' => 'Reiskosten inbegrepen',
 ];

@@ -1,13 +1,11 @@
 <?php
 
 return [
-    'video_360' => '360 video',
     'attendant' => 'Booth attendant',
-    'prints' => 'Unlimited prints',
+    'prints' => 'Prints',
     'props' => 'Props',
     'backdrop' => 'Backdrop',
-    'instant_sharing' => 'Instant sharing',
-    'digital_gallery' => 'Event gallery',
-    'custom_template' => 'Custom frame and start screen',
+    'digital_gallery' => 'Digital gallery',
+    'custom_template' => 'Custom template',
     'travel_included' => 'Travel included',
 ];
