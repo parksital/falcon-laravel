@@ -11,7 +11,7 @@ return [
             'instant_sharing',
             'digital_gallery',
             'custom_template',
-            'travel_included'
+            'travel_included',
         ],
     ],
 

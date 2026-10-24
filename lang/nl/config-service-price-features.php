@@ -9,4 +9,5 @@ return [
     'instant_sharing' => 'Direct delen',
     'digital_gallery' => 'Digitale oplevering',
     'custom_template' => 'Eigen frame en startscherm',
+    'travel_included' => 'Reiskosten inbegrepen',
 ];
