@@ -76,7 +76,6 @@ Run `artisan` commands through Sail so they reach the database:
 ```sh
 ./vendor/bin/sail artisan migrate
 ./vendor/bin/sail artisan tinker
-./vendor/bin/sail artisan falcon:make-admin you@example.com
 ```
 
 Sail doesn't start a queue worker. Nothing is queued today, but if a job is added,
