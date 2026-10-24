@@ -9,4 +9,5 @@ return [
     'instant_sharing' => 'Instant sharing',
     'digital_gallery' => 'Event gallery',
     'custom_template' => 'Custom frame and start screen',
+    'travel_included' => 'Travel included',
 ];

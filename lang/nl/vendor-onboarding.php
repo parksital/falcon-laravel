@@ -6,6 +6,7 @@ return [
     'description' => 'Hierna voeg je je eerste service toe.',
     'business_name_label' => 'Bedrijfsnaam',
     'business_name_placeholder' => 'Hoe heet je bedrijf?',
+    'business_name_help' => 'Deze naam staat op je openbare pagina.',
     'logo_label' => 'Logo',
     'logo_help' => 'Upload een vierkante afbeelding van maximaal 2 MB.',
     'clear_logo' => 'Logo wissen',
