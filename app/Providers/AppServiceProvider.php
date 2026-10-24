@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Models\User;
+use App\Models\Admin;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -21,6 +21,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Gate::define('ingest', fn (User $user) => $user->is_admin);
+        // Untyped on purpose: the gate also receives vendor users, which must be refused rather than throw.
+        Gate::define('ingest', fn ($user) => $user instanceof Admin);
     }
 }

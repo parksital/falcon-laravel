@@ -174,7 +174,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', function (Request $request) {
         if (! $request->user()->vendor()->exists()) {
-            return $request->user()->is_admin ? to_route('settings') : to_route('onboarding');
+            return to_route('onboarding');
         }
 
         return to_route('overview');
@@ -182,7 +182,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/overview', function (Request $request) {
         if (! $request->user()->vendor()->exists()) {
-            return $request->user()->is_admin ? to_route('settings') : to_route('onboarding');
+            return to_route('onboarding');
         }
 
         $vendor = $request->user()->vendor()->first();
@@ -247,7 +247,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/services/{service}', [ServiceController::class, 'destroy'])->name('services.destroy');
 
     Route::get('/settings', function (Request $request) {
-        if (! $request->user()->is_admin && ! $request->user()->vendor()->exists()) {
+        if (! $request->user()->vendor()->exists()) {
             return to_route('onboarding');
         }
 
@@ -266,7 +266,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/onboarding', function (Request $request) {
         if (! $request->user()->vendor()->exists()) {
-            return $request->user()->is_admin ? to_route('settings') : to_route('onboarding.vendor.show');
+            return to_route('onboarding.vendor.show');
         }
 
         return to_route('overview');
