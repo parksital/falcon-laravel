@@ -2,6 +2,8 @@
 
 Before changing code in this repository, read and follow these project rules.
 
+To run the app locally, follow `docs/local-development.md`.
+
 ## Testing
 
 - Do not add or update tests unless the user explicitly asks for tests.
