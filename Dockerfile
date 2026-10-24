@@ -1,4 +1,4 @@
-FROM dunglas/frankenphp:1-php8.3-bookworm AS php-base
+FROM dunglas/frankenphp:1-php8.5.12-bookworm AS php-base
 
 WORKDIR /app
 
