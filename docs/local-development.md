@@ -111,30 +111,28 @@ files, so set it up before running anything in it.
    `git fetch origin` and `git reset --hard origin/develop` before making any
    changes.
 
-2. From the worktree root, copy the gitignored files from the main checkout:
+2. From the worktree root, copy `.env` and `vendor/` from the main checkout:
 
    ```sh
    cp ../../../.env .env
    echo "COMPOSE_PROJECT_NAME=falcon-laravel" >> .env
    cp -Rc ../../../vendor vendor
-   cp -Rc ../../../node_modules node_modules
    ```
 
    `-c` clones the files on APFS, so the copy is instant and takes no extra
-   space. Never symlink `vendor` or `node_modules`: Composer resolves the
-   symlink and loads `App\` from the main checkout instead of the worktree. If
-   the worktree's `composer.lock` differs from the main checkout's, run
-   `composer install` in the worktree.
+   space. Never symlink `vendor`: Composer resolves the symlink and loads `App\`
+   from the main checkout instead of the worktree. If the worktree's
+   `composer.lock` differs from the main checkout's, run `composer install` in
+   the worktree.
 
 3. Run the app:
 
    ```sh
    ./vendor/bin/sail up -d          # replaces the running app with this worktree
    ./vendor/bin/sail artisan migrate
+   ./vendor/bin/sail bun install
    ./vendor/bin/sail bun run dev
    ```
-
-   Run `./vendor/bin/sail bun install` first if the branch changed `bun.lock`.
 
 `COMPOSE_PROJECT_NAME` puts the worktree on the main checkout's Sail stack, so a
 worktree runs instead of the main checkout, not alongside it, and uses the same
