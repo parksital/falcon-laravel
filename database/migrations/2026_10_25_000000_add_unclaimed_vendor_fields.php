@@ -16,7 +16,6 @@ return new class extends Migration
             $table->string('contact_email')->nullable();
             $table->string('contact_phone')->nullable();
             $table->string('website_url', 2048)->nullable();
-            $table->string('created_via')->default('signup');
         });
     }
 
@@ -30,7 +29,6 @@ return new class extends Migration
                 'contact_email',
                 'contact_phone',
                 'website_url',
-                'created_via',
             ]);
             $table->foreignId('user_id')->nullable(false)->change();
         });

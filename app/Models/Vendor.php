@@ -22,7 +22,6 @@ class Vendor extends Model
         'contact_email',
         'contact_phone',
         'website_url',
-        'created_via',
     ];
 
     public function user(): BelongsTo
