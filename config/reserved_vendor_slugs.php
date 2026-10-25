@@ -15,6 +15,7 @@ return [
     'locale',
     'login',
     'logout',
+    'mcp',
     'onboarding',
     'overview',
     'pricing',
