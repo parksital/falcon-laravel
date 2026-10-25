@@ -95,6 +95,29 @@ composer require <package>                 # on your Mac
 ./vendor/bin/sail artisan test             # uses in-memory SQLite, see phpunit.xml
 ```
 
+## Worktrees
+
+Claude Code creates worktrees in `.claude/worktrees/<name>` through the hook in
+`.claude/hooks/worktree-create.sh`. Each one starts from the latest
+`origin/develop` and gets `vendor/`, `node_modules/` and `.env` from the main
+checkout.
+
+The worktree's `.env` sets `COMPOSE_PROJECT_NAME` to the main checkout's stack,
+so a worktree runs instead of the main checkout, not alongside it, and uses the
+same database. To run the app from a worktree:
+
+```sh
+cd .claude/worktrees/<name>
+./vendor/bin/sail up -d          # replaces the running app with this worktree
+./vendor/bin/sail artisan migrate
+./vendor/bin/sail bun run dev
+```
+
+Run `./vendor/bin/sail bun install` first if the branch changed `bun.lock`. To
+switch back, run `./vendor/bin/sail up -d` in the main checkout. Migrations the
+branch ran stay in the database; roll them back first if `develop` doesn't
+expect them.
+
 ## Ports
 
 | Port | Service                                     |
