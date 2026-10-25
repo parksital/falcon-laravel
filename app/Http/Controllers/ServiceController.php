@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\CreateService;
 use App\Http\Requests\StoreServiceRequest;
 use App\Http\Requests\StoreServicePriceRequest;
 use App\Http\Requests\UpdateServiceRequest;
@@ -12,7 +13,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Number;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -145,7 +145,7 @@ class ServiceController extends Controller
         ]);
     }
 
-    public function store(StoreServiceRequest $request)
+    public function store(StoreServiceRequest $request, CreateService $createService)
     {
         $vendor = $request->user()->vendor;
 
@@ -153,45 +153,8 @@ class ServiceController extends Controller
             return to_route('onboarding');
         }
 
-        $validated = $request->validated();
-
-        $service = DB::transaction(function () use ($request, $vendor, $validated) {
-            $service = $vendor->services()->create([
-                'uuid' => Str::uuid(),
-                'public_id' => $this->makePublicId(),
-                'name' => $validated['name'],
-                'category' => $validated['category'],
-                'description' => $validated['description'] ?? null,
-                'is_public' => $validated['is_public'] ?? true,
-            ]);
-
-            if ($validated['category'] === 'other') {
-                $service->customCategory()->create([
-                    'name' => $validated['custom_category'],
-                ]);
-            }
-
-            foreach ($validated['pricing_options'] ?? [] as $sortOrder => $pricingOptionData) {
-                $price = $service->prices()->create([
-                    'name' => $pricingOptionData['name'] ?? 'Price '.($sortOrder + 1),
-                    'description' => $pricingOptionData['description'] ?? null,
-                    'price_in_minor' => $pricingOptionData['price_in_minor'],
-                    'pricing_mode' => $pricingOptionData['pricing_mode'],
-                    'pricing_unit' => $pricingOptionData['pricing_mode'] === 'variable'
-                        ? $pricingOptionData['pricing_unit']
-                        : null,
-                    'sort_order' => $sortOrder,
-                ]);
-
-                foreach ($pricingOptionData['features'] ?? [] as $featureSortOrder => $featureData) {
-                    $price->features()->create([
-                        'feature_key' => $featureData['feature_key'],
-                        'is_included' => $featureData['is_included'] ?? true,
-                        'value' => $featureData['value'] ?? null,
-                        'sort_order' => $featureSortOrder,
-                    ]);
-                }
-            }
+        $service = DB::transaction(function () use ($request, $vendor, $createService) {
+            $service = $createService->handle($vendor, $request->validated());
 
             foreach ($request->file('media', []) as $sortOrder => $media) {
                 $service->media()->create([
@@ -393,15 +356,6 @@ class ServiceController extends Controller
         $service->delete();
 
         return to_route('overview')->with('success', __('overview.delete_service_deleted'));
-    }
-
-    private function makePublicId(): string
-    {
-        do {
-            $publicId = 'svc_'.Str::lower(Str::random(10));
-        } while (Service::query()->where('public_id', $publicId)->exists());
-
-        return $publicId;
     }
 
     private function pricingModeLabel(?string $mode): ?string
