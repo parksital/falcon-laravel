@@ -20,6 +20,7 @@ class Service extends Model
         'category',
         'description',
         'is_public',
+        'source_url',
     ];
 
     protected function casts(): array

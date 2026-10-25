@@ -51,6 +51,7 @@ class VendorController extends Controller
             'slug' => $validated['slug'],
             'logo_path' => $logoPath,
             'location' => '',
+            'created_via' => 'signup',
         ]);
 
         return to_route('overview');

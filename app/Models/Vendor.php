@@ -19,11 +19,35 @@ class Vendor extends Model
         'logo_path',
         'location',
         'short_description',
+        'contact_email',
+        'contact_phone',
+        'website_url',
+        'created_via',
+        'created_by_admin_id',
+        'source_url',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'user_id' => 'integer',
+            'created_by_admin_id' => 'integer',
+        ];
+    }
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function createdByAdmin(): BelongsTo
+    {
+        return $this->belongsTo(Admin::class, 'created_by_admin_id');
+    }
+
+    public function isClaimed(): bool
+    {
+        return $this->user_id !== null;
     }
 
     public function services(): HasMany
