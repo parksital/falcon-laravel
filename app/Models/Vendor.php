@@ -27,14 +27,6 @@ class Vendor extends Model
         'source_url',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'user_id' => 'integer',
-            'created_by_admin_id' => 'integer',
-        ];
-    }
-
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

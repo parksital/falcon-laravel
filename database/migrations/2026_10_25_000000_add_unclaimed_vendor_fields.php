@@ -13,20 +13,19 @@ return new class extends Migration
     {
         Schema::table('vendors', function (Blueprint $table) {
             $table->foreignId('user_id')->nullable()->change();
-            $table->string('contact_email')->nullable()->after('short_description');
-            $table->string('contact_phone')->nullable()->after('contact_email');
-            $table->string('website_url')->nullable()->after('contact_phone');
-            $table->string('created_via')->default('signup')->after('website_url');
+            $table->string('contact_email')->nullable();
+            $table->string('contact_phone')->nullable();
+            $table->string('website_url', 2048)->nullable();
+            $table->string('created_via')->default('signup');
             $table->foreignId('created_by_admin_id')
                 ->nullable()
-                ->after('created_via')
                 ->constrained('admins')
                 ->nullOnDelete();
-            $table->string('source_url', 2048)->nullable()->after('created_by_admin_id');
+            $table->string('source_url', 2048)->nullable();
         });
 
         Schema::table('services', function (Blueprint $table) {
-            $table->string('source_url', 2048)->nullable()->after('is_public');
+            $table->string('source_url', 2048)->nullable();
         });
     }
 
