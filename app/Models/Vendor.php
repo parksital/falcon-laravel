@@ -23,7 +23,6 @@ class Vendor extends Model
         'contact_phone',
         'website_url',
         'created_via',
-        'created_by_admin_id',
         'source_url',
     ];
 
