@@ -23,7 +23,6 @@ class Vendor extends Model
         'contact_phone',
         'website_url',
         'created_via',
-        'source_url',
     ];
 
     public function user(): BelongsTo
