@@ -40,11 +40,6 @@ class Vendor extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function createdByAdmin(): BelongsTo
-    {
-        return $this->belongsTo(Admin::class, 'created_by_admin_id');
-    }
-
     public function isClaimed(): bool
     {
         return $this->user_id !== null;
