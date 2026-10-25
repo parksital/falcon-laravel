@@ -97,26 +97,50 @@ composer require <package>                 # on your Mac
 
 ## Worktrees
 
-Claude Code creates worktrees in `.claude/worktrees/<name>` through the hook in
-`.claude/hooks/worktree-create.sh`. Each one starts from the latest
-`origin/develop` and gets `vendor/`, `node_modules/` and `.env` from the main
-checkout.
+Worktrees live in `.claude/worktrees/<name>`. A new worktree has only tracked
+files, so set it up before running anything in it.
 
-The worktree's `.env` sets `COMPOSE_PROJECT_NAME` to the main checkout's stack,
-so a worktree runs instead of the main checkout, not alongside it, and uses the
-same database. To run the app from a worktree:
+1. Start from the latest `develop`. From the main checkout:
 
-```sh
-cd .claude/worktrees/<name>
-./vendor/bin/sail up -d          # replaces the running app with this worktree
-./vendor/bin/sail artisan migrate
-./vendor/bin/sail bun run dev
-```
+   ```sh
+   git fetch origin
+   git worktree add -b <branch> .claude/worktrees/<name> origin/develop
+   ```
 
-Run `./vendor/bin/sail bun install` first if the branch changed `bun.lock`. To
-switch back, run `./vendor/bin/sail up -d` in the main checkout. Migrations the
-branch ran stay in the database; roll them back first if `develop` doesn't
-expect them.
+   Claude Code's own worktrees branch from `master`. In one of those, run
+   `git fetch origin` and `git reset --hard origin/develop` before making any
+   changes.
+
+2. From the worktree root, copy the gitignored files from the main checkout:
+
+   ```sh
+   cp ../../../.env .env
+   echo "COMPOSE_PROJECT_NAME=falcon-laravel" >> .env
+   cp -Rc ../../../vendor vendor
+   cp -Rc ../../../node_modules node_modules
+   ```
+
+   `-c` clones the files on APFS, so the copy is instant and takes no extra
+   space. Never symlink `vendor` or `node_modules`: Composer resolves the
+   symlink and loads `App\` from the main checkout instead of the worktree. If
+   the worktree's `composer.lock` differs from the main checkout's, run
+   `composer install` in the worktree.
+
+3. Run the app:
+
+   ```sh
+   ./vendor/bin/sail up -d          # replaces the running app with this worktree
+   ./vendor/bin/sail artisan migrate
+   ./vendor/bin/sail bun run dev
+   ```
+
+   Run `./vendor/bin/sail bun install` first if the branch changed `bun.lock`.
+
+`COMPOSE_PROJECT_NAME` puts the worktree on the main checkout's Sail stack, so a
+worktree runs instead of the main checkout, not alongside it, and uses the same
+database. To switch back, run `./vendor/bin/sail up -d` in the main checkout.
+Migrations the branch ran stay in the database; roll them back first if
+`develop` doesn't expect them.
 
 ## Ports
 
