@@ -4,6 +4,11 @@ Before changing code in this repository, read and follow these project rules.
 
 To run the app locally, follow `docs/local-development.md`.
 
+## Scope
+
+- Implement exactly what the issue or request lists. Do not add extra fields,
+  relations, helpers, or values that defaults already cover; suggest them instead.
+
 ## Testing
 
 - Do not add or update tests unless the user explicitly asks for tests.
