@@ -17,10 +17,6 @@ return new class extends Migration
             $table->string('contact_phone')->nullable();
             $table->string('website_url', 2048)->nullable();
             $table->string('created_via')->default('signup');
-            $table->foreignId('created_by_admin_id')
-                ->nullable()
-                ->constrained('admins')
-                ->nullOnDelete();
             $table->string('source_url', 2048)->nullable();
         });
 
@@ -39,7 +35,6 @@ return new class extends Migration
         });
 
         Schema::table('vendors', function (Blueprint $table) {
-            $table->dropConstrainedForeignId('created_by_admin_id');
             $table->dropColumn([
                 'contact_email',
                 'contact_phone',
