@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests;
 
-use App\Actions\CreateService;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreServiceRequest extends FormRequest
 {
@@ -38,10 +38,44 @@ class StoreServiceRequest extends FormRequest
      */
     public function rules(): array
     {
+        $priceFeatures = $this->priceFeaturesForCategory($this->string('category')->toString());
+
         return [
-            ...CreateService::rules($this->string('category')->toString()),
+            'name' => ['required', 'string', 'max:120'],
+            'category' => ['required', 'string', Rule::in(array_keys(config('service_categories')))],
+            'custom_category' => ['nullable', 'required_if:category,other', 'string', 'max:120'],
+            'description' => ['nullable', 'string', 'max:2000'],
+            'pricing_options' => ['sometimes', 'array', 'max:3'],
+            'pricing_options.*.name' => ['nullable', 'string', 'max:120'],
+            'pricing_options.*.description' => ['nullable', 'string', 'max:2000'],
+            'pricing_options.*.price_in_minor' => ['required', 'integer', 'min:0', 'max:4294967295'],
+            'pricing_options.*.pricing_mode' => ['required', 'string', Rule::in(['fixed', 'variable'])],
+            'pricing_options.*.pricing_unit' => ['nullable', 'string', Rule::in($this->pricingUnits())],
+            'pricing_options.*.features' => ['sometimes', 'array'],
+            'pricing_options.*.features.*.feature_key' => ['required', 'string', Rule::in($priceFeatures)],
+            'pricing_options.*.features.*.is_included' => ['boolean'],
+            'pricing_options.*.features.*.value' => ['nullable', 'string', 'max:120'],
             'media' => ['sometimes', 'array', 'max:3'],
             'media.*' => ['image', 'max:4096'],
+            'is_public' => ['boolean'],
+        ];
+    }
+
+    /**
+     * Get the after validation callables for the request.
+     *
+     * @return array<int, callable>
+     */
+    public function after(): array
+    {
+        return [
+            function ($validator) {
+                foreach ($this->input('pricing_options', []) as $index => $pricingOption) {
+                    if (($pricingOption['pricing_mode'] ?? null) === 'variable' && blank($pricingOption['pricing_unit'] ?? null)) {
+                        $validator->errors()->add("pricing_options.{$index}.pricing_unit", __('create-service.validation_pricing_unit_required'));
+                    }
+                }
+            },
         ];
     }
 
@@ -60,7 +94,6 @@ class StoreServiceRequest extends FormRequest
             'pricing_options.max' => __('create-service.validation_price_limit'),
             'pricing_options.*.pricing_mode.required' => __('create-service.validation_pricing_mode_required'),
             'pricing_options.*.pricing_mode.in' => __('create-service.validation_pricing_mode_invalid'),
-            'pricing_options.*.pricing_unit.required_if' => __('create-service.validation_pricing_unit_required'),
             'pricing_options.*.pricing_unit.in' => __('create-service.validation_pricing_unit_invalid'),
             'pricing_options.*.features.*.feature_key.in' => __('create-service.validation_price_feature_invalid'),
             'pricing_options.*.price_in_minor.required' => __('create-service.validation_price_required'),
@@ -71,5 +104,15 @@ class StoreServiceRequest extends FormRequest
             'media.*.image' => __('create-service.validation_media_image'),
             'media.*.max' => __('create-service.validation_media_size'),
         ];
+    }
+
+    private function pricingUnits(): array
+    {
+        return config('service_pricing_units');
+    }
+
+    private function priceFeaturesForCategory(string $category): array
+    {
+        return config("service_categories.{$category}.price_features", []);
     }
 }
