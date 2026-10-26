@@ -6,20 +6,22 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { useMediaQuery } from '@/hooks/use-media-query';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import PublicLayout from '@/layouts/public/public-layout';
 import { PublicServiceCard } from '@/pages/public-booking/public-service-card';
 import { type Service } from '@/pages/public-booking/types';
 import { register } from '@/routes';
 import { Head, router } from '@inertiajs/react';
+import { useState } from 'react';
 
 type IndexPageProps = {
     services: Service[];
+    categories: { value: string; label: string }[];
     copy: Record<string, string>;
 };
 
-export default function IndexPage({ services, copy }: IndexPageProps) {
-    const isMobile = useMediaQuery('(max-width: 640px)');
+export default function IndexPage({ services, categories, copy }: IndexPageProps) {
+    const [selectedCategory, setSelectedCategory] = useState('all');
 
     return (
         <PublicLayout>
@@ -33,26 +35,48 @@ export default function IndexPage({ services, copy }: IndexPageProps) {
                 <section id="services" className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-6 py-12">
                     <div className="flex flex-col gap-1">
                         <h1 className="text-2xl font-semibold">{copy.services_heading}</h1>
+                        <p className="text-muted-foreground">{copy.intro_description}</p>
                     </div>
 
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {! isMobile ? (
-                            <Card className="self-start">
-                                <CardHeader>
-                                    <CardTitle>{copy.cta_title}</CardTitle>
-                                    <CardDescription>{copy.cta_description}</CardDescription>
-                                </CardHeader>
-                                <CardFooter className="mt-auto justify-end">
-                                    <Button onClick={() => router.visit(register())}>
-                                        {copy.cta_button}
-                                    </Button>
-                                </CardFooter>
-                            </Card>
-                        ) : null}
+                    {categories.length > 0 ? (
+                        <ToggleGroup
+                            type="single"
+                            variant="outline"
+                            className="flex-wrap"
+                            value={selectedCategory}
+                            onValueChange={(value) => {
+                                if (! value) {
+                                    return;
+                                }
 
-                        {services.map((service) => (
-                            <PublicServiceCard key={service.id} copy={copy} presentation="mobile" service={service} showFooter={false} />
-                        ))}
+                                setSelectedCategory(value);
+                            }}
+                        >
+                            <ToggleGroupItem value="all">{copy.category_all}</ToggleGroupItem>
+                            {categories.map((category) => (
+                                <ToggleGroupItem key={category.value} value={category.value}>{category.label}</ToggleGroupItem>
+                            ))}
+                        </ToggleGroup>
+                    ) : null}
+
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        <Card className="order-last self-start sm:order-first">
+                            <CardHeader>
+                                <CardTitle>{copy.cta_title}</CardTitle>
+                                <CardDescription>{copy.cta_description}</CardDescription>
+                            </CardHeader>
+                            <CardFooter className="mt-auto justify-end">
+                                <Button onClick={() => router.visit(register())}>
+                                    {copy.cta_button}
+                                </Button>
+                            </CardFooter>
+                        </Card>
+
+                        {services
+                            .filter((service) => selectedCategory === 'all' || service.category === selectedCategory)
+                            .map((service) => (
+                                <PublicServiceCard key={service.id} copy={copy} presentation="mobile" service={service} showFooter={false} />
+                            ))}
 
                         {services.length === 0 ? (
                             <Card>
