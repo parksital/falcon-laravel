@@ -8,6 +8,8 @@ return [
     'services_heading' => 'Services voor je evenement',
     'intro_description' => 'Vind lokale vendors voor je evenement, vergelijk prijzen en open een service voor de details.',
     'category_all' => 'Alles',
+    'category_empty_title' => 'Nog geen services in :category',
+    'category_empty_description' => 'Ben je vendor in deze categorie? Meld je bedrijf aan zodat organisatoren je hier vinden.',
     'cta_title' => 'Word gevonden door evenementorganisatoren',
     'cta_description' => 'Maak een openbare boekingspagina en zet zoekers om in boekingen.',
     'cta_button' => 'Meld je bedrijf aan',

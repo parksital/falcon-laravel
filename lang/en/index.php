@@ -8,6 +8,8 @@ return [
     'services_heading' => 'Services for your event',
     'intro_description' => 'Browse local vendors for your event, compare prices, and open a service to see the details.',
     'category_all' => 'All',
+    'category_empty_title' => 'No services in :category yet',
+    'category_empty_description' => 'Are you a vendor in this category? List your business so organizers can find you here.',
     'cta_title' => 'Get discovered by event organizers',
     'cta_description' => 'Create a public booking page and start turning searches into bookings.',
     'cta_button' => 'List your business',
