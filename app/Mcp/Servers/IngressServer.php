@@ -2,6 +2,8 @@
 
 namespace App\Mcp\Servers;
 
+use App\Mcp\Tools\CreateService;
+use App\Mcp\Tools\CreateVendor;
 use App\Mcp\Tools\GetCatalogSchema;
 use App\Mcp\Tools\HealthCheck;
 use App\Mcp\Tools\SearchVendors;
@@ -28,6 +30,8 @@ class IngressServer extends Server
         HealthCheck::class,
         GetCatalogSchema::class,
         SearchVendors::class,
+        CreateVendor::class,
+        CreateService::class,
     ];
 
     protected array $resources = [
