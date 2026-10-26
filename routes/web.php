@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Number;
 use Inertia\Inertia;
 
-Route::get('/index', function () {
+Route::get('/', function () {
     $serviceCategoryLabels = collect(array_keys(config('service_categories')))
         ->mapWithKeys(function (string $value) {
             $translation = __("config-service-categories.{$value}");
@@ -124,18 +124,18 @@ Route::get('/index', function () {
     ])->withViewData(['seo' => [
         'title' => $copy['title'] ?? config('app.name'),
         'description' => $copy['meta_description'] ?? 'Discover public services from local vendors.',
-        'canonical' => route('index'),
+        'canonical' => route('home'),
         'robots' => 'index, follow',
         'schema' => [
             '@context' => 'https://schema.org',
             '@type' => 'ItemList',
             'name' => $copy['services_heading'] ?? 'Services',
-            'url' => route('index'),
+            'url' => route('home'),
             'numberOfItems' => count($schemaServices),
             'itemListElement' => $schemaServices,
         ],
     ]]);
-})->name('index');
+})->name('home');
 
 Route::get('/book/{vendorSlug}/services/{servicePublicId}', fn (string $vendorSlug, string $servicePublicId) => redirect()->route(
     'public.booking.service.show',
@@ -148,8 +148,6 @@ Route::get('/book/{vendorSlug}', fn (string $vendorSlug) => redirect()->route(
     301,
 ));
 Route::patch('locale', [LocaleController::class, 'update'])->name('locale.update');
-
-Route::redirect('/', '/index')->name('home');
 
 Route::middleware('auth')->group(function () {
     Route::patch('settings/profile', [ProfileController::class, 'update'])->name('profile.update');
