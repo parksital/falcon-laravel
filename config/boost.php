@@ -49,7 +49,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | Write the Boost guidelines to a dedicated Claude Code rule file instead
-    | of appending them to AGENTS.md.
+    | of appending them to CLAUDE.md.
     |
     */
 
