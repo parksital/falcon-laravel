@@ -119,6 +119,11 @@ Route::get('/', function () {
                 ];
             })
             ->all(),
+        'categories' => collect(array_keys(config('service_categories')))
+            ->filter(fn (string $value) => $publicServices->contains('category', $value))
+            ->map(fn (string $value) => ['value' => $value, 'label' => $serviceCategoryLabels[$value]])
+            ->values()
+            ->all(),
         'locale' => app()->getLocale(),
         'copy' => $copy,
     ])->withViewData(['seo' => [
