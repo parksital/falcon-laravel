@@ -6,7 +6,9 @@ use App\Mcp\Tools\CreateService;
 use App\Mcp\Tools\CreateVendor;
 use App\Mcp\Tools\GetCatalogSchema;
 use App\Mcp\Tools\HealthCheck;
+use App\Mcp\Tools\RequestVendorLogoUpload;
 use App\Mcp\Tools\SearchVendors;
+use App\Mcp\Tools\SetVendorLogo;
 use Laravel\Mcp\Server;
 use Laravel\Mcp\Server\Attributes\Instructions;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -32,6 +34,8 @@ class IngressServer extends Server
         SearchVendors::class,
         CreateVendor::class,
         CreateService::class,
+        RequestVendorLogoUpload::class,
+        SetVendorLogo::class,
     ];
 
     protected array $resources = [
