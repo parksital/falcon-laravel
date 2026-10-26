@@ -9,15 +9,6 @@ To run the app locally, follow `docs/local-development.md`.
 - Implement exactly what the issue or request lists. Do not add extra fields,
   relations, helpers, or values that defaults already cover; suggest them instead.
 
-## Architecture
-
-- Treat the MCP server (`app/Mcp`) and the web app (controllers, form requests,
-  Inertia pages) as separate domains. Keep their logic split, even when it
-  looks the same.
-- Do not extract shared logic into a new file, action class, or service so
-  several places can call it. Keep the logic where it's used, such as in the
-  MCP tool or the controller and form request.
-
 ## Testing
 
 - Do not add or update tests unless the user explicitly asks for tests.
