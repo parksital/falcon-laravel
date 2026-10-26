@@ -43,7 +43,7 @@ export default function MobilePublicVendorPage({ copy, vendor, services }: Publi
                 </div>
             </section>
 
-            <PublicVendorContactCard copy={copy} vendor={vendor} />
+            {!vendor.is_claimed && <PublicVendorContactCard copy={copy} vendor={vendor} />}
 
             <section className="flex flex-col gap-2">
                 <h2 className="text-xl font-semibold text-foreground">
