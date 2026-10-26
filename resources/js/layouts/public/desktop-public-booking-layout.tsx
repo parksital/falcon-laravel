@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
 import { Toaster } from '@/components/ui/sonner';
-import { index } from '@/routes';
+import { home } from '@/routes';
 import { type BreadcrumbItem as BreadcrumbItemType, SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { Fragment, type ReactNode } from 'react';
@@ -27,7 +27,7 @@ export default function DesktopPublicBookingLayout({ breadcrumbs, children, head
             <header className="shrink-0 border-b border-sidebar-border/80 bg-background">
                 <div className="mx-auto flex max-w-7xl flex-col px-4">
                     <div className="flex h-16 items-center gap-6">
-                        <Link href={index()} className="flex items-center gap-2">
+                        <Link href={home()} className="flex items-center gap-2">
                             <AppLogoIcon className="size-6 fill-current text-black dark:text-white" />
                             <span className="text-xs font-semibold text-foreground">
                                 {name}

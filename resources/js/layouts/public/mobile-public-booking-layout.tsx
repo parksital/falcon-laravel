@@ -14,7 +14,7 @@ import {
     EmptyTitle,
 } from '@/components/ui/empty';
 import { Toaster } from '@/components/ui/sonner';
-import { index } from '@/routes';
+import { home } from '@/routes';
 import { type BreadcrumbItem as BreadcrumbItemType, SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { Fragment, type ReactNode } from 'react';
@@ -32,7 +32,7 @@ export default function MobilePublicBookingLayout({ breadcrumbs, headerAction }:
         <div className="flex h-dvh w-full flex-col overflow-hidden bg-background text-foreground">
             <header className="shrink-0 border-b border-sidebar-border/80 bg-background">
                 <div className="flex h-16 items-center gap-3 px-4">
-                    <Link href={index()} className="flex shrink-0 items-center gap-2">
+                    <Link href={home()} className="flex shrink-0 items-center gap-2">
                         <AppLogoIcon className="size-6 fill-current text-black dark:text-white" />
                         <span className="text-xs font-semibold text-foreground">
                             {name}
