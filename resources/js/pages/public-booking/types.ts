@@ -7,6 +7,10 @@ export type Vendor = {
     joined_at: string;
     url: string;
     logo_url: string | null;
+    is_claimed: boolean;
+    contact_email: string | null;
+    contact_phone: string | null;
+    website_url: string | null;
 };
 
 export type ServiceMedia = {
