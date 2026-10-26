@@ -91,6 +91,10 @@ class PublicBookingPageController extends Controller
             'joined_at' => $vendor->created_at?->locale(app()->getLocale())->translatedFormat(__('public-booking.joined_date_format')),
             'url' => route('public.booking.show', $vendor->slug),
             'logo_url' => $vendor->logo_path ? Storage::disk('r2')->url($vendor->logo_path) : null,
+            'is_claimed' => $vendor->isClaimed(),
+            'contact_email' => $vendor->contact_email,
+            'contact_phone' => $vendor->contact_phone,
+            'website_url' => $vendor->website_url,
         ];
     }
 

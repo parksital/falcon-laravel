@@ -6,6 +6,7 @@ import {
     EmptyTitle,
 } from '@/components/ui/empty';
 import { PublicServiceCard } from './public-service-card';
+import { PublicVendorContactCard } from './public-vendor-contact-card';
 import { type PublicVendorPageProps } from './types';
 
 function interpolate(value: string, replacements: Record<string, string>) {
@@ -39,6 +40,8 @@ export default function DesktopPublicBookingPage({ copy, vendor, services }: Pub
                     </div>
                 </div>
             </section>
+
+            <PublicVendorContactCard copy={copy} vendor={vendor} />
 
             <section className="flex flex-col gap-3">
                 <h2 className="text-xl font-semibold text-foreground">

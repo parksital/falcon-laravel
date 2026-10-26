@@ -2,6 +2,7 @@ import { Badge } from '@/components/ui/badge';
 import { ServicePricingCard } from '@/components/service-pricing-card';
 import { Button } from '@/components/ui/button';
 import PublicLayout from '@/layouts/public/public-layout';
+import { PublicVendorContactCard } from '@/pages/public-booking/public-vendor-contact-card';
 import { type PublicServicePageProps } from '@/pages/public-booking/types';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
@@ -58,6 +59,8 @@ export default function PublicServicePage({ copy, vendor, service, seo }: Public
                             </div>
                         </div>
                     </section>
+
+                    <PublicVendorContactCard copy={copy} vendor={vendor} />
 
                     {service.media.length > 0 ? (
                         <section className="grid grid-cols-3 gap-4">
