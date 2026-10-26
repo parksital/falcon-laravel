@@ -7,7 +7,7 @@ type PublicVendorContactCardProps = {
 };
 
 export function PublicVendorContactCard({ copy, vendor }: PublicVendorContactCardProps) {
-    if (vendor.is_claimed || (!vendor.contact_email && !vendor.contact_phone && !vendor.website_url)) {
+    if (!vendor.contact_email && !vendor.contact_phone && !vendor.website_url) {
         return null;
     }
 

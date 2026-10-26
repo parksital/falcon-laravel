@@ -60,7 +60,7 @@ export default function PublicServicePage({ copy, vendor, service, seo }: Public
                         </div>
                     </section>
 
-                    <PublicVendorContactCard copy={copy} vendor={vendor} />
+                    {!vendor.is_claimed && <PublicVendorContactCard copy={copy} vendor={vendor} />}
 
                     {service.media.length > 0 ? (
                         <section className="grid grid-cols-3 gap-4">
