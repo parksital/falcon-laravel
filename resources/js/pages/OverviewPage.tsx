@@ -273,7 +273,7 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
         <>
             <Head title={copy.title} />
 
-            <main className="container mx-auto flex h-full w-full flex-1 flex-col gap-6 p-6">
+            <main className="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-6 px-4 py-6">
                 <div className="grid items-start gap-6 lg:grid-cols-[minmax(16rem,1fr)_minmax(0,2fr)]">
                     <div className="flex flex-col gap-3">
                         <h1 className="text-2xl font-semibold">{copy.overview_heading}</h1>

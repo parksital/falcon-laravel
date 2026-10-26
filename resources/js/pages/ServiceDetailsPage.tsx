@@ -300,7 +300,7 @@ function ServiceDetailsPage({
         <>
             <Head title={service.name} />
 
-            <main className="container mx-auto max-h-full w-full px-4 flex flex-col">
+            <main className="mx-auto max-h-full w-full max-w-7xl px-4 flex flex-col">
                 <header className='w-full py-4'>
                     <div className='flex items-center gap-2'>
                         <h1 className='text-xl font-semibold'>
