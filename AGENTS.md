@@ -18,5 +18,6 @@ To run the app locally, follow `docs/local-development.md`.
   change. Prefer static checks or a build when appropriate. Only perform
   runtime browser verification when the user explicitly asks for it or when
   the behavior cannot be verified confidently without running the app.
-- Use Bun for JavaScript tooling in this repository. Prefer `bun` instead of
-  `npm`, and `bunx` instead of `npx`.
+- Use Bun for JavaScript tooling in this repository, run through Sail:
+  `vendor/bin/sail bun` instead of `npm`, and `vendor/bin/sail bunx` instead
+  of `npx`. This also applies where the Boost guidelines say `npm`.

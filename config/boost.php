@@ -24,12 +24,23 @@ return [
     |--------------------------------------------------------------------------
     |
     | "tests" conflicts with the project's no-tests-unless-asked rule, and
-    | "deployments" only points at Laravel Cloud.
+    | "deployments" only points at Laravel Cloud. The rest live as
+    | path-scoped rules in .claude/rules so they only load when relevant.
     |
     */
 
     'guidelines' => [
-        'exclude' => ['tests', 'deployments'],
+        'exclude' => [
+            'tests',
+            'deployments',
+            'php',
+            'laravel/core',
+            'laravel/v12',
+            'pint/core',
+            'pest/core',
+            'inertia-laravel/core',
+            'laravel-fortify/core',
+        ],
     ],
 
     /*
