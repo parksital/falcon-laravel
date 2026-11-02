@@ -2,10 +2,12 @@
 
 namespace App\Mcp\Servers;
 
+use App\Mcp\Tools\AddServiceMedia;
 use App\Mcp\Tools\CreateService;
 use App\Mcp\Tools\CreateVendor;
 use App\Mcp\Tools\GetCatalogSchema;
 use App\Mcp\Tools\HealthCheck;
+use App\Mcp\Tools\RequestServiceMediaUpload;
 use App\Mcp\Tools\RequestVendorLogoUpload;
 use App\Mcp\Tools\SearchVendors;
 use App\Mcp\Tools\SetVendorLogo;
@@ -25,7 +27,7 @@ Follow these rules when importing a business:
 
 - Call `get-catalog-schema` first, then `search-vendors` to check the business isn't already in the catalog before creating anything.
 - Never guess prices, contact details or categories. Ask the admin, or leave optional fields empty.
-- Summarize what you're about to create (vendor, services, prices, logo) and get the admin's confirmation before writing.
+- Summarize what you're about to create (vendor, services, prices, logo, service images) and get the admin's confirmation before writing.
 - Finish with the public URLs of everything created.
 MARKDOWN)]
 class IngressServer extends Server
@@ -40,6 +42,8 @@ class IngressServer extends Server
         UpdateService::class,
         RequestVendorLogoUpload::class,
         SetVendorLogo::class,
+        RequestServiceMediaUpload::class,
+        AddServiceMedia::class,
     ];
 
     protected array $resources = [
