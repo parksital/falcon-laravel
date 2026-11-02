@@ -40,7 +40,7 @@ export default function PublicServicePage({ copy, vendor, service, seo }: Public
             </Head>
 
             <main className="w-full">
-                <section className='mx-auto flex max-w-4xl flex-col gap-6 p-4'>
+                <section className='mx-auto flex max-w-4xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-12'>
 
 
                     <section className="flex items-start justify-between gap-2">
@@ -49,8 +49,8 @@ export default function PublicServicePage({ copy, vendor, service, seo }: Public
                                 <Badge variant="secondary">{service.category_label}</Badge>
                                 <p className="text-sm text-muted-foreground">{vendor.location}</p>
                             </div>
-                            <h1 className="text-2xl font-semibold text-foreground">{service.name}</h1>
-                            <div className="flex items-center text-sm text-muted-foreground gap-1">
+                            <h1 className="text-3xl font-semibold text-foreground">{service.name}</h1>
+                            <div className="flex items-baseline gap-1 text-sm text-muted-foreground">
                                 <span>{serviceByVendorPrefix}</span>
                                 <Button asChild variant="link" className="h-auto p-0 text-sm">
                                     <Link href={vendor.url}>{vendor.name}</Link>
@@ -73,14 +73,14 @@ export default function PublicServicePage({ copy, vendor, service, seo }: Public
                     ) : null}
 
                     {service.description ? (
-                        <section className="flex flex-col gap-2">
+                        <section className="flex flex-col gap-3">
                             <h2 className="text-xl font-semibold text-foreground">{copy.service_details_heading}</h2>
-                            <p className="whitespace-pre-line text-sm text-muted-foreground">{service.description}</p>
+                            <p className="max-w-prose whitespace-pre-line text-base/relaxed text-foreground">{service.description}</p>
                         </section>
                     ) : null}
 
                     {service.pricing_options.length > 0 ? (
-                        <section className="flex flex-col gap-4">
+                        <section className="flex flex-col gap-3">
                             <h2 className="text-xl font-semibold text-foreground">{copy.pricing_heading}</h2>
                             <div className="grid gap-4">
                                 {service.pricing_options.map((pricingOption) => (

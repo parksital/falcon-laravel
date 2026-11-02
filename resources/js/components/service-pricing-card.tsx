@@ -23,14 +23,14 @@ export function ServicePricingCard({
 }: ServicePricingCardProps) {
 
     return (
-        <div className="flex flex-col gap-0 border p-4">
+        <div className="flex flex-col gap-2 border p-4">
 
             {title ? (
-                <h3 className="text-base">{title}</h3>
+                <h3 className="text-base font-semibold">{title}</h3>
             ) : null}
 
-            <div className='flex items-center gap-1'>
-                <p className="text-sm">{formattedPrice}</p>
+            <div className='flex items-center gap-2'>
+                <p className="text-sm font-medium">{formattedPrice}</p>
 
                 {priceLabel ? (
                     <Badge variant="secondary">{priceLabel}</Badge>
@@ -39,7 +39,7 @@ export function ServicePricingCard({
 
 
             {features.length > 0 ? (
-                <div className="mt-4 flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2">
                     {features.map((feature) => (
                         <Badge key={feature.key} variant="outline">
                             {feature.value ? `${feature.label}: ${feature.value}` : feature.label}
@@ -49,7 +49,7 @@ export function ServicePricingCard({
             ) : null}
 
             {description ? (
-                <p className="whitespace-pre-line text-sm text-muted-foreground">{description}</p>
+                <p className="whitespace-pre-line text-sm/relaxed text-muted-foreground">{description}</p>
             ) : null}
         </div>
     );
