@@ -1,12 +1,12 @@
 <?php
 
 return [
-    'title' => 'Find and book services',
-    'meta_description' => 'Find services for your event on HuurMaar.',
+    'title' => 'Everything for your event in one place',
+    'meta_description' => 'Find everything for your event on HuurMaar, from catering and a photo booth to decor and kids\' activities.',
     'nav_login' => 'Log in',
     'nav_register' => 'List your business',
-    'services_heading' => 'Services for your event',
-    'intro_description' => 'Find the services you need for your event.',
+    'services_heading' => 'Everything for your event',
+    'intro_description' => 'Catering, a photo booth, decor or something for the kids: find every supplier for your event in one place.',
     'category_all' => 'All',
     'category_empty_title' => 'No services in :category yet',
     'category_empty_description' => 'Are you a vendor in this category? List your business so organizers can find you here.',
@@ -23,6 +23,6 @@ return [
     'price_not_set' => 'Price not set',
     'unit_not_set' => 'unit',
     'vendor_not_set' => 'Unknown vendor',
-    'empty_title' => 'No services yet',
-    'empty_description' => 'Services will appear here once vendors add them.',
+    'empty_title' => 'Nothing here yet',
+    'empty_description' => 'Soon you\'ll find catering, photo booths, decor and more for your event here.',
 ];
