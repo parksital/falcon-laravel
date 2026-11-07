@@ -6,7 +6,6 @@ import { PublicVendorContactCard } from '@/pages/public-booking/public-vendor-co
 import { type PublicServicePageProps } from '@/pages/public-booking/types';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { BinocularsIcon } from '@phosphor-icons/react';
 
 function interpolate(value: string, replacements: Record<string, string>) {
     return Object.entries(replacements).reduce(
@@ -48,7 +47,7 @@ export default function PublicServicePage({ copy, vendor, service, seo }: Public
                         <div className="flex flex-col gap-2">
                             <div className="flex flex-wrap items-center gap-2">
                                 <Badge variant="secondary">{service.category_label}</Badge>
-                                {!vendor.is_claimed && <Badge variant="outline"><BinocularsIcon data-icon="inline-start" />{copy.found_by_huurmaar}</Badge>}
+                                {!vendor.is_claimed && <Badge variant="outline">{copy.found_by_huurmaar}</Badge>}
                                 <p className="text-sm text-muted-foreground">{vendor.location}</p>
                             </div>
                             <h1 className="text-3xl font-semibold text-foreground">{service.name}</h1>

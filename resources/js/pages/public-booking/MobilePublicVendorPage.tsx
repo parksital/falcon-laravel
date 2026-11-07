@@ -1,4 +1,3 @@
-import { BinocularsIcon } from '@phosphor-icons/react';
 import { Badge } from '@/components/ui/badge';
 import {
     Empty,
@@ -37,7 +36,7 @@ export default function MobilePublicVendorPage({ copy, vendor, services }: Publi
                             <p className="text-sm text-muted-foreground">{vendor.short_description}</p>
                         ) : null}
                         {!vendor.is_claimed ? (
-                            <Badge variant="outline"><BinocularsIcon data-icon="inline-start" />{copy.found_by_huurmaar}</Badge>
+                            <Badge variant="outline">{copy.found_by_huurmaar}</Badge>
                         ) : vendor.joined_at ? (
                             <p className="text-xs text-muted-foreground">
                                 {interpolate(copy.joined, { formatted_date: vendor.joined_at })}

@@ -1,4 +1,3 @@
-import { BinocularsIcon } from '@phosphor-icons/react';
 import { Badge } from '@/components/ui/badge';
 import {
     Empty,
@@ -41,7 +40,7 @@ export default function DesktopPublicBookingPage({ copy, vendor, services }: Pub
                                 {interpolate(copy.joined, { formatted_date: vendor.joined_at })}
                             </p>
                         ) : (
-                            <Badge variant="outline"><BinocularsIcon data-icon="inline-start" />{copy.found_by_huurmaar}</Badge>
+                            <Badge variant="outline">{copy.found_by_huurmaar}</Badge>
                         )}
                     </div>
                 </div>
