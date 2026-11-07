@@ -48,6 +48,7 @@ export type Service = {
     category: string;
     category_label: string;
     description: string | null;
+    vendor_name: string;
     price_in_minor: number | null;
     formatted_price: string | null;
     pricing_mode: 'fixed' | 'variable' | null;
@@ -57,10 +58,6 @@ export type Service = {
     url: string;
     pricing_options: ServicePricingOption[];
     media: ServiceMedia[];
-};
-
-export type IndexService = Service & {
-    vendor_name: string;
 };
 
 export type PublicVendorPageProps = {

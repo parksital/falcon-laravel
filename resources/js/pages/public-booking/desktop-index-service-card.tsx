@@ -1,11 +1,11 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { type IndexService } from '@/pages/public-booking/types';
+import { type Service } from '@/pages/public-booking/types';
 import { ArrowRightIcon } from '@phosphor-icons/react';
 
 type DesktopIndexServiceCardProps = {
     copy: Record<string, string>;
-    service: IndexService;
+    service: Service;
 };
 
 export function DesktopIndexServiceCard({ copy, service }: DesktopIndexServiceCardProps) {
