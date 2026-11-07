@@ -188,7 +188,7 @@ function PublicFooter() {
                     </nav>
                 </div>
 
-                <svg viewBox="0 0 1000 156" overflow="visible" role="img" aria-label={layoutCopy.app_name} className="w-full">
+                <svg viewBox="0 0 1000 156" overflow="visible" role="img" aria-label={layoutCopy.app_name} className="pointer-events-none w-full">
                     <text x="0" y="153" textLength="1000" lengthAdjust="spacingAndGlyphs" fontSize="210" className="fill-muted-foreground/20 font-heading font-semibold">
                         {layoutCopy.app_name}
                     </text>
