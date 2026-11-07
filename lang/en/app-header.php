@@ -12,6 +12,6 @@ return [
     'logout' => 'Log out',
     'footer_contact' => 'Contact',
     'footer_instagram' => 'Instagram',
-    'footer_legal' => 'Legal',
-    'footer_privacy' => 'Privacy',
+    'footer_legal' => 'legal.txt',
+    'footer_privacy' => 'privacy.txt',
 ];
