@@ -172,27 +172,60 @@ function PublicMobileHeader() {
     );
 }
 
-function PublicFooter() {
+function FooterLinks() {
     const { layoutCopy } = usePage<SharedData>().props;
 
     return (
+        <>
+            <a href="mailto:info@huurmaar.nl" className="hover:text-foreground">{layoutCopy.footer_contact}</a>
+            <a href="https://www.instagram.com/huurmaar.nl/" target="_blank" rel="noopener noreferrer" className="hover:text-foreground">{layoutCopy.footer_instagram}</a>
+            <a href="/legal.txt" className="hover:text-foreground">{layoutCopy.footer_legal}</a>
+            <a href="/privacy.txt" className="hover:text-foreground">{layoutCopy.footer_privacy}</a>
+        </>
+    );
+}
+
+function FooterWordmark() {
+    const { layoutCopy } = usePage<SharedData>().props;
+
+    return (
+        <svg viewBox="0 0 948.5 148" role="img" aria-label={layoutCopy.app_name} className="pointer-events-none w-full overflow-hidden select-none">
+            <text x="-14.6" y="145.5" textLength="967" lengthAdjust="spacingAndGlyphs" fontSize="200" className="fill-muted-foreground/20 font-heading font-semibold">
+                {layoutCopy.app_name}
+            </text>
+        </svg>
+    );
+}
+
+function PublicDesktopFooter() {
+    return (
         <footer className="border-t bg-background">
-            <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 pt-10 sm:px-6">
-                <div className="flex items-start justify-between gap-4 text-sm text-muted-foreground">
+            <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 pt-10">
+                <div className="flex items-center justify-between gap-4 text-sm text-muted-foreground">
                     <p>© {new Date().getFullYear()} huurmaar.nl</p>
-                    <nav className="flex flex-col items-end gap-2 sm:flex-row sm:flex-wrap sm:justify-end sm:gap-x-6">
-                        <a href="mailto:info@huurmaar.nl" className="hover:text-foreground">{layoutCopy.footer_contact}</a>
-                        <a href="https://www.instagram.com/huurmaar.nl/" target="_blank" rel="noopener noreferrer" className="hover:text-foreground">{layoutCopy.footer_instagram}</a>
-                        <a href="/legal.txt" className="hover:text-foreground">{layoutCopy.footer_legal}</a>
-                        <a href="/privacy.txt" className="hover:text-foreground">{layoutCopy.footer_privacy}</a>
+                    <nav className="flex gap-6">
+                        <FooterLinks />
                     </nav>
                 </div>
 
-                <svg viewBox="0 0 948.5 148" role="img" aria-label={layoutCopy.app_name} className="pointer-events-none w-full overflow-hidden select-none">
-                    <text x="-14.6" y="145.5" textLength="967" lengthAdjust="spacingAndGlyphs" fontSize="200" className="fill-muted-foreground/20 font-heading font-semibold">
-                        {layoutCopy.app_name}
-                    </text>
-                </svg>
+                <FooterWordmark />
+            </div>
+        </footer>
+    );
+}
+
+function PublicMobileFooter() {
+    return (
+        <footer className="border-t bg-background">
+            <div className="flex flex-col gap-8 px-4 pt-10">
+                <div className="flex items-start justify-between gap-4 text-sm text-muted-foreground">
+                    <p>© {new Date().getFullYear()} huurmaar.nl</p>
+                    <nav className="flex flex-col items-end gap-2">
+                        <FooterLinks />
+                    </nav>
+                </div>
+
+                <FooterWordmark />
             </div>
         </footer>
     );
@@ -205,14 +238,14 @@ export default function PublicLayout({ breadcrumbs = [], children }: PublicLayou
         <MobilePublicLayout>
             <PublicMobileHeader />
             {children}
-            <PublicFooter />
+            <PublicMobileFooter />
             <Toaster />
         </MobilePublicLayout>
     ) : (
         <DesktopPublicLayout>
             <PublicDesktopHeader breadcrumbs={breadcrumbs} />
             {children}
-            <PublicFooter />
+            <PublicDesktopFooter />
             <Toaster />
         </DesktopPublicLayout>
     );
