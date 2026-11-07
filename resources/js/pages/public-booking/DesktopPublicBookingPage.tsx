@@ -1,3 +1,5 @@
+import { MagnifyingGlassIcon } from '@phosphor-icons/react';
+import { Badge } from '@/components/ui/badge';
 import {
     Empty,
     EmptyDescription,
@@ -34,9 +36,13 @@ export default function DesktopPublicBookingPage({ copy, vendor, services }: Pub
                             <p className="max-w-2xl text-sm text-muted-foreground">{vendor.short_description}</p>
                         ) : null}
 
-                        <p className="text-sm text-muted-foreground">
-                            {interpolate(copy.joined, { formatted_date: vendor.joined_at })}
-                        </p>
+                        {vendor.is_claimed ? (
+                            <p className="text-sm text-muted-foreground">
+                                {interpolate(copy.joined, { formatted_date: vendor.joined_at })}
+                            </p>
+                        ) : (
+                            <Badge variant="outline"><MagnifyingGlassIcon data-icon="inline-start" />{copy.found_by_huurmaar}</Badge>
+                        )}
                     </div>
                 </div>
             </section>

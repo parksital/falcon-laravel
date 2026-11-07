@@ -6,6 +6,7 @@ return [
     'services_empty_description' => ':vendor doesn’t have any services available right now.',
     'joined' => 'Joined :formatted_date',
     'joined_date_format' => 'F j, Y',
+    'found_by_huurmaar' => 'Found by HuurMaar',
     'service_details_heading' => 'About this service',
     'pricing_heading' => 'Pricing',
     'pricing_mode_fixed_label' => 'Fixed',
