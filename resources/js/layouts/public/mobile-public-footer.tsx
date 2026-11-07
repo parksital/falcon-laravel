@@ -10,8 +10,8 @@ export default function MobilePublicFooter() {
         <footer className="border-t bg-background">
             <div className="flex flex-col gap-8 px-4 pt-10">
                 <div className="flex items-start justify-between gap-4 text-sm text-muted-foreground">
-                    <p className="flex h-9 items-center">© {new Date().getFullYear()} huurmaar.nl</p>
-                    <nav className="-mr-2.5 flex flex-col items-end">
+                    <p className="text-xs">© {new Date().getFullYear()} huurmaar.nl</p>
+                    <nav className="flex flex-col items-end">
                         <Button asChild variant="link" size="lg">
                             <a href="mailto:info@huurmaar.nl">{layoutCopy.footer_contact}</a>
                         </Button>
