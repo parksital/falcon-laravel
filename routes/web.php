@@ -2,10 +2,10 @@
 
 use App\Http\Controllers\PublicBookingPageController;
 use App\Http\Controllers\ServiceController;
-use App\Http\Controllers\VendorController;
 use App\Http\Controllers\Settings\LocaleController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
+use App\Http\Controllers\VendorController;
 use App\Models\Service;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -86,6 +86,8 @@ Route::get('/', function () {
                         ? ($service->customCategory?->name ?? $serviceCategoryLabels['other'] ?? $service->category)
                         : $serviceCategoryLabels[$service->category] ?? $service->category,
                     'description' => $service->description,
+                    'vendor_name' => $service->vendor->name,
+                    'vendor_location' => $service->vendor->location,
                     'price_in_minor' => $price?->price_in_minor,
                     'pricing_mode' => $price?->pricing_mode,
                     'pricing_mode_label' => $price?->pricing_mode ? ($copy["pricing_mode_{$price->pricing_mode}_label"] ?? $price->pricing_mode) : null,

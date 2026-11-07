@@ -16,6 +16,8 @@ export type PublicServiceCardService = {
     name: string;
     category_label: string;
     description: string | null;
+    vendor_name?: string;
+    vendor_location?: string | null;
     url: string;
     pricing_options: {
         price_in_minor: number;
@@ -31,7 +33,7 @@ export type PublicServiceCardService = {
 
 type PublicServiceCardProps = {
     copy: Record<string, string>;
-    presentation?: 'default' | 'mobile';
+    presentation?: 'default' | 'mobile' | 'index';
     service: PublicServiceCardService;
     showFooter?: boolean;
 };
@@ -49,6 +51,14 @@ function servicePriceSummary(service: PublicServiceCardService, copy: PublicServ
         [0];
 
     if (! lowestPrice) return null;
+
+    if (presentation === 'index') {
+        return {
+            price: service.pricing_options.length > 1 ? `${copy.starting_from} ${lowestPrice.formatted_price}` : lowestPrice.formatted_price,
+            count: null,
+            hasMultiplePrices: false,
+        };
+    }
 
     const unit = lowestPrice.pricing_mode === 'variable' && lowestPrice.pricing_unit_label
         ? ` ${interpolate(copy.per_unit, { unit: lowestPrice.pricing_unit_label })}`
@@ -95,7 +105,9 @@ export function PublicServiceCard({ copy, presentation = 'default', service, sho
                             <CardTitle>{service.name}</CardTitle>
                         </>
                     )}
-                    {service.description ? (
+                    {presentation === 'index' ? (
+                        <CardDescription>{service.vendor_location ? `${service.vendor_name} · ${service.vendor_location}` : service.vendor_name}</CardDescription>
+                    ) : service.description ? (
                         <CardDescription className="line-clamp-2">{service.description}</CardDescription>
                     ) : null}
                 </CardHeader>
