@@ -61,7 +61,6 @@ export type Service = {
 
 export type IndexService = Service & {
     vendor_name: string;
-    vendor_location: string;
 };
 
 export type PublicVendorPageProps = {

@@ -22,7 +22,7 @@ export function DesktopIndexServiceCard({ copy, service }: DesktopIndexServiceCa
             <CardHeader>
                 <Badge variant="secondary">{service.category_label}</Badge>
                 <CardTitle className="line-clamp-2">{service.name}</CardTitle>
-                <CardDescription className="truncate">{service.vendor_location ? `${copy.by_vendor.replace(':vendor', service.vendor_name)} · ${service.vendor_location}` : copy.by_vendor.replace(':vendor', service.vendor_name)}</CardDescription>
+                <CardDescription className="truncate">{copy.by_vendor.replace(':vendor', service.vendor_name)}</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-1 flex-col justify-end gap-3">
                 {lowestPrice ? (
