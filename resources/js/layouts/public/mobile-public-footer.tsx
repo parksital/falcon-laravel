@@ -1,14 +1,29 @@
-import { PublicFooterLinks } from '@/components/public-footer-links';
 import { PublicFooterWordmark } from '@/components/public-footer-wordmark';
+import { Button } from '@/components/ui/button';
+import { type SharedData } from '@/types';
+import { usePage } from '@inertiajs/react';
 
 export default function MobilePublicFooter() {
+    const { layoutCopy } = usePage<SharedData>().props;
+
     return (
         <footer className="border-t bg-background">
             <div className="flex flex-col gap-8 px-4 pt-10">
                 <div className="flex items-start justify-between gap-4 text-sm text-muted-foreground">
                     <p className="flex h-9 items-center">© {new Date().getFullYear()} huurmaar.nl</p>
                     <nav className="-mr-2.5 flex flex-col items-end">
-                        <PublicFooterLinks size="lg" />
+                        <Button asChild variant="link" size="lg">
+                            <a href="mailto:info@huurmaar.nl">{layoutCopy.footer_contact}</a>
+                        </Button>
+                        <Button asChild variant="link" size="lg">
+                            <a href="https://www.instagram.com/huurmaar.nl/" target="_blank" rel="noopener noreferrer">{layoutCopy.footer_instagram}</a>
+                        </Button>
+                        <Button asChild variant="link" size="lg">
+                            <a href="/legal.txt">{layoutCopy.footer_legal}</a>
+                        </Button>
+                        <Button asChild variant="link" size="lg">
+                            <a href="/privacy.txt">{layoutCopy.footer_privacy}</a>
+                        </Button>
                     </nav>
                 </div>
 
