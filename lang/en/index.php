@@ -2,11 +2,11 @@
 
 return [
     'title' => 'Find and book services',
-    'meta_description' => 'Discover services from vendors for your event on HuurMaar.',
+    'meta_description' => 'Find services for your event on HuurMaar.',
     'nav_login' => 'Log in',
     'nav_register' => 'List your business',
     'services_heading' => 'Services for your event',
-    'intro_description' => 'Discover vendors for your event and see what they offer.',
+    'intro_description' => 'Find the services you need for your event.',
     'category_all' => 'All',
     'category_empty_title' => 'No services in :category yet',
     'category_empty_description' => 'Are you a vendor in this category? List your business so organizers can find you here.',
