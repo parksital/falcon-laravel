@@ -25,7 +25,9 @@ import {
 } from '@/components/ui/sheet';
 import { Toaster } from '@/components/ui/sonner';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import DesktopPublicFooter from '@/layouts/public/desktop-public-footer';
 import DesktopPublicLayout from '@/layouts/public/desktop-public-layout';
+import MobilePublicFooter from '@/layouts/public/mobile-public-footer';
 import MobilePublicLayout from '@/layouts/public/mobile-public-layout';
 import { home, login, register } from '@/routes';
 import { update as updateLocale } from '@/routes/locale';
@@ -172,73 +174,6 @@ function PublicMobileHeader() {
     );
 }
 
-function FooterLinks({ size }: { size: 'default' | 'lg' }) {
-    const { layoutCopy } = usePage<SharedData>().props;
-
-    return (
-        <>
-            <Button asChild variant="link" size={size}>
-                <a href="mailto:info@huurmaar.nl">{layoutCopy.footer_contact}</a>
-            </Button>
-            <Button asChild variant="link" size={size}>
-                <a href="https://www.instagram.com/huurmaar.nl/" target="_blank" rel="noopener noreferrer">{layoutCopy.footer_instagram}</a>
-            </Button>
-            <Button asChild variant="link" size={size}>
-                <a href="/legal.txt">{layoutCopy.footer_legal}</a>
-            </Button>
-            <Button asChild variant="link" size={size}>
-                <a href="/privacy.txt">{layoutCopy.footer_privacy}</a>
-            </Button>
-        </>
-    );
-}
-
-function FooterWordmark() {
-    const { layoutCopy } = usePage<SharedData>().props;
-
-    return (
-        <svg viewBox="0 0 948.5 148" role="img" aria-label={layoutCopy.app_name} className="pointer-events-none w-full overflow-hidden select-none">
-            <text x="-14.6" y="145.5" textLength="967" lengthAdjust="spacingAndGlyphs" fontSize="200" className="fill-muted-foreground/20 font-heading font-semibold">
-                {layoutCopy.app_name}
-            </text>
-        </svg>
-    );
-}
-
-function PublicDesktopFooter() {
-    return (
-        <footer className="border-t bg-background">
-            <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 pt-10">
-                <div className="flex items-center justify-between gap-4 text-sm text-muted-foreground">
-                    <p>© {new Date().getFullYear()} huurmaar.nl</p>
-                    <nav className="-mr-2.5 flex">
-                        <FooterLinks size="default" />
-                    </nav>
-                </div>
-
-                <FooterWordmark />
-            </div>
-        </footer>
-    );
-}
-
-function PublicMobileFooter() {
-    return (
-        <footer className="border-t bg-background">
-            <div className="flex flex-col gap-8 px-4 pt-10">
-                <div className="flex items-start justify-between gap-4 text-sm text-muted-foreground">
-                    <p className="flex h-9 items-center">© {new Date().getFullYear()} huurmaar.nl</p>
-                    <nav className="-mr-2.5 flex flex-col items-end">
-                        <FooterLinks size="lg" />
-                    </nav>
-                </div>
-
-                <FooterWordmark />
-            </div>
-        </footer>
-    );
-}
-
 export default function PublicLayout({ breadcrumbs = [], children }: PublicLayoutProps) {
     const isMobile = useMediaQuery('(max-width: 640px)');
 
@@ -246,14 +181,14 @@ export default function PublicLayout({ breadcrumbs = [], children }: PublicLayou
         <MobilePublicLayout>
             <PublicMobileHeader />
             {children}
-            <PublicMobileFooter />
+            <MobilePublicFooter />
             <Toaster />
         </MobilePublicLayout>
     ) : (
         <DesktopPublicLayout>
             <PublicDesktopHeader breadcrumbs={breadcrumbs} />
             {children}
-            <PublicDesktopFooter />
+            <DesktopPublicFooter />
             <Toaster />
         </DesktopPublicLayout>
     );
