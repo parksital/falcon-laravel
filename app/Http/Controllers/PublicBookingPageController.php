@@ -112,6 +112,7 @@ class PublicBookingPageController extends Controller
                 : $this->serviceCategoryLabels()[$service->category] ?? $service->category,
             'description' => $service->description,
             'vendor_name' => $vendor->name,
+            'vendor_is_claimed' => $vendor->isClaimed(),
             'price_in_minor' => $price?->price_in_minor,
             'formatted_price' => $price?->price_in_minor !== null ? $this->formatPrice($price->price_in_minor) : null,
             'pricing_mode' => $price?->pricing_mode,

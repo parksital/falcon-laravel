@@ -18,6 +18,7 @@ return [
     'starting_from' => 'Vanaf',
     'prices_count' => ':count prijzen',
     'view_service' => 'Bekijk service',
+    'found_by_huurmaar' => 'Gevonden door HuurMaar',
     'pricing_mode_fixed_label' => 'Vast',
     'pricing_mode_variable_label' => 'Variabel',
     'price_not_set' => 'Prijs niet ingesteld',
