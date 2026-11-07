@@ -4,7 +4,7 @@ import { type SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
 
 export default function DesktopPublicFooter() {
-    const { layoutCopy } = usePage<SharedData>().props;
+    const { layoutCopy, locale } = usePage<SharedData>().props;
 
     return (
         <footer className="border-t bg-background">
@@ -19,10 +19,10 @@ export default function DesktopPublicFooter() {
                             <a href="https://www.instagram.com/huurmaar.nl/" target="_blank" rel="noopener noreferrer">{layoutCopy.footer_instagram}</a>
                         </Button>
                         <Button asChild variant="link">
-                            <a href="/legal.txt" target="_blank" rel="noopener noreferrer">{layoutCopy.footer_legal}</a>
+                            <a href={`/${locale}/legal.txt`} target="_blank" rel="noopener noreferrer">{layoutCopy.footer_legal}</a>
                         </Button>
                         <Button asChild variant="link">
-                            <a href="/privacy.txt" target="_blank" rel="noopener noreferrer">{layoutCopy.footer_privacy}</a>
+                            <a href={`/${locale}/privacy.txt`} target="_blank" rel="noopener noreferrer">{layoutCopy.footer_privacy}</a>
                         </Button>
                     </nav>
                 </div>
