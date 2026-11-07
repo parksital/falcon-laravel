@@ -178,14 +178,14 @@ function PublicFooter() {
     return (
         <footer className="border-t bg-background">
             <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-10 sm:px-6">
-                <div className="flex flex-col gap-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-                    <nav className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-x-6">
+                <div className="flex items-start justify-between gap-4 text-sm text-muted-foreground">
+                    <p>© {new Date().getFullYear()} huurmaar.nl</p>
+                    <nav className="flex flex-col items-end gap-2 sm:flex-row sm:flex-wrap sm:justify-end sm:gap-x-6">
                         <a href="mailto:info@huurmaar.nl" className="hover:text-foreground">{layoutCopy.footer_contact}</a>
                         <a href="https://www.instagram.com/huurmaar.nl/" target="_blank" rel="noopener noreferrer" className="hover:text-foreground">{layoutCopy.footer_instagram}</a>
                         <a href="/legal.txt" className="hover:text-foreground">{layoutCopy.footer_legal}</a>
                         <a href="/privacy.txt" className="hover:text-foreground">{layoutCopy.footer_privacy}</a>
                     </nav>
-                    <p>© {new Date().getFullYear()} huurmaar.nl</p>
                 </div>
 
                 <svg viewBox="0 0 1000 156" overflow="visible" role="img" aria-label={layoutCopy.app_name} className="w-full">
