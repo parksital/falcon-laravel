@@ -13,7 +13,7 @@ return [
     'cta_title' => 'Get discovered by event organizers',
     'cta_description' => 'Create a public booking page and start turning searches into bookings.',
     'cta_button' => 'List your business',
-    'by_vendor' => 'by :vendor',
+    'by_vendor' => 'By :vendor',
     'per_unit' => 'per :unit',
     'starting_from' => 'From',
     'prices_count' => ':count prices',
