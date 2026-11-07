@@ -17,7 +17,7 @@ import { StorefrontIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 
 type IndexPageProps = {
-    services: Service[];
+    services: (Service & { vendor_name: string; vendor_location: string | null })[];
     categories: { value: string; label: string }[];
     copy: Record<string, string>;
 };
@@ -88,7 +88,7 @@ export default function IndexPage({ services, categories, copy }: IndexPageProps
                             </Card>
 
                             {visibleServices.map((service) => (
-                                <PublicServiceCard key={service.id} copy={copy} presentation="mobile" service={service} showFooter={false} />
+                                <PublicServiceCard key={service.id} copy={copy} presentation="index" service={service} showFooter={false} />
                             ))}
 
                             {services.length === 0 ? (
