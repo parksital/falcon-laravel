@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { type Service } from '@/pages/public-booking/types';
-import { MagnifyingGlassIcon } from '@phosphor-icons/react';
+import { BinocularsIcon } from '@phosphor-icons/react';
 
 type MobileIndexServiceCardProps = {
     copy: Record<string, string>;
@@ -17,7 +17,7 @@ export function MobileIndexServiceCard({ copy, service }: MobileIndexServiceCard
                 {service.media[0] ? (
                     <img src={service.media[0].url} alt={service.name} className="size-full object-cover" />
                 ) : null}
-                {!service.vendor_is_claimed && <Badge variant="secondary" className="absolute top-2 left-2"><MagnifyingGlassIcon data-icon="inline-start" />{copy.found_by_huurmaar}</Badge>}
+                {!service.vendor_is_claimed && <Badge variant="secondary" className="absolute top-2 left-2"><BinocularsIcon data-icon="inline-start" />{copy.found_by_huurmaar}</Badge>}
                 <Badge variant="secondary" className="absolute bottom-2 left-2">{service.category_label}</Badge>
             </div>
 
