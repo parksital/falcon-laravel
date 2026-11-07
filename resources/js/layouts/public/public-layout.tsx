@@ -172,15 +172,23 @@ function PublicMobileHeader() {
     );
 }
 
-function FooterLinks() {
+function FooterLinks({ size }: { size: 'default' | 'lg' }) {
     const { layoutCopy } = usePage<SharedData>().props;
 
     return (
         <>
-            <a href="mailto:info@huurmaar.nl" className="hover:text-foreground">{layoutCopy.footer_contact}</a>
-            <a href="https://www.instagram.com/huurmaar.nl/" target="_blank" rel="noopener noreferrer" className="hover:text-foreground">{layoutCopy.footer_instagram}</a>
-            <a href="/legal.txt" className="hover:text-foreground">{layoutCopy.footer_legal}</a>
-            <a href="/privacy.txt" className="hover:text-foreground">{layoutCopy.footer_privacy}</a>
+            <Button asChild variant="link" size={size}>
+                <a href="mailto:info@huurmaar.nl">{layoutCopy.footer_contact}</a>
+            </Button>
+            <Button asChild variant="link" size={size}>
+                <a href="https://www.instagram.com/huurmaar.nl/" target="_blank" rel="noopener noreferrer">{layoutCopy.footer_instagram}</a>
+            </Button>
+            <Button asChild variant="link" size={size}>
+                <a href="/legal.txt">{layoutCopy.footer_legal}</a>
+            </Button>
+            <Button asChild variant="link" size={size}>
+                <a href="/privacy.txt">{layoutCopy.footer_privacy}</a>
+            </Button>
         </>
     );
 }
@@ -203,8 +211,8 @@ function PublicDesktopFooter() {
             <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 pt-10">
                 <div className="flex items-center justify-between gap-4 text-sm text-muted-foreground">
                     <p>© {new Date().getFullYear()} huurmaar.nl</p>
-                    <nav className="flex gap-6">
-                        <FooterLinks />
+                    <nav className="-mr-2.5 flex">
+                        <FooterLinks size="default" />
                     </nav>
                 </div>
 
@@ -219,9 +227,9 @@ function PublicMobileFooter() {
         <footer className="border-t bg-background">
             <div className="flex flex-col gap-8 px-4 pt-10">
                 <div className="flex items-start justify-between gap-4 text-sm text-muted-foreground">
-                    <p>© {new Date().getFullYear()} huurmaar.nl</p>
-                    <nav className="flex flex-col items-end gap-2">
-                        <FooterLinks />
+                    <p className="flex h-9 items-center">© {new Date().getFullYear()} huurmaar.nl</p>
+                    <nav className="-mr-2.5 flex flex-col items-end">
+                        <FooterLinks size="lg" />
                     </nav>
                 </div>
 
