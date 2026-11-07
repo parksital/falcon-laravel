@@ -6,6 +6,7 @@ return [
     'services_empty_description' => ':vendor heeft op dit moment geen services beschikbaar.',
     'joined' => 'Lid sinds :formatted_date',
     'joined_date_format' => 'j F Y',
+    'found_by_huurmaar' => 'Gevonden door HuurMaar',
     'service_details_heading' => 'Over deze service',
     'pricing_heading' => 'Prijzen',
     'pricing_mode_fixed_label' => 'Vast',
