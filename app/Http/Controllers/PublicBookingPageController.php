@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Service;
 use App\Models\Vendor;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Illuminate\Support\Number;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -111,6 +111,7 @@ class PublicBookingPageController extends Controller
                 ? ($service->customCategory?->name ?? $this->serviceCategoryLabels()['other'] ?? $service->category)
                 : $this->serviceCategoryLabels()[$service->category] ?? $service->category,
             'description' => $service->description,
+            'vendor_name' => $vendor->name,
             'price_in_minor' => $price?->price_in_minor,
             'formatted_price' => $price?->price_in_minor !== null ? $this->formatPrice($price->price_in_minor) : null,
             'pricing_mode' => $price?->pricing_mode,

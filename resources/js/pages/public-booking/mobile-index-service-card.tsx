@@ -1,10 +1,10 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { type IndexService } from '@/pages/public-booking/types';
+import { type Service } from '@/pages/public-booking/types';
 
 type MobileIndexServiceCardProps = {
     copy: Record<string, string>;
-    service: IndexService;
+    service: Service;
 };
 
 export function MobileIndexServiceCard({ copy, service }: MobileIndexServiceCardProps) {

@@ -12,14 +12,14 @@ import { useMediaQuery } from '@/hooks/use-media-query';
 import PublicLayout from '@/layouts/public/public-layout';
 import { DesktopIndexServiceCard } from '@/pages/public-booking/desktop-index-service-card';
 import { MobileIndexServiceCard } from '@/pages/public-booking/mobile-index-service-card';
-import { type IndexService } from '@/pages/public-booking/types';
+import { type Service } from '@/pages/public-booking/types';
 import { register } from '@/routes';
 import { Head, Link, router } from '@inertiajs/react';
 import { StorefrontIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 
 type IndexPageProps = {
-    services: IndexService[];
+    services: Service[];
     categories: { value: string; label: string }[];
     copy: Record<string, string>;
 };
