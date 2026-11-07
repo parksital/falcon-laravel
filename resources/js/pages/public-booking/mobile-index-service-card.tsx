@@ -21,7 +21,7 @@ export function MobileIndexServiceCard({ copy, service }: MobileIndexServiceCard
             <CardHeader>
                 <Badge variant="secondary">{service.category_label}</Badge>
                 <CardTitle>{service.name}</CardTitle>
-                <CardDescription>{service.vendor_location ? `${copy.by_vendor.replace(':vendor', service.vendor_name)} · ${service.vendor_location}` : copy.by_vendor.replace(':vendor', service.vendor_name)}</CardDescription>
+                <CardDescription>{copy.by_vendor.replace(':vendor', service.vendor_name)}</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-1 flex-col gap-3">
                 {lowestPrice ? (
