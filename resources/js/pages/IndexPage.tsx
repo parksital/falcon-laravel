@@ -91,7 +91,7 @@ export default function IndexPage({ services, categories, copy }: IndexPageProps
                             </Card>
 
                             {visibleServices.map((service) => (
-                                <Link key={service.id} href={service.url} className="flex h-full flex-col text-left">
+                                <Link key={service.id} href={service.url} className="flex h-full flex-col text-left outline-none focus-visible:ring-2 focus-visible:ring-ring">
                                     {isMobile ? (
                                         <MobileIndexServiceCard copy={copy} service={service} />
                                     ) : (

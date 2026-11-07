@@ -13,7 +13,7 @@ return [
     'cta_title' => 'Word gevonden door evenementorganisatoren',
     'cta_description' => 'Maak een openbare boekingspagina en zet zoekers om in boekingen.',
     'cta_button' => 'Meld je bedrijf aan',
-    'by_vendor' => 'door :vendor',
+    'by_vendor' => 'Van :vendor',
     'per_unit' => 'per :unit',
     'starting_from' => 'Vanaf',
     'prices_count' => ':count prijzen',
