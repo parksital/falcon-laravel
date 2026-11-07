@@ -2,11 +2,11 @@
 
 return [
     'title' => 'Services vinden en boeken',
-    'meta_description' => 'Ontdek services van lokale bedrijven voor je evenement op HuurMaar.',
+    'meta_description' => 'Ontdek services van bedrijven voor je evenement op HuurMaar.',
     'nav_login' => 'Log in',
     'nav_register' => 'Meld bedrijf aan',
     'services_heading' => 'Services voor je evenement',
-    'intro_description' => 'Ontdek lokale bedrijven voor je evenement en bekijk wat ze aanbieden.',
+    'intro_description' => 'Ontdek bedrijven voor je evenement en bekijk wat ze aanbieden.',
     'category_all' => 'Alles',
     'category_empty_title' => 'Nog geen services in :category',
     'category_empty_description' => 'Heb je een bedrijf in deze categorie? Meld het aan zodat organisatoren je hier vinden.',
