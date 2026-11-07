@@ -1,12 +1,12 @@
 <?php
 
 return [
-    'title' => 'Services vinden en boeken',
-    'meta_description' => 'Vind services voor je evenement op HuurMaar.',
+    'title' => 'Alles voor je evenement op één plek',
+    'meta_description' => 'Vind alles voor je evenement op HuurMaar, van catering en een fotobooth tot decoratie en kinderactiviteiten.',
     'nav_login' => 'Log in',
     'nav_register' => 'Meld bedrijf aan',
-    'services_heading' => 'Services voor je evenement',
-    'intro_description' => 'Vind de services die je nodig hebt voor je evenement.',
+    'services_heading' => 'Alles voor je evenement',
+    'intro_description' => 'Catering, een fotobooth, decoratie of iets voor de kinderen: vind alle aanbieders voor je evenement op één plek.',
     'category_all' => 'Alles',
     'category_empty_title' => 'Nog geen services in :category',
     'category_empty_description' => 'Heb je een bedrijf in deze categorie? Meld het aan zodat organisatoren je hier vinden.',
@@ -23,6 +23,6 @@ return [
     'price_not_set' => 'Prijs niet ingesteld',
     'unit_not_set' => 'eenheid',
     'vendor_not_set' => 'Onbekende vendor',
-    'empty_title' => 'Nog geen services',
-    'empty_description' => 'Services verschijnen hier zodra bedrijven ze toevoegen.',
+    'empty_title' => 'Hier staat nog niets',
+    'empty_description' => 'Binnenkort vind je hier catering, fotobooths, decoratie en meer voor je evenement.',
 ];
