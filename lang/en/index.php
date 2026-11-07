@@ -2,11 +2,11 @@
 
 return [
     'title' => 'Find and book services',
-    'meta_description' => 'Discover public services from local vendors, compare pricing, and open vendor booking pages on Falcon.',
+    'meta_description' => 'Discover services from local vendors for your event on HuurMaar.',
     'nav_login' => 'Log in',
     'nav_register' => 'List your business',
     'services_heading' => 'Services for your event',
-    'intro_description' => 'Browse local vendors for your event, compare prices, and open a service to see the details.',
+    'intro_description' => 'Discover local vendors for your event and see what they offer.',
     'category_all' => 'All',
     'category_empty_title' => 'No services in :category yet',
     'category_empty_description' => 'Are you a vendor in this category? List your business so organizers can find you here.',
