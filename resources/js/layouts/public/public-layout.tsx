@@ -177,7 +177,7 @@ function PublicFooter() {
 
     return (
         <footer className="border-t bg-background">
-            <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-10 sm:px-6">
+            <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 pt-10 sm:px-6">
                 <div className="flex items-start justify-between gap-4 text-sm text-muted-foreground">
                     <p>© {new Date().getFullYear()} huurmaar.nl</p>
                     <nav className="flex flex-col items-end gap-2 sm:flex-row sm:flex-wrap sm:justify-end sm:gap-x-6">
