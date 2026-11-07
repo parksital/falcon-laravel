@@ -8,21 +8,24 @@ import {
 } from '@/components/ui/card';
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import PublicLayout from '@/layouts/public/public-layout';
-import { PublicServiceCard } from '@/pages/public-booking/public-service-card';
-import { type Service } from '@/pages/public-booking/types';
+import { DesktopIndexServiceCard } from '@/pages/public-booking/desktop-index-service-card';
+import { MobileIndexServiceCard } from '@/pages/public-booking/mobile-index-service-card';
+import { type IndexService } from '@/pages/public-booking/types';
 import { register } from '@/routes';
 import { Head, router } from '@inertiajs/react';
 import { StorefrontIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 
 type IndexPageProps = {
-    services: (Service & { vendor_name: string; vendor_location: string | null })[];
+    services: IndexService[];
     categories: { value: string; label: string }[];
     copy: Record<string, string>;
 };
 
 export default function IndexPage({ services, categories, copy }: IndexPageProps) {
+    const isMobile = useMediaQuery('(max-width: 640px)');
     const [selectedCategory, setSelectedCategory] = useState('all');
     const visibleServices = services.filter((service) => selectedCategory === 'all' || service.category === selectedCategory);
 
@@ -87,8 +90,10 @@ export default function IndexPage({ services, categories, copy }: IndexPageProps
                                 </CardFooter>
                             </Card>
 
-                            {visibleServices.map((service) => (
-                                <PublicServiceCard key={service.id} copy={copy} presentation="index" service={service} showFooter={false} />
+                            {visibleServices.map((service) => isMobile ? (
+                                <MobileIndexServiceCard key={service.id} copy={copy} service={service} />
+                            ) : (
+                                <DesktopIndexServiceCard key={service.id} copy={copy} service={service} />
                             ))}
 
                             {services.length === 0 ? (
