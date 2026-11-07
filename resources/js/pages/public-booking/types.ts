@@ -59,6 +59,11 @@ export type Service = {
     media: ServiceMedia[];
 };
 
+export type IndexService = Service & {
+    vendor_name: string;
+    vendor_location: string;
+};
+
 export type PublicVendorPageProps = {
     copy: Record<string, string>;
     vendor: Vendor;
