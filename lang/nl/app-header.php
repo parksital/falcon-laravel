@@ -10,6 +10,7 @@ return [
     'nav_login' => 'Log in',
     'nav_register' => 'Meld bedrijf aan',
     'logout' => 'Log uit',
+    'footer_tagline' => 'Alles voor je evenement, op één plek.',
     'footer_contact' => 'Contact',
     'footer_instagram' => 'Instagram',
     'footer_legal' => 'legal.txt',
