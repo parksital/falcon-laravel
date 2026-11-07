@@ -10,4 +10,8 @@ return [
     'nav_login' => 'Log in',
     'nav_register' => 'List your business',
     'logout' => 'Log out',
+    'footer_contact' => 'Contact',
+    'footer_instagram' => 'Instagram',
+    'footer_legal' => 'Legal',
+    'footer_privacy' => 'Privacy',
 ];
