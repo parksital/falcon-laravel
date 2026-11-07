@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { type Service } from '@/pages/public-booking/types';
-import { ArrowRightIcon } from '@phosphor-icons/react';
+import { ArrowRightIcon, MagnifyingGlassIcon } from '@phosphor-icons/react';
 
 type DesktopIndexServiceCardProps = {
     copy: Record<string, string>;
@@ -20,7 +20,10 @@ export function DesktopIndexServiceCard({ copy, service }: DesktopIndexServiceCa
             </div>
 
             <CardHeader>
-                <Badge variant="secondary">{service.category_label}</Badge>
+                <div className="flex flex-wrap gap-2">
+                    <Badge variant="secondary">{service.category_label}</Badge>
+                    {!service.vendor_is_claimed && <Badge variant="outline"><MagnifyingGlassIcon data-icon="inline-start" />{copy.found_by_huurmaar}</Badge>}
+                </div>
                 <CardTitle className="line-clamp-2">{service.name}</CardTitle>
                 <CardDescription className="truncate">{copy.by_vendor.replace(':vendor', service.vendor_name)}</CardDescription>
             </CardHeader>

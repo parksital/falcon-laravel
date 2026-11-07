@@ -87,6 +87,7 @@ Route::get('/', function () {
                         : $serviceCategoryLabels[$service->category] ?? $service->category,
                     'description' => $service->description,
                     'vendor_name' => $service->vendor->name,
+                    'vendor_is_claimed' => $service->vendor->isClaimed(),
                     'price_in_minor' => $price?->price_in_minor,
                     'pricing_mode' => $price?->pricing_mode,
                     'pricing_mode_label' => $price?->pricing_mode ? ($copy["pricing_mode_{$price->pricing_mode}_label"] ?? $price->pricing_mode) : null,

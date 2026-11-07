@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { type Service } from '@/pages/public-booking/types';
+import { MagnifyingGlassIcon } from '@phosphor-icons/react';
 
 type MobileIndexServiceCardProps = {
     copy: Record<string, string>;
@@ -19,7 +20,10 @@ export function MobileIndexServiceCard({ copy, service }: MobileIndexServiceCard
             </div>
 
             <CardHeader>
-                <Badge variant="secondary">{service.category_label}</Badge>
+                <div className="flex flex-wrap gap-2">
+                    <Badge variant="secondary">{service.category_label}</Badge>
+                    {!service.vendor_is_claimed && <Badge variant="outline"><MagnifyingGlassIcon data-icon="inline-start" />{copy.found_by_huurmaar}</Badge>}
+                </div>
                 <CardTitle>{service.name}</CardTitle>
                 <CardDescription>{copy.by_vendor.replace(':vendor', service.vendor_name)}</CardDescription>
             </CardHeader>

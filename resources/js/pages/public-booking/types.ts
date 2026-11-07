@@ -49,6 +49,7 @@ export type Service = {
     category_label: string;
     description: string | null;
     vendor_name: string;
+    vendor_is_claimed: boolean;
     price_in_minor: number | null;
     formatted_price: string | null;
     pricing_mode: 'fixed' | 'variable' | null;
