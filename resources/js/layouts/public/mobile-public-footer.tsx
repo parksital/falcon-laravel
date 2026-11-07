@@ -19,10 +19,10 @@ export default function MobilePublicFooter() {
                             <a href="https://www.instagram.com/huurmaar.nl/" target="_blank" rel="noopener noreferrer">{layoutCopy.footer_instagram}</a>
                         </Button>
                         <Button asChild variant="link" size="lg">
-                            <a href="/legal.txt">{layoutCopy.footer_legal}</a>
+                            <a href="/legal.txt" target="_blank" rel="noopener noreferrer">{layoutCopy.footer_legal}</a>
                         </Button>
                         <Button asChild variant="link" size="lg">
-                            <a href="/privacy.txt">{layoutCopy.footer_privacy}</a>
+                            <a href="/privacy.txt" target="_blank" rel="noopener noreferrer">{layoutCopy.footer_privacy}</a>
                         </Button>
                     </nav>
                 </div>
