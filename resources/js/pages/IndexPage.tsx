@@ -14,7 +14,7 @@ import { DesktopIndexServiceCard } from '@/pages/public-booking/desktop-index-se
 import { MobileIndexServiceCard } from '@/pages/public-booking/mobile-index-service-card';
 import { type IndexService } from '@/pages/public-booking/types';
 import { register } from '@/routes';
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { StorefrontIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 
@@ -90,10 +90,14 @@ export default function IndexPage({ services, categories, copy }: IndexPageProps
                                 </CardFooter>
                             </Card>
 
-                            {visibleServices.map((service) => isMobile ? (
-                                <MobileIndexServiceCard key={service.id} copy={copy} service={service} />
-                            ) : (
-                                <DesktopIndexServiceCard key={service.id} copy={copy} service={service} />
+                            {visibleServices.map((service) => (
+                                <Link key={service.id} href={service.url} className="flex h-full flex-col text-left">
+                                    {isMobile ? (
+                                        <MobileIndexServiceCard copy={copy} service={service} />
+                                    ) : (
+                                        <DesktopIndexServiceCard copy={copy} service={service} />
+                                    )}
+                                </Link>
                             ))}
 
                             {services.length === 0 ? (
