@@ -9,9 +9,9 @@ export default function MobilePublicFooter() {
     return (
         <footer className="border-t bg-background">
             <div className="flex flex-col gap-8 px-4 pt-10">
-                <div className="flex items-start justify-between gap-4 text-sm text-muted-foreground">
+                <div className="grid grid-cols-[1fr_auto] items-center gap-x-4 text-sm text-muted-foreground">
                     <p className="text-xs">{layoutCopy.footer_tagline}</p>
-                    <nav className="flex flex-col items-end">
+                    <nav className="col-start-2 row-span-4 row-start-1 grid grid-rows-subgrid justify-items-end">
                         <Button asChild variant="link" size="lg">
                             <a href="mailto:info@huurmaar.nl">{layoutCopy.footer_contact}</a>
                         </Button>
