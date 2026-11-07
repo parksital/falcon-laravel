@@ -179,7 +179,7 @@ function PublicFooter() {
         <footer className="border-t bg-background">
             <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-10 sm:px-6">
                 <div className="flex flex-col gap-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-                    <nav className="flex flex-wrap gap-x-6 gap-y-2">
+                    <nav className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-x-6">
                         <a href="mailto:info@huurmaar.nl" className="hover:text-foreground">{layoutCopy.footer_contact}</a>
                         <a href="https://www.instagram.com/huurmaar.nl/" target="_blank" rel="noopener noreferrer" className="hover:text-foreground">{layoutCopy.footer_instagram}</a>
                         <a href="/legal.txt" className="hover:text-foreground">{layoutCopy.footer_legal}</a>
