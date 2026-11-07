@@ -20,10 +20,7 @@ export function MobileIndexServiceCard({ copy, service }: MobileIndexServiceCard
             </div>
 
             <CardHeader>
-                <div className="flex flex-wrap gap-2">
-                    <Badge variant="secondary">{service.category_label}</Badge>
-                    {!service.vendor_is_claimed && <Badge variant="outline"><MagnifyingGlassIcon data-icon="inline-start" />{copy.found_by_huurmaar}</Badge>}
-                </div>
+                <Badge variant="secondary">{service.category_label}</Badge>
                 <CardTitle>{service.name}</CardTitle>
                 <CardDescription>{copy.by_vendor.replace(':vendor', service.vendor_name)}</CardDescription>
             </CardHeader>
@@ -31,6 +28,7 @@ export function MobileIndexServiceCard({ copy, service }: MobileIndexServiceCard
                 {lowestPrice ? (
                     <span className="font-medium">{service.pricing_options.length > 1 ? `${copy.starting_from} ${lowestPrice.formatted_price}` : lowestPrice.formatted_price}</span>
                 ) : null}
+                {!service.vendor_is_claimed && <Badge variant="outline"><MagnifyingGlassIcon data-icon="inline-start" />{copy.found_by_huurmaar}</Badge>}
             </CardContent>
         </Card>
     );
