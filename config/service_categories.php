@@ -17,7 +17,15 @@ return [
 
     'foodtrucks' => [],
 
+    'catering' => [],
+
+    'drinks' => [],
+
+    'sweets' => [],
+
     'kids_activities' => [],
+
+    'decor' => [],
 
     'other' => [],
 ];

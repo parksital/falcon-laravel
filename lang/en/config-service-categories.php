@@ -3,6 +3,8 @@
 return [
     'catering' => 'Catering',
     'foodtrucks' => 'Food Truck',
+    'drinks' => 'Drinks',
+    'sweets' => 'Sweets',
     'photography' => 'Photography',
     'videography' => 'Videography',
     'photobooths' => 'Photo Booth',
