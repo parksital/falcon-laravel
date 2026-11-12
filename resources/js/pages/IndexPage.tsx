@@ -46,18 +46,38 @@ function resolveCategoryIcon(category: string): Icon {
     }
 }
 
+type Vendor = { name: string; location: string | null; logo_url: string | null; url: string };
+
+function VendorCard({ vendor, isFoundByHuurMaar, copy }: { vendor: Vendor; isFoundByHuurMaar: boolean; copy: Record<string, string> }) {
+    const getInitials = useInitials();
+
+    return (
+        <Link href={vendor.url} className="flex items-start gap-3 rounded-xl border bg-card p-4 outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
+            <Avatar className="size-12 shrink-0">
+                {vendor.logo_url ? <AvatarImage src={vendor.logo_url} alt={vendor.name} /> : null}
+                <AvatarFallback>{getInitials(vendor.name)}</AvatarFallback>
+            </Avatar>
+            <div className="flex min-w-0 flex-col items-start gap-1">
+                {isFoundByHuurMaar ? <Badge variant="secondary">{copy.found_by_huurmaar}</Badge> : null}
+                <span className="w-full truncate font-medium">{vendor.name}</span>
+                {vendor.location ? <span className="w-full truncate text-sm text-muted-foreground">{copy.based_in.replace(':location', vendor.location)}</span> : null}
+            </div>
+        </Link>
+    );
+}
+
 type IndexPageProps = {
     services: Service[];
     categories: { value: string; label: string; slug: string }[];
     category_counts: { value: string; label: string; count: number; url: string }[];
-    new_vendors: { name: string; location: string | null; logo_url: string | null; url: string; is_claimed: boolean }[];
+    new_vendors: (Vendor & { is_claimed: boolean })[];
+    verified_vendors: Vendor[];
     selectedCategory: string | null;
     copy: Record<string, string>;
 };
 
-export default function IndexPage({ services, categories, category_counts, new_vendors, selectedCategory, copy }: IndexPageProps) {
+export default function IndexPage({ services, categories, category_counts, new_vendors, verified_vendors, selectedCategory, copy }: IndexPageProps) {
     const isMobile = useMediaQuery('(max-width: 640px)');
-    const getInitials = useInitials();
     const { name } = usePage<SharedData>().props;
     const selectedCategoryLabel = categories.find((category) => category.value === selectedCategory)?.label ?? selectedCategory;
     const categoryTitle = selectedCategoryLabel ? copy.category_title.replace(':category', selectedCategoryLabel) : null;
@@ -156,17 +176,18 @@ export default function IndexPage({ services, categories, category_counts, new_v
                             <h2 className="text-lg font-semibold">{copy.new_vendors_heading.replace(':appName', name)}</h2>
                             <div className="grid gap-3 sm:grid-cols-2">
                                 {new_vendors.map((vendor) => (
-                                    <Link key={vendor.url} href={vendor.url} className="flex items-start gap-3 rounded-xl border bg-card p-4 outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
-                                        <Avatar className="size-12 shrink-0">
-                                            {vendor.logo_url ? <AvatarImage src={vendor.logo_url} alt={vendor.name} /> : null}
-                                            <AvatarFallback>{getInitials(vendor.name)}</AvatarFallback>
-                                        </Avatar>
-                                        <div className="flex min-w-0 flex-col items-start gap-1">
-                                            {!vendor.is_claimed ? <Badge variant="secondary">{copy.found_by_huurmaar}</Badge> : null}
-                                            <span className="w-full truncate font-medium">{vendor.name}</span>
-                                            {vendor.location ? <span className="w-full truncate text-sm text-muted-foreground">{copy.based_in.replace(':location', vendor.location)}</span> : null}
-                                        </div>
-                                    </Link>
+                                    <VendorCard key={vendor.url} vendor={vendor} isFoundByHuurMaar={!vendor.is_claimed} copy={copy} />
+                                ))}
+                            </div>
+                        </section>
+                    ) : null}
+
+                    {verified_vendors.length > 0 ? (
+                        <section className="flex flex-col gap-3">
+                            <h2 className="text-lg font-semibold">{copy.verified_vendors_heading}</h2>
+                            <div className="grid gap-3 sm:grid-cols-2">
+                                {verified_vendors.map((vendor) => (
+                                    <VendorCard key={vendor.url} vendor={vendor} isFoundByHuurMaar={false} copy={copy} />
                                 ))}
                             </div>
                         </section>

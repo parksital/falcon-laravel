@@ -169,6 +169,21 @@ class IndexPageController extends Controller
                     ])
                     ->all()
                 : [],
+            'verified_vendors' => $category === null
+                ? Vendor::query()
+                    ->whereNotNull('user_id')
+                    ->whereHas('services', fn ($query) => $query->where('is_public', true))
+                    ->latest()
+                    ->limit(4)
+                    ->get()
+                    ->map(fn (Vendor $vendor) => [
+                        'name' => $vendor->name,
+                        'location' => $vendor->location,
+                        'logo_url' => $vendor->logo_path ? Storage::disk('r2')->url($vendor->logo_path) : null,
+                        'url' => route('public.booking.show', $vendor->slug),
+                    ])
+                    ->all()
+                : [],
             'selectedCategory' => $category,
             'locale' => app()->getLocale(),
             'copy' => $copy,
