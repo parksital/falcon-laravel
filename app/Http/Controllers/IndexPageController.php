@@ -140,6 +140,19 @@ class IndexPageController extends Controller
                 ->map(fn (string $label, string $value) => ['value' => $value, 'label' => $label, 'slug' => config("service_categories.{$value}.slug")])
                 ->values()
                 ->all(),
+            'category_counts' => $category === null
+                ? collect($serviceCategoryLabels)
+                    ->except('other')
+                    ->map(fn (string $label, string $value) => [
+                        'value' => $value,
+                        'label' => $label,
+                        'count' => $publicServices->where('category', $value)->count(),
+                        'url' => route('category.show', config("service_categories.{$value}.slug")),
+                    ])
+                    ->filter(fn (array $categoryCount) => $categoryCount['count'] > 0)
+                    ->values()
+                    ->all()
+                : [],
             'selectedCategory' => $category,
             'locale' => app()->getLocale(),
             'copy' => $copy,
