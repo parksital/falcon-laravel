@@ -16,6 +16,7 @@ return [
     'category_empty_title' => 'No services in :category yet',
     'category_empty_description' => 'Are you a vendor in this category? List your business so organizers can find you here.',
     'new_vendors_heading' => 'New on HuurMaar',
+    'based_in' => 'Based in :location',
     'cta_title' => 'Get discovered by event organizers',
     'cta_description' => 'Create a public booking page and start turning searches into bookings.',
     'cta_button' => 'List your business',

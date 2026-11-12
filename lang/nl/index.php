@@ -16,6 +16,7 @@ return [
     'category_empty_title' => 'Nog geen services in :category',
     'category_empty_description' => 'Heb je een bedrijf in deze categorie? Meld het aan zodat organisatoren je hier vinden.',
     'new_vendors_heading' => 'Nieuw op HuurMaar',
+    'based_in' => 'Gevestigd in :location',
     'cta_title' => 'Word gevonden door evenementorganisatoren',
     'cta_description' => 'Maak een openbare boekingspagina en zet zoekers om in boekingen.',
     'cta_button' => 'Meld je bedrijf aan',
