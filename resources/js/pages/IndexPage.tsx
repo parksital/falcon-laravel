@@ -152,7 +152,7 @@ export default function IndexPage({ services, categories, category_counts, new_v
                     {new_vendors.length > 0 ? (
                         <section className="flex flex-col gap-3">
                             <h2 className="text-lg font-semibold">{copy.new_vendors_heading}</h2>
-                            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                            <div className="grid gap-3 sm:grid-cols-2">
                                 {new_vendors.map((vendor) => (
                                     <Link key={vendor.url} href={vendor.url} className="flex items-start gap-3 rounded-xl border bg-card p-4 outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
                                         <Avatar className="size-12 shrink-0">
