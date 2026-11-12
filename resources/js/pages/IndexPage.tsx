@@ -1,3 +1,5 @@
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -8,6 +10,7 @@ import {
 } from '@/components/ui/card';
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { toggleVariants } from '@/components/ui/toggle';
+import { useInitials } from '@/hooks/use-initials';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils';
 import PublicLayout from '@/layouts/public/public-layout';
@@ -46,12 +49,14 @@ type IndexPageProps = {
     services: Service[];
     categories: { value: string; label: string; slug: string }[];
     category_counts: { value: string; label: string; count: number; url: string }[];
+    new_vendors: { name: string; location: string | null; logo_url: string | null; url: string; is_claimed: boolean }[];
     selectedCategory: string | null;
     copy: Record<string, string>;
 };
 
-export default function IndexPage({ services, categories, category_counts, selectedCategory, copy }: IndexPageProps) {
+export default function IndexPage({ services, categories, category_counts, new_vendors, selectedCategory, copy }: IndexPageProps) {
     const isMobile = useMediaQuery('(max-width: 640px)');
+    const getInitials = useInitials();
     const selectedCategoryLabel = categories.find((category) => category.value === selectedCategory)?.label ?? selectedCategory;
     const categoryTitle = selectedCategoryLabel ? copy.category_title.replace(':category', selectedCategoryLabel) : null;
 
@@ -143,6 +148,27 @@ export default function IndexPage({ services, categories, category_counts, selec
                             ) : null}
                         </div>
                     )}
+
+                    {new_vendors.length > 0 ? (
+                        <section className="flex flex-col gap-3">
+                            <h2 className="text-lg font-semibold">{copy.new_vendors_heading}</h2>
+                            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                                {new_vendors.map((vendor) => (
+                                    <Link key={vendor.url} href={vendor.url} className="flex items-center gap-3 rounded-xl border bg-card p-4 outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
+                                        <Avatar className="size-12 shrink-0">
+                                            {vendor.logo_url ? <AvatarImage src={vendor.logo_url} alt={vendor.name} /> : null}
+                                            <AvatarFallback>{getInitials(vendor.name)}</AvatarFallback>
+                                        </Avatar>
+                                        <div className="flex min-w-0 flex-col items-start gap-1">
+                                            <span className="w-full truncate font-medium">{vendor.name}</span>
+                                            {vendor.location ? <span className="w-full truncate text-sm text-muted-foreground">{vendor.location}</span> : null}
+                                            {!vendor.is_claimed ? <Badge variant="secondary">{copy.found_by_huurmaar}</Badge> : null}
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        </section>
+                    ) : null}
                 </section>
             </main>
         </PublicLayout>
