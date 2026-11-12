@@ -19,16 +19,28 @@ import { show as showCategory } from '@/routes/category';
 import { Head, Link, router } from '@inertiajs/react';
 import { ApertureIcon, BalloonIcon, CakeIcon, CameraIcon, FlowerTulipIcon, ForkKnifeIcon, type Icon, MartiniIcon, StorefrontIcon, TagIcon, TruckIcon } from '@phosphor-icons/react';
 
-const categoryIcons: Record<string, Icon> = {
-    photobooths: CameraIcon,
-    photography: ApertureIcon,
-    foodtrucks: TruckIcon,
-    catering: ForkKnifeIcon,
-    drinks: MartiniIcon,
-    sweets: CakeIcon,
-    kids_activities: BalloonIcon,
-    decor: FlowerTulipIcon,
-};
+function resolveCategoryIcon(category: string): Icon {
+    switch (category) {
+        case 'photobooths':
+            return CameraIcon;
+        case 'photography':
+            return ApertureIcon;
+        case 'foodtrucks':
+            return TruckIcon;
+        case 'catering':
+            return ForkKnifeIcon;
+        case 'drinks':
+            return MartiniIcon;
+        case 'sweets':
+            return CakeIcon;
+        case 'kids_activities':
+            return BalloonIcon;
+        case 'decor':
+            return FlowerTulipIcon;
+        default:
+            return TagIcon;
+    }
+}
 
 type IndexPageProps = {
     services: Service[];
@@ -61,7 +73,7 @@ export default function IndexPage({ services, categories, category_counts, selec
                             <h2 className="text-lg font-semibold">{copy.categories_heading}</h2>
                             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                                 {category_counts.map((category) => {
-                                    const CategoryIcon = categoryIcons[category.value] ?? TagIcon;
+                                    const CategoryIcon = resolveCategoryIcon(category.value);
 
                                     return (
                                         <Link key={category.value} href={category.url} className="flex flex-col items-center gap-3 rounded-xl border bg-card p-4 text-center outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
