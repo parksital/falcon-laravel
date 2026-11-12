@@ -7,6 +7,8 @@ return [
     'nav_register' => 'Meld bedrijf aan',
     'services_heading' => 'Alles voor je evenement',
     'intro_description' => 'Catering, een fotobooth, decoratie of iets voor de kinderen: vind alle aanbieders voor je evenement op één plek.',
+    'category_title' => ':category voor je evenement',
+    'category_meta_description' => 'Vind :category voor je evenement op HuurMaar en vergelijk lokale aanbieders op één plek.',
     'category_all' => 'Alles',
     'category_empty_title' => 'Nog geen services in :category',
     'category_empty_description' => 'Heb je een bedrijf in deze categorie? Meld het aan zodat organisatoren je hier vinden.',

@@ -7,34 +7,33 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { toggleVariants } from '@/components/ui/toggle';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { cn } from '@/lib/utils';
 import PublicLayout from '@/layouts/public/public-layout';
 import { DesktopIndexServiceCard } from '@/pages/public-booking/desktop-index-service-card';
 import { MobileIndexServiceCard } from '@/pages/public-booking/mobile-index-service-card';
 import { type Service } from '@/pages/public-booking/types';
-import { register } from '@/routes';
+import { home, register } from '@/routes';
+import { show as showCategory } from '@/routes/category';
 import { Head, Link, router } from '@inertiajs/react';
 import { StorefrontIcon } from '@phosphor-icons/react';
-import { useState } from 'react';
 
 type IndexPageProps = {
     services: Service[];
-    categories: { value: string; label: string }[];
+    categories: { value: string; label: string; slug: string }[];
+    selectedCategory: string | null;
     copy: Record<string, string>;
 };
 
-export default function IndexPage({ services, categories, copy }: IndexPageProps) {
+export default function IndexPage({ services, categories, selectedCategory, copy }: IndexPageProps) {
     const isMobile = useMediaQuery('(max-width: 640px)');
-    const [selectedCategory, setSelectedCategory] = useState('all');
-    const visibleServices = services.filter((service) => selectedCategory === 'all' || service.category === selectedCategory);
+    const selectedCategoryLabel = categories.find((category) => category.value === selectedCategory)?.label ?? selectedCategory;
 
     return (
         <PublicLayout>
-            <Head title={copy.title}>
-                {copy.meta_description ? (
-                    <meta name="description" content={copy.meta_description} />
-                ) : null}
+            <Head title={selectedCategoryLabel ? copy.category_title.replace(':category', selectedCategoryLabel) : copy.title}>
+                <meta name="description" content={selectedCategoryLabel ? copy.category_meta_description.replace(':category', selectedCategoryLabel) : copy.meta_description} />
             </Head>
 
             <main className="flex min-h-[calc(100vh-4rem)] w-full flex-1 flex-col">
@@ -44,32 +43,20 @@ export default function IndexPage({ services, categories, copy }: IndexPageProps
                         <p className="text-muted-foreground">{copy.intro_description}</p>
                     </div>
 
-                    <ToggleGroup
-                        type="single"
-                        variant="outline"
-                        className="flex-wrap"
-                        value={selectedCategory}
-                        onValueChange={(value) => {
-                            if (! value) {
-                                return;
-                            }
-
-                            setSelectedCategory(value);
-                        }}
-                    >
-                        <ToggleGroupItem value="all">{copy.category_all}</ToggleGroupItem>
+                    <nav className="flex flex-wrap gap-2">
+                        <Link href={home()} aria-current={selectedCategory === null ? 'page' : undefined} className={cn(toggleVariants({ variant: 'outline' }), 'aria-[current=page]:bg-muted')}>{copy.category_all}</Link>
                         {categories.map((category) => (
-                            <ToggleGroupItem key={category.value} value={category.value}>{category.label}</ToggleGroupItem>
+                            <Link key={category.value} href={showCategory(category.slug)} aria-current={category.value === selectedCategory ? 'page' : undefined} className={cn(toggleVariants({ variant: 'outline' }), 'aria-[current=page]:bg-muted')}>{category.label}</Link>
                         ))}
-                    </ToggleGroup>
+                    </nav>
 
-                    {selectedCategory !== 'all' && visibleServices.length === 0 ? (
+                    {selectedCategoryLabel && services.length === 0 ? (
                         <Empty className="border">
                             <EmptyMedia variant="icon">
                                 <StorefrontIcon />
                             </EmptyMedia>
                             <EmptyHeader>
-                                <EmptyTitle>{copy.category_empty_title.replace(':category', categories.find((category) => category.value === selectedCategory)?.label ?? selectedCategory)}</EmptyTitle>
+                                <EmptyTitle>{copy.category_empty_title.replace(':category', selectedCategoryLabel)}</EmptyTitle>
                                 <EmptyDescription>{copy.category_empty_description}</EmptyDescription>
                             </EmptyHeader>
                             <EmptyContent>
@@ -90,7 +77,7 @@ export default function IndexPage({ services, categories, copy }: IndexPageProps
                                 </CardFooter>
                             </Card>
 
-                            {visibleServices.map((service) => (
+                            {services.map((service) => (
                                 <Link key={service.id} href={service.url} className="flex h-full flex-col text-left outline-none focus-visible:ring-2 focus-visible:ring-ring">
                                     {isMobile ? (
                                         <MobileIndexServiceCard copy={copy} service={service} />

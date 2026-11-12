@@ -7,6 +7,8 @@ return [
     'nav_register' => 'List your business',
     'services_heading' => 'Everything for your event',
     'intro_description' => 'Catering, a photo booth, decor or something for the kids: find every supplier for your event in one place.',
+    'category_title' => ':category for your event',
+    'category_meta_description' => 'Find :category for your event on HuurMaar and compare local vendors in one place.',
     'category_all' => 'All',
     'category_empty_title' => 'No services in :category yet',
     'category_empty_description' => 'Are you a vendor in this category? List your business so organizers can find you here.',

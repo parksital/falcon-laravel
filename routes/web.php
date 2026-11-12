@@ -13,7 +13,17 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Number;
 use Inertia\Inertia;
 
-Route::get('/', function () {
+$showIndexPage = function (?string $slug = null) {
+    $category = null;
+
+    if ($slug !== null) {
+        $category = collect(config('service_categories'))->search(fn (array $categoryConfig) => $categoryConfig['slug'] === $slug);
+
+        if ($category === false) {
+            abort(404);
+        }
+    }
+
     $serviceCategoryLabels = collect(array_keys(config('service_categories')))
         ->mapWithKeys(function (string $value) {
             $translation = __("config-service-categories.{$value}");
@@ -36,9 +46,12 @@ Route::get('/', function () {
     $publicServices = Service::query()
         ->with(['customCategory', 'vendor', 'media', 'prices'])
         ->where('is_public', true)
+        ->when($category !== null, fn ($query) => $query->where('category', $category))
         ->orderBy('name')
         ->get();
     $copy = __('index');
+    $categoryLabel = $category !== null ? $serviceCategoryLabels[$category] : null;
+    $pageUrl = $category !== null ? route('category.show', $slug) : route('home');
     $schemaServices = $publicServices
         ->values()
         ->map(function (Service $service, int $index) use ($serviceCategoryLabels) {
@@ -122,26 +135,30 @@ Route::get('/', function () {
             })
             ->all(),
         'categories' => collect($serviceCategoryLabels)
-            ->map(fn (string $label, string $value) => ['value' => $value, 'label' => $label])
+            ->map(fn (string $label, string $value) => ['value' => $value, 'label' => $label, 'slug' => config("service_categories.{$value}.slug")])
             ->values()
             ->all(),
+        'selectedCategory' => $category,
         'locale' => app()->getLocale(),
         'copy' => $copy,
     ])->withViewData(['seo' => [
-        'title' => $copy['title'] ?? config('app.name'),
-        'description' => $copy['meta_description'] ?? 'Discover public services from local vendors.',
-        'canonical' => route('home'),
-        'robots' => 'index, follow',
+        'title' => $categoryLabel !== null ? __('index.category_title', ['category' => $categoryLabel]) : ($copy['title'] ?? config('app.name')),
+        'description' => $categoryLabel !== null ? __('index.category_meta_description', ['category' => $categoryLabel]) : ($copy['meta_description'] ?? 'Discover public services from local vendors.'),
+        'canonical' => $pageUrl,
+        'robots' => $category !== null && $publicServices->isEmpty() ? 'noindex, follow' : 'index, follow',
         'schema' => [
             '@context' => 'https://schema.org',
             '@type' => 'ItemList',
-            'name' => $copy['services_heading'] ?? 'Services',
-            'url' => route('home'),
+            'name' => $categoryLabel ?? $copy['services_heading'] ?? 'Services',
+            'url' => $pageUrl,
             'numberOfItems' => count($schemaServices),
             'itemListElement' => $schemaServices,
         ],
     ]]);
-})->name('home');
+};
+
+Route::get('/', $showIndexPage)->name('home');
+Route::get('/categorie/{slug}', $showIndexPage)->name('category.show');
 
 Route::get('/book/{vendorSlug}/services/{servicePublicId}', fn (string $vendorSlug, string $servicePublicId) => redirect()->route(
     'public.booking.service.show',
