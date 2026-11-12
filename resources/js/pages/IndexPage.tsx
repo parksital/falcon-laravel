@@ -154,15 +154,15 @@ export default function IndexPage({ services, categories, category_counts, new_v
                             <h2 className="text-lg font-semibold">{copy.new_vendors_heading}</h2>
                             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                                 {new_vendors.map((vendor) => (
-                                    <Link key={vendor.url} href={vendor.url} className="flex items-center gap-3 rounded-xl border bg-card p-4 outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
+                                    <Link key={vendor.url} href={vendor.url} className="flex items-start gap-3 rounded-xl border bg-card p-4 outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
                                         <Avatar className="size-12 shrink-0">
                                             {vendor.logo_url ? <AvatarImage src={vendor.logo_url} alt={vendor.name} /> : null}
                                             <AvatarFallback>{getInitials(vendor.name)}</AvatarFallback>
                                         </Avatar>
                                         <div className="flex min-w-0 flex-col items-start gap-1">
-                                            <span className="w-full truncate font-medium">{vendor.name}</span>
-                                            {vendor.location ? <span className="w-full truncate text-sm text-muted-foreground">{vendor.location}</span> : null}
                                             {!vendor.is_claimed ? <Badge variant="secondary">{copy.found_by_huurmaar}</Badge> : null}
+                                            <span className="w-full truncate font-medium">{vendor.name}</span>
+                                            {vendor.location ? <span className="w-full truncate text-sm text-muted-foreground">{copy.based_in.replace(':location', vendor.location)}</span> : null}
                                         </div>
                                     </Link>
                                 ))}
