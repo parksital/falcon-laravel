@@ -17,16 +17,28 @@ import { type Service } from '@/pages/public-booking/types';
 import { home, register } from '@/routes';
 import { show as showCategory } from '@/routes/category';
 import { Head, Link, router } from '@inertiajs/react';
-import { StorefrontIcon } from '@phosphor-icons/react';
+import { ApertureIcon, BalloonIcon, CakeIcon, CameraIcon, FlowerTulipIcon, ForkKnifeIcon, type Icon, MartiniIcon, StorefrontIcon, TagIcon, TruckIcon } from '@phosphor-icons/react';
+
+const categoryIcons: Record<string, Icon> = {
+    photobooths: CameraIcon,
+    photography: ApertureIcon,
+    foodtrucks: TruckIcon,
+    catering: ForkKnifeIcon,
+    drinks: MartiniIcon,
+    sweets: CakeIcon,
+    kids_activities: BalloonIcon,
+    decor: FlowerTulipIcon,
+};
 
 type IndexPageProps = {
     services: Service[];
     categories: { value: string; label: string; slug: string }[];
+    category_counts: { value: string; label: string; count: number; url: string }[];
     selectedCategory: string | null;
     copy: Record<string, string>;
 };
 
-export default function IndexPage({ services, categories, selectedCategory, copy }: IndexPageProps) {
+export default function IndexPage({ services, categories, category_counts, selectedCategory, copy }: IndexPageProps) {
     const isMobile = useMediaQuery('(max-width: 640px)');
     const selectedCategoryLabel = categories.find((category) => category.value === selectedCategory)?.label ?? selectedCategory;
     const categoryTitle = selectedCategoryLabel ? copy.category_title.replace(':category', selectedCategoryLabel) : null;
@@ -43,6 +55,27 @@ export default function IndexPage({ services, categories, selectedCategory, copy
                         <h1 className="text-2xl font-semibold">{categoryTitle ?? copy.services_heading}</h1>
                         <p className="text-muted-foreground">{copy.intro_description}</p>
                     </div>
+
+                    {category_counts.length > 0 ? (
+                        <section className="flex flex-col gap-3">
+                            <h2 className="text-lg font-semibold">{copy.categories_heading}</h2>
+                            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                                {category_counts.map((category) => {
+                                    const CategoryIcon = categoryIcons[category.value] ?? TagIcon;
+
+                                    return (
+                                        <Link key={category.value} href={category.url} className="flex items-center gap-3 rounded-xl border bg-card p-4 outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
+                                            <CategoryIcon className="size-6 shrink-0 text-muted-foreground" />
+                                            <div className="flex min-w-0 flex-col">
+                                                <span className="truncate font-medium">{category.label}</span>
+                                                <span className="text-sm text-muted-foreground">{category.count === 1 ? copy.category_service_count_one : copy.category_service_count_other.replace(':count', String(category.count))}</span>
+                                            </div>
+                                        </Link>
+                                    );
+                                })}
+                            </div>
+                        </section>
+                    ) : null}
 
                     <nav className="flex flex-wrap gap-2">
                         <Link href={home()} aria-current={selectedCategory === null ? 'page' : undefined} className={cn(toggleVariants({ variant: 'outline' }), 'aria-[current=page]:bg-muted')}>{copy.category_all}</Link>
