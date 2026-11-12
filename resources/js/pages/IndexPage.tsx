@@ -64,7 +64,7 @@ export default function IndexPage({ services, categories, category_counts, selec
                                     const CategoryIcon = categoryIcons[category.value] ?? TagIcon;
 
                                     return (
-                                        <Link key={category.value} href={category.url} className="flex flex-col items-start gap-3 rounded-xl border bg-card p-4 outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
+                                        <Link key={category.value} href={category.url} className="flex flex-col items-center gap-3 rounded-xl border bg-card p-4 text-center outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
                                             <CategoryIcon className="size-6 shrink-0 text-muted-foreground" />
                                             <div className="flex w-full min-w-0 flex-col">
                                                 <span className="truncate font-medium">{category.label}</span>
