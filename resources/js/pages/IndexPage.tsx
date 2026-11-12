@@ -116,6 +116,31 @@ export default function IndexPage({ services, categories, category_counts, new_v
                         </section>
                     ) : null}
 
+                    {new_vendors.length > 0 ? (
+                        <section className="flex flex-col gap-3">
+                            <h2 className="text-lg font-semibold">{copy.new_vendors_heading.replace(':appName', name)}</h2>
+                            <div className="grid gap-3 sm:grid-cols-2">
+                                {new_vendors.map((vendor) => (
+                                    <VendorCard key={vendor.url} vendor={vendor} isFoundByHuurMaar={!vendor.is_claimed} copy={copy} />
+                                ))}
+                            </div>
+                        </section>
+                    ) : null}
+
+                    {verified_vendors.length > 0 ? (
+                        <section className="flex flex-col gap-3">
+                            <h2 className="flex items-center gap-2 text-lg font-semibold">
+                                <SealCheckIcon className="size-5 shrink-0 text-primary" weight="fill" />
+                                {copy.verified_vendors_heading}
+                            </h2>
+                            <div className="grid gap-3 sm:grid-cols-2">
+                                {verified_vendors.map((vendor) => (
+                                    <VendorCard key={vendor.url} vendor={vendor} isFoundByHuurMaar={false} copy={copy} />
+                                ))}
+                            </div>
+                        </section>
+                    ) : null}
+
                     <div className="flex flex-col gap-4">
                         <nav className="flex flex-wrap gap-2">
                             <Link href={home()} aria-current={selectedCategory === null ? 'page' : undefined} className={cn(toggleVariants({ variant: 'outline' }), 'aria-[current=page]:bg-muted')}>{copy.category_all}</Link>
@@ -172,31 +197,6 @@ export default function IndexPage({ services, categories, category_counts, new_v
                             </div>
                         )}
                     </div>
-
-                    {new_vendors.length > 0 ? (
-                        <section className="flex flex-col gap-3">
-                            <h2 className="text-lg font-semibold">{copy.new_vendors_heading.replace(':appName', name)}</h2>
-                            <div className="grid gap-3 sm:grid-cols-2">
-                                {new_vendors.map((vendor) => (
-                                    <VendorCard key={vendor.url} vendor={vendor} isFoundByHuurMaar={!vendor.is_claimed} copy={copy} />
-                                ))}
-                            </div>
-                        </section>
-                    ) : null}
-
-                    {verified_vendors.length > 0 ? (
-                        <section className="flex flex-col gap-3">
-                            <h2 className="flex items-center gap-2 text-lg font-semibold">
-                                <SealCheckIcon className="size-5 shrink-0 text-primary" weight="fill" />
-                                {copy.verified_vendors_heading}
-                            </h2>
-                            <div className="grid gap-3 sm:grid-cols-2">
-                                {verified_vendors.map((vendor) => (
-                                    <VendorCard key={vendor.url} vendor={vendor} isFoundByHuurMaar={false} copy={copy} />
-                                ))}
-                            </div>
-                        </section>
-                    ) : null}
                 </section>
             </main>
         </PublicLayout>
