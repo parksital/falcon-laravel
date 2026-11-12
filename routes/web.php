@@ -158,7 +158,7 @@ $showIndexPage = function (?string $slug = null) {
 };
 
 Route::get('/', $showIndexPage)->name('home');
-Route::get('/categorie/{slug}', $showIndexPage)->name('category.show');
+Route::get('/category/{slug}', $showIndexPage)->name('category.show');
 
 Route::get('/book/{vendorSlug}/services/{servicePublicId}', fn (string $vendorSlug, string $servicePublicId) => redirect()->route(
     'public.booking.service.show',

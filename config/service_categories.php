@@ -15,7 +15,7 @@ return [
     ],
 
     'photography' => [
-        'slug' => 'fotografie',
+        'slug' => 'photography',
     ],
 
     'foodtrucks' => [
@@ -27,22 +27,22 @@ return [
     ],
 
     'drinks' => [
-        'slug' => 'drankjes',
+        'slug' => 'drinks',
     ],
 
     'sweets' => [
-        'slug' => 'zoetigheden',
+        'slug' => 'sweets',
     ],
 
     'kids_activities' => [
-        'slug' => 'kinderactiviteiten',
+        'slug' => 'kids-activities',
     ],
 
     'decor' => [
-        'slug' => 'decoratie',
+        'slug' => 'decor',
     ],
 
     'other' => [
-        'slug' => 'overig',
+        'slug' => 'other',
     ],
 ];
