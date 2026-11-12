@@ -1,6 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema.json",
-  "style": "radix-lyra",
+  "style": "radix-mira",
   "rsc": false,
   "tsx": true,
   "tailwind": {
@@ -19,7 +19,7 @@
   },
   "iconLibrary": "phosphor",
   "rtl": false,
-  "menuColor": "default",
+  "menuColor": "default-translucent",
   "menuAccent": "subtle",
   "registries": {}
 }
