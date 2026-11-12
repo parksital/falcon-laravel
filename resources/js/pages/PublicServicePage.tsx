@@ -105,7 +105,6 @@ export default function PublicServicePage({ copy, vendor, service, seo }: Public
                             title={service.name}
                             formattedPrice={formattedServicePrice(service)}
                             priceLabel={service.pricing_mode === 'variable' ? service.pricing_unit_label : service.pricing_mode_label}
-                            variant="dashboard"
                         />
                         ) : null}
                 </section>
