@@ -7,13 +7,6 @@ import { type PublicServicePageProps } from '@/pages/public-booking/types';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 
-function interpolate(value: string, replacements: Record<string, string>) {
-    return Object.entries(replacements).reduce(
-        (result, [key, replacement]) => result.replace(`:${key}`, replacement),
-        value,
-    );
-}
-
 function formattedPricingOptionPrice(
     pricingOption: PublicServicePageProps['service']['pricing_options'][number],
 ) {
