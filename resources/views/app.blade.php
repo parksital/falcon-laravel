@@ -51,6 +51,7 @@
             <meta property="og:description" content="{{ $seo['description'] }}">
             <meta name="twitter:description" content="{{ $seo['description'] }}">
         @endif
+        <meta property="og:locale" content="{{ app()->getLocale() === 'nl' ? 'nl_NL' : 'en_US' }}">
         @if (! empty($seo['canonical']))
             <meta property="og:url" content="{{ $seo['canonical'] }}">
         @endif

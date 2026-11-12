@@ -29,17 +29,18 @@ type IndexPageProps = {
 export default function IndexPage({ services, categories, selectedCategory, copy }: IndexPageProps) {
     const isMobile = useMediaQuery('(max-width: 640px)');
     const selectedCategoryLabel = categories.find((category) => category.value === selectedCategory)?.label ?? selectedCategory;
+    const categoryTitle = selectedCategoryLabel ? copy.category_title.replace(':category', selectedCategoryLabel) : null;
 
     return (
         <PublicLayout>
-            <Head title={selectedCategoryLabel ? copy.category_title.replace(':category', selectedCategoryLabel) : copy.title}>
+            <Head title={categoryTitle ?? copy.title}>
                 <meta name="description" content={selectedCategoryLabel ? copy.category_meta_description.replace(':category', selectedCategoryLabel) : copy.meta_description} />
             </Head>
 
             <main className="flex min-h-[calc(100vh-4rem)] w-full flex-1 flex-col">
                 <section id="services" className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-6 py-12">
                     <div className="flex flex-col gap-1">
-                        <h1 className="text-2xl font-semibold">{copy.services_heading}</h1>
+                        <h1 className="text-2xl font-semibold">{categoryTitle ?? copy.services_heading}</h1>
                         <p className="text-muted-foreground">{copy.intro_description}</p>
                     </div>
 
