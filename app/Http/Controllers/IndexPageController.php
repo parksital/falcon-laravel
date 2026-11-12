@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Service;
+use App\Models\Vendor;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Number;
 use Inertia\Inertia;
@@ -151,6 +152,21 @@ class IndexPageController extends Controller
                     ])
                     ->filter(fn (array $categoryCount) => $categoryCount['count'] > 0)
                     ->values()
+                    ->all()
+                : [],
+            'new_vendors' => $category === null
+                ? Vendor::query()
+                    ->whereHas('services', fn ($query) => $query->where('is_public', true))
+                    ->latest()
+                    ->limit(4)
+                    ->get()
+                    ->map(fn (Vendor $vendor) => [
+                        'name' => $vendor->name,
+                        'location' => $vendor->location,
+                        'logo_url' => $vendor->logo_path ? Storage::disk('r2')->url($vendor->logo_path) : null,
+                        'url' => route('public.booking.show', $vendor->slug),
+                        'is_claimed' => $vendor->isClaimed(),
+                    ])
                     ->all()
                 : [],
             'selectedCategory' => $category,
