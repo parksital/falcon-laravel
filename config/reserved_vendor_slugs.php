@@ -7,6 +7,7 @@ return [
     'assets',
     'book',
     'build',
+    'categorie',
     'dashboard',
     'email',
     'forgot-password',

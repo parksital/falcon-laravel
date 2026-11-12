@@ -2,6 +2,7 @@
 
 return [
     'photobooths' => [
+        'slug' => 'photobooths',
         'price_features' => [
             'attendant',
             'prints',
@@ -13,19 +14,35 @@ return [
         ],
     ],
 
-    'photography' => [],
+    'photography' => [
+        'slug' => 'fotografie',
+    ],
 
-    'foodtrucks' => [],
+    'foodtrucks' => [
+        'slug' => 'foodtrucks',
+    ],
 
-    'catering' => [],
+    'catering' => [
+        'slug' => 'catering',
+    ],
 
-    'drinks' => [],
+    'drinks' => [
+        'slug' => 'drankjes',
+    ],
 
-    'sweets' => [],
+    'sweets' => [
+        'slug' => 'zoetigheden',
+    ],
 
-    'kids_activities' => [],
+    'kids_activities' => [
+        'slug' => 'kinderactiviteiten',
+    ],
 
-    'decor' => [],
+    'decor' => [
+        'slug' => 'decoratie',
+    ],
 
-    'other' => [],
+    'other' => [
+        'slug' => 'overig',
+    ],
 ];
