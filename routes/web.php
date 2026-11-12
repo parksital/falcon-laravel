@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\IndexPageController;
 use App\Http\Controllers\PublicBookingPageController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\Settings\LocaleController;
@@ -10,155 +11,10 @@ use App\Models\Service;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Number;
 use Inertia\Inertia;
 
-$showIndexPage = function (?string $slug = null) {
-    $category = null;
-
-    if ($slug !== null) {
-        $category = collect(config('service_categories'))->search(fn (array $categoryConfig) => $categoryConfig['slug'] === $slug);
-
-        if ($category === false) {
-            abort(404);
-        }
-    }
-
-    $serviceCategoryLabels = collect(array_keys(config('service_categories')))
-        ->mapWithKeys(function (string $value) {
-            $translation = __("config-service-categories.{$value}");
-
-            return [
-                $value => $translation === "config-service-categories.{$value}" ? $value : $translation,
-            ];
-        })
-        ->all();
-
-    $pricingUnitLabels = collect(config('service_pricing_units'))
-        ->mapWithKeys(function (string $value) {
-            $translation = __("config-service-pricing-units.{$value}");
-
-            return [
-                $value => $translation === "config-service-pricing-units.{$value}" ? $value : $translation,
-            ];
-        })
-        ->all();
-    $publicServices = Service::query()
-        ->with(['customCategory', 'vendor', 'media', 'prices'])
-        ->where('is_public', true)
-        ->when($category !== null, fn ($query) => $query->where('category', $category))
-        ->orderBy('name')
-        ->get();
-    $copy = __('index');
-    $categoryLabel = $category !== null ? $serviceCategoryLabels[$category] : null;
-    $pageUrl = $category !== null ? route('category.show', $slug) : route('home');
-    $schemaServices = $publicServices
-        ->values()
-        ->map(function (Service $service, int $index) use ($serviceCategoryLabels) {
-            $offer = [
-                '@type' => 'Offer',
-                'position' => $index + 1,
-                'url' => route('public.booking.service.show', [$service->vendor->slug, $service->public_id]),
-                'itemOffered' => [
-                    '@type' => 'Service',
-                    'name' => $service->name,
-                    'description' => $service->description,
-                    'category' => $service->category === 'other'
-                        ? ($service->customCategory?->name ?? $serviceCategoryLabels['other'] ?? $service->category)
-                        : $serviceCategoryLabels[$service->category] ?? $service->category,
-                    'provider' => [
-                        '@type' => 'LocalBusiness',
-                        'name' => $service->vendor->name,
-                        'url' => route('public.booking.show', $service->vendor->slug),
-                    ],
-                ],
-            ];
-
-            $price = $service->prices->first();
-
-            if ($price?->price_in_minor !== null) {
-                $offer['price'] = number_format($price->price_in_minor / 100, 2, '.', '');
-                $offer['priceCurrency'] = 'EUR';
-            }
-
-            return $offer;
-        })
-        ->all();
-
-    return Inertia::render('IndexPage', [
-        'services' => $publicServices
-            ->map(function (Service $service) use ($copy, $serviceCategoryLabels, $pricingUnitLabels) {
-                $price = $service->prices->first();
-
-                return [
-                    'id' => $service->id,
-                    'public_id' => $service->public_id,
-                    'name' => $service->name,
-                    'category' => $service->category,
-                    'category_label' => $service->category === 'other'
-                        ? ($service->customCategory?->name ?? $serviceCategoryLabels['other'] ?? $service->category)
-                        : $serviceCategoryLabels[$service->category] ?? $service->category,
-                    'description' => $service->description,
-                    'vendor_name' => $service->vendor->name,
-                    'vendor_is_claimed' => $service->vendor->isClaimed(),
-                    'price_in_minor' => $price?->price_in_minor,
-                    'pricing_mode' => $price?->pricing_mode,
-                    'pricing_mode_label' => $price?->pricing_mode ? ($copy["pricing_mode_{$price->pricing_mode}_label"] ?? $price->pricing_mode) : null,
-                    'pricing_unit' => $price?->pricing_unit,
-                    'pricing_unit_label' => $price?->pricing_unit ? ($pricingUnitLabels[$price->pricing_unit] ?? $price->pricing_unit) : null,
-                    'formatted_price' => $price?->price_in_minor !== null ? Number::currency($price->price_in_minor / 100, 'EUR', app()->getLocale()) : null,
-                    'url' => route('public.booking.service.show', [$service->vendor->slug, $service->public_id]),
-                    'pricing_options' => $service->prices
-                        ->map(fn ($price) => [
-                            'id' => $price->id,
-                            'name' => $price->name,
-                            'description' => $price->description,
-                            'price_in_minor' => $price->price_in_minor,
-                            'formatted_price' => Number::currency($price->price_in_minor / 100, 'EUR', app()->getLocale()),
-                            'pricing_mode' => $price->pricing_mode,
-                            'pricing_mode_label' => $copy["pricing_mode_{$price->pricing_mode}_label"] ?? $price->pricing_mode,
-                            'pricing_unit' => $price->pricing_unit,
-                            'pricing_unit_label' => $price->pricing_unit ? ($pricingUnitLabels[$price->pricing_unit] ?? $price->pricing_unit) : null,
-                            'features' => [],
-                        ])
-                        ->values()
-                        ->all(),
-                    'media' => $service->media
-                        ->map(fn ($media) => [
-                            'id' => $media->id,
-                            'url' => Storage::disk('r2')->url($media->path),
-                            'sort_order' => $media->sort_order,
-                        ])
-                        ->values()
-                        ->all(),
-                ];
-            })
-            ->all(),
-        'categories' => collect($serviceCategoryLabels)
-            ->map(fn (string $label, string $value) => ['value' => $value, 'label' => $label, 'slug' => config("service_categories.{$value}.slug")])
-            ->values()
-            ->all(),
-        'selectedCategory' => $category,
-        'locale' => app()->getLocale(),
-        'copy' => $copy,
-    ])->withViewData(['seo' => [
-        'title' => $categoryLabel !== null ? __('index.category_title', ['category' => $categoryLabel]) : ($copy['title'] ?? config('app.name')),
-        'description' => $categoryLabel !== null ? __('index.category_meta_description', ['category' => $categoryLabel]) : ($copy['meta_description'] ?? 'Discover public services from local vendors.'),
-        'canonical' => $pageUrl,
-        'robots' => $category !== null && $publicServices->isEmpty() ? 'noindex, follow' : 'index, follow',
-        'schema' => [
-            '@context' => 'https://schema.org',
-            '@type' => 'ItemList',
-            'name' => $categoryLabel ?? $copy['services_heading'] ?? 'Services',
-            'url' => $pageUrl,
-            'numberOfItems' => count($schemaServices),
-            'itemListElement' => $schemaServices,
-        ],
-    ]]);
-};
-
-Route::get('/', $showIndexPage)->name('home');
-Route::get('/category/{slug}', $showIndexPage)->name('category.show');
+Route::get('/', [IndexPageController::class, 'index'])->name('home');
+Route::get('/category/{slug}', [IndexPageController::class, 'showCategory'])->name('category.show');
 
 Route::get('/book/{vendorSlug}/services/{servicePublicId}', fn (string $vendorSlug, string $servicePublicId) => redirect()->route(
     'public.booking.service.show',
