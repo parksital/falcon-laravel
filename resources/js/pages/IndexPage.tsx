@@ -19,7 +19,8 @@ import { MobileIndexServiceCard } from '@/pages/public-booking/mobile-index-serv
 import { type Service } from '@/pages/public-booking/types';
 import { home, register } from '@/routes';
 import { show as showCategory } from '@/routes/category';
-import { Head, Link, router } from '@inertiajs/react';
+import { type SharedData } from '@/types';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ApertureIcon, BalloonIcon, CakeIcon, CameraIcon, FlowerTulipIcon, ForkKnifeIcon, type Icon, MartiniIcon, StorefrontIcon, TagIcon, TruckIcon } from '@phosphor-icons/react';
 
 function resolveCategoryIcon(category: string): Icon {
@@ -57,6 +58,7 @@ type IndexPageProps = {
 export default function IndexPage({ services, categories, category_counts, new_vendors, selectedCategory, copy }: IndexPageProps) {
     const isMobile = useMediaQuery('(max-width: 640px)');
     const getInitials = useInitials();
+    const { name } = usePage<SharedData>().props;
     const selectedCategoryLabel = categories.find((category) => category.value === selectedCategory)?.label ?? selectedCategory;
     const categoryTitle = selectedCategoryLabel ? copy.category_title.replace(':category', selectedCategoryLabel) : null;
 
@@ -151,7 +153,7 @@ export default function IndexPage({ services, categories, category_counts, new_v
 
                     {new_vendors.length > 0 ? (
                         <section className="flex flex-col gap-3">
-                            <h2 className="text-lg font-semibold">{copy.new_vendors_heading}</h2>
+                            <h2 className="text-lg font-semibold">{copy.new_vendors_heading.replace(':appName', name)}</h2>
                             <div className="grid gap-3 sm:grid-cols-2">
                                 {new_vendors.map((vendor) => (
                                     <Link key={vendor.url} href={vendor.url} className="flex items-start gap-3 rounded-xl border bg-card p-4 outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
