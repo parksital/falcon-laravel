@@ -21,7 +21,7 @@ import { home, register } from '@/routes';
 import { show as showCategory } from '@/routes/category';
 import { type SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { ApertureIcon, BalloonIcon, CakeIcon, CameraIcon, FlowerTulipIcon, ForkKnifeIcon, type Icon, MartiniIcon, StorefrontIcon, TagIcon, TruckIcon } from '@phosphor-icons/react';
+import { ApertureIcon, BalloonIcon, CakeIcon, CameraIcon, FlowerTulipIcon, ForkKnifeIcon, type Icon, MartiniIcon, SealCheckIcon, StorefrontIcon, TagIcon, TruckIcon } from '@phosphor-icons/react';
 
 function resolveCategoryIcon(category: string): Icon {
     switch (category) {
@@ -89,7 +89,7 @@ export default function IndexPage({ services, categories, category_counts, new_v
             </Head>
 
             <main className="flex min-h-[calc(100vh-4rem)] w-full flex-1 flex-col">
-                <section id="services" className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-6 py-12">
+                <section id="services" className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-6 py-12">
                     <div className="flex flex-col gap-1">
                         <h1 className="text-2xl font-semibold">{categoryTitle ?? copy.services_heading}</h1>
                         <p className="text-muted-foreground">{copy.intro_description}</p>
@@ -116,60 +116,62 @@ export default function IndexPage({ services, categories, category_counts, new_v
                         </section>
                     ) : null}
 
-                    <nav className="flex flex-wrap gap-2">
-                        <Link href={home()} aria-current={selectedCategory === null ? 'page' : undefined} className={cn(toggleVariants({ variant: 'outline' }), 'aria-[current=page]:bg-muted')}>{copy.category_all}</Link>
-                        {categories.map((category) => (
-                            <Link key={category.value} href={showCategory(category.slug)} aria-current={category.value === selectedCategory ? 'page' : undefined} className={cn(toggleVariants({ variant: 'outline' }), 'aria-[current=page]:bg-muted')}>{category.label}</Link>
-                        ))}
-                    </nav>
-
-                    {selectedCategoryLabel && services.length === 0 ? (
-                        <Empty className="border">
-                            <EmptyMedia variant="icon">
-                                <StorefrontIcon />
-                            </EmptyMedia>
-                            <EmptyHeader>
-                                <EmptyTitle>{copy.category_empty_title.replace(':category', selectedCategoryLabel)}</EmptyTitle>
-                                <EmptyDescription>{copy.category_empty_description}</EmptyDescription>
-                            </EmptyHeader>
-                            <EmptyContent>
-                                <Button onClick={() => router.visit(register())}>{copy.cta_button}</Button>
-                            </EmptyContent>
-                        </Empty>
-                    ) : (
-                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                            <Card className="order-last self-start sm:order-first">
-                                <CardHeader>
-                                    <CardTitle>{copy.cta_title}</CardTitle>
-                                    <CardDescription>{copy.cta_description}</CardDescription>
-                                </CardHeader>
-                                <CardFooter className="mt-auto justify-end">
-                                    <Button onClick={() => router.visit(register())}>
-                                        {copy.cta_button}
-                                    </Button>
-                                </CardFooter>
-                            </Card>
-
-                            {services.map((service) => (
-                                <Link key={service.id} href={service.url} className="flex h-full flex-col text-left outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                                    {isMobile ? (
-                                        <MobileIndexServiceCard copy={copy} service={service} />
-                                    ) : (
-                                        <DesktopIndexServiceCard copy={copy} service={service} />
-                                    )}
-                                </Link>
+                    <div className="flex flex-col gap-4">
+                        <nav className="flex flex-wrap gap-2">
+                            <Link href={home()} aria-current={selectedCategory === null ? 'page' : undefined} className={cn(toggleVariants({ variant: 'outline' }), 'aria-[current=page]:bg-muted')}>{copy.category_all}</Link>
+                            {categories.map((category) => (
+                                <Link key={category.value} href={showCategory(category.slug)} aria-current={category.value === selectedCategory ? 'page' : undefined} className={cn(toggleVariants({ variant: 'outline' }), 'aria-[current=page]:bg-muted')}>{category.label}</Link>
                             ))}
+                        </nav>
 
-                            {services.length === 0 ? (
-                                <Card>
+                        {selectedCategoryLabel && services.length === 0 ? (
+                            <Empty className="border">
+                                <EmptyMedia variant="icon">
+                                    <StorefrontIcon />
+                                </EmptyMedia>
+                                <EmptyHeader>
+                                    <EmptyTitle>{copy.category_empty_title.replace(':category', selectedCategoryLabel)}</EmptyTitle>
+                                    <EmptyDescription>{copy.category_empty_description}</EmptyDescription>
+                                </EmptyHeader>
+                                <EmptyContent>
+                                    <Button onClick={() => router.visit(register())}>{copy.cta_button}</Button>
+                                </EmptyContent>
+                            </Empty>
+                        ) : (
+                            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                <Card className="order-last self-start sm:order-first">
                                     <CardHeader>
-                                        <CardTitle>{copy.empty_title}</CardTitle>
-                                        <CardDescription>{copy.empty_description}</CardDescription>
+                                        <CardTitle>{copy.cta_title}</CardTitle>
+                                        <CardDescription>{copy.cta_description}</CardDescription>
                                     </CardHeader>
+                                    <CardFooter className="mt-auto justify-end">
+                                        <Button onClick={() => router.visit(register())}>
+                                            {copy.cta_button}
+                                        </Button>
+                                    </CardFooter>
                                 </Card>
-                            ) : null}
-                        </div>
-                    )}
+
+                                {services.map((service) => (
+                                    <Link key={service.id} href={service.url} className="flex h-full flex-col text-left outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                                        {isMobile ? (
+                                            <MobileIndexServiceCard copy={copy} service={service} />
+                                        ) : (
+                                            <DesktopIndexServiceCard copy={copy} service={service} />
+                                        )}
+                                    </Link>
+                                ))}
+
+                                {services.length === 0 ? (
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>{copy.empty_title}</CardTitle>
+                                            <CardDescription>{copy.empty_description}</CardDescription>
+                                        </CardHeader>
+                                    </Card>
+                                ) : null}
+                            </div>
+                        )}
+                    </div>
 
                     {new_vendors.length > 0 ? (
                         <section className="flex flex-col gap-3">
@@ -184,7 +186,10 @@ export default function IndexPage({ services, categories, category_counts, new_v
 
                     {verified_vendors.length > 0 ? (
                         <section className="flex flex-col gap-3">
-                            <h2 className="text-lg font-semibold">{copy.verified_vendors_heading}</h2>
+                            <h2 className="flex items-center gap-2 text-lg font-semibold">
+                                <SealCheckIcon className="size-5 shrink-0 text-primary" weight="fill" />
+                                {copy.verified_vendors_heading}
+                            </h2>
                             <div className="grid gap-3 sm:grid-cols-2">
                                 {verified_vendors.map((vendor) => (
                                     <VendorCard key={vendor.url} vendor={vendor} isFoundByHuurMaar={false} copy={copy} />
