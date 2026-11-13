@@ -69,7 +69,7 @@ export default function DesktopDashboardLayout({ children, breadcrumbs = [] }: D
     return (
         <AppShell>
             <div className="border-b border-sidebar-border/80">
-                <div className="mx-auto flex flex-col px-4 max-w-7xl">
+                <div className="container mx-auto flex flex-col px-4">
                     <div className="flex h-16 items-center gap-6">
                         <Link href={overview.url()} className="flex items-center gap-2">
                             <AppLogoIcon className="size-6 fill-current text-black dark:text-white" />

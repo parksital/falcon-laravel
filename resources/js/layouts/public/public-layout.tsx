@@ -112,7 +112,7 @@ function PublicDesktopHeader({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbIte
 
     return (
         <header className="sticky top-0 z-10 border-b bg-background">
-            <div className="mx-auto flex h-16 w-full max-w-5xl items-center gap-3 px-4 sm:gap-4 sm:px-6">
+            <div className="container mx-auto flex h-16 items-center gap-3 px-4 sm:gap-4 sm:px-6">
                 <Link href={home()} className="flex min-w-0 items-center gap-2 font-heading text-sm font-semibold">
                     <AppLogoIcon className="size-6 shrink-0 fill-current text-black dark:text-white" />
                     <span className="truncate">{layoutCopy.app_name}</span>

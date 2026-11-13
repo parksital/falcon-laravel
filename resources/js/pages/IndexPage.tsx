@@ -67,7 +67,7 @@ export default function IndexPage({ services, categories, category_counts, servi
             </Head>
 
             <main className="flex min-h-[calc(100vh-4rem)] w-full flex-1 flex-col">
-                <div id="services" className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 pt-8 pb-12 sm:gap-12 sm:px-6 sm:pt-12 sm:pb-16">
+                <div id="services" className="container mx-auto flex flex-col gap-8 px-4 pt-8 pb-12 sm:gap-12 sm:px-6 sm:pt-12 sm:pb-16">
                     <section className="flex flex-col items-center gap-2 text-center sm:gap-3">
                         <h1 className="max-w-3xl text-[clamp(2rem,5vw,3rem)]/[1.15] font-semibold tracking-tight text-balance sm:leading-[1.1]">{copy.title}</h1>
                         <p className="max-w-xl text-base text-pretty text-muted-foreground sm:text-lg">{copy.hero_description.replace(':services', String(service_count)).replace(':vendors', String(vendor_count))}</p>
@@ -125,7 +125,7 @@ export default function IndexPage({ services, categories, category_counts, servi
                                     ))}
                                 </div>
                             ) : (
-                                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
                                     {categoryGroup.services.map((service) => (
                                         <Link key={service.id} href={service.url} className="flex flex-col self-start text-left outline-none focus-visible:ring-2 focus-visible:ring-ring">
                                             <ServiceCard copy={copy} service={service} />
