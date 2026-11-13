@@ -1,16 +1,13 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Card,
     CardDescription,
-    CardFooter,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { toggleVariants } from '@/components/ui/toggle';
-import { useInitials } from '@/hooks/use-initials';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils';
 import PublicLayout from '@/layouts/public/public-layout';
@@ -19,24 +16,28 @@ import { ServiceListItem } from '@/components/service-list-item';
 import { home, register } from '@/routes';
 import { type SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { SealCheckIcon, StorefrontIcon } from '@phosphor-icons/react';
+import { CaretRightIcon, ImageIcon, MapPinSimpleIcon, SealCheckIcon, StorefrontIcon } from '@phosphor-icons/react';
 
 type Vendor = { name: string; location: string | null; logo_url: string | null; url: string };
 
 function VendorCard({ vendor, isFoundByHuurMaar, copy }: { vendor: Vendor; isFoundByHuurMaar: boolean; copy: Record<string, string> }) {
-    const getInitials = useInitials();
-
     return (
-        <Link href={vendor.url} className="flex items-start gap-3 rounded-xl border bg-card p-4 outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
-            <Avatar className="size-12 shrink-0">
-                {vendor.logo_url ? <AvatarImage src={vendor.logo_url} alt={vendor.name} /> : null}
-                <AvatarFallback>{getInitials(vendor.name)}</AvatarFallback>
-            </Avatar>
-            <div className="flex min-w-0 flex-col items-start gap-1">
-                {isFoundByHuurMaar ? <Badge variant="secondary">{copy.found_by_huurmaar}</Badge> : null}
-                <span className="w-full truncate font-medium">{vendor.name}</span>
-                {vendor.location ? <span className="w-full truncate text-sm text-muted-foreground">{copy.based_in.replace(':location', vendor.location)}</span> : null}
-            </div>
+        <Link href={vendor.url} className="flex items-center gap-3 rounded-xl border bg-card p-3 text-card-foreground outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring sm:p-4">
+            <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted text-muted-foreground sm:size-12">
+                {vendor.logo_url ? <img src={vendor.logo_url} alt={vendor.name} className="size-full object-cover" /> : <ImageIcon aria-hidden="true" className="size-5" />}
+            </span>
+            <span className="flex min-w-0 flex-1 items-center gap-1 text-xs text-muted-foreground sm:text-sm">
+                <span className="min-w-0 truncate text-sm font-medium text-card-foreground sm:text-base">{vendor.name}</span>
+                {vendor.location ? (
+                    <>
+                        <span aria-hidden="true">·</span>
+                        <MapPinSimpleIcon aria-hidden="true" className="size-3 shrink-0 sm:size-3.5" />
+                        <span className="shrink-0">{vendor.location}</span>
+                    </>
+                ) : null}
+            </span>
+            {isFoundByHuurMaar ? <Badge variant="secondary" className="shrink-0">{copy.found_by_huurmaar}</Badge> : null}
+            <CaretRightIcon aria-hidden="true" className="size-4 shrink-0 text-muted-foreground sm:hidden" />
         </Link>
     );
 }
@@ -71,7 +72,7 @@ export default function IndexPage({ services, categories, category_counts, servi
             <main className="flex min-h-[calc(100vh-4rem)] w-full flex-1 flex-col">
                 <div id="services" className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 pt-8 pb-12 sm:gap-12 sm:px-6 sm:pt-12 sm:pb-16">
                     <section className="flex flex-col items-center gap-2 text-center sm:gap-3">
-                        <h1 className="max-w-3xl text-[2rem]/[1.15] font-semibold tracking-tight text-balance sm:text-5xl/[1.1]">{copy.title}</h1>
+                        <h1 className="max-w-3xl text-[clamp(2rem,5vw,3rem)]/[1.15] font-semibold tracking-tight text-balance sm:leading-[1.1]">{copy.title}</h1>
                         <p className="max-w-xl text-base text-pretty text-muted-foreground sm:text-lg">{copy.hero_description.replace(':services', String(service_count)).replace(':vendors', String(vendor_count))}</p>
                     </section>
 
@@ -139,9 +140,9 @@ export default function IndexPage({ services, categories, category_counts, servi
                     ))}
 
                     {new_vendors.length > 0 ? (
-                        <section className="flex flex-col gap-3">
-                            <h2 className="text-lg font-semibold">{copy.new_vendors_heading.replace(':appName', name)}</h2>
-                            <div className="grid gap-3 sm:grid-cols-2">
+                        <section className="flex flex-col gap-2 sm:gap-3">
+                            <h2 className="text-lg font-semibold text-balance">{copy.new_vendors_heading.replace(':appName', name)}</h2>
+                            <div className="grid gap-2 sm:grid-cols-2 sm:gap-3">
                                 {new_vendors.map((vendor) => (
                                     <VendorCard key={vendor.url} vendor={vendor} isFoundByHuurMaar={!vendor.is_claimed} copy={copy} />
                                 ))}
@@ -150,12 +151,13 @@ export default function IndexPage({ services, categories, category_counts, servi
                     ) : null}
 
                     {verified_vendors.length > 0 ? (
-                        <section className="flex flex-col gap-3">
-                            <h2 className="flex items-center gap-2 text-lg font-semibold">
-                                <SealCheckIcon className="size-5 shrink-0 text-primary" weight="fill" />
+                        <section className="flex flex-col gap-2 sm:gap-3">
+                            <h2 className="flex items-center gap-2 text-lg font-semibold text-balance">
+                                <SealCheckIcon aria-hidden="true" className="size-5 shrink-0 text-primary" weight="fill" />
                                 {copy.verified_vendors_heading}
                             </h2>
-                            <div className="grid gap-3 sm:grid-cols-2">
+                            <p className="text-sm text-pretty text-muted-foreground">{copy.verified_vendors_description.replace(':appName', name)}</p>
+                            <div className="mt-1 grid gap-2 sm:mt-0 sm:grid-cols-2 sm:gap-3">
                                 {verified_vendors.map((vendor) => (
                                     <VendorCard key={vendor.url} vendor={vendor} isFoundByHuurMaar={false} copy={copy} />
                                 ))}
@@ -163,16 +165,12 @@ export default function IndexPage({ services, categories, category_counts, servi
                         </section>
                     ) : null}
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>{copy.cta_title}</CardTitle>
-                            <CardDescription>{copy.cta_description}</CardDescription>
-                        </CardHeader>
-                        <CardFooter className="mt-auto justify-end">
-                            <Button onClick={() => router.visit(register())}>
-                                {copy.cta_button}
-                            </Button>
-                        </CardFooter>
+                    <Card className="gap-3 p-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
+                        <div className="flex min-w-0 flex-col gap-1 sm:flex-[1_1_20rem]">
+                            <CardTitle className="text-balance">{copy.cta_title}</CardTitle>
+                            <CardDescription className="text-pretty">{copy.cta_description}</CardDescription>
+                        </div>
+                        <Button size={isMobile ? 'lg' : 'default'} onClick={() => router.visit(register())}>{copy.cta_button}</Button>
                     </Card>
                 </div>
             </main>
