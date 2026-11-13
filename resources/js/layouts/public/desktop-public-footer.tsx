@@ -7,8 +7,8 @@ export default function DesktopPublicFooter() {
     const { layoutCopy, locale } = usePage<SharedData>().props;
 
     return (
-        <footer className="border-t bg-background">
-            <div className="container mx-auto flex flex-col gap-8 px-6 pt-10">
+        <footer>
+            <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 border-t bg-background px-6 pt-10 lg:border-x">
                 <div className="flex items-center justify-between gap-4 text-sm text-muted-foreground">
                     <p>{layoutCopy.footer_tagline}</p>
                     <nav className="flex">

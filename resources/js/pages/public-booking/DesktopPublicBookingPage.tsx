@@ -19,7 +19,7 @@ function interpolate(value: string, replacements: Record<string, string>) {
 
 export default function DesktopPublicBookingPage({ copy, vendor, services }: PublicVendorPageProps) {
     return (
-        <main className="container mx-auto flex flex-1 flex-col gap-6 px-6 py-12">
+        <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-6 py-12">
             <section className="flex flex-col gap-3">
                 <div className="flex items-start gap-3">
                     {vendor.logo_url && (

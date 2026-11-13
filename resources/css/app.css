@@ -100,6 +100,7 @@
     --sidebar-accent-foreground: oklch(0.48 0.15 40);
     --sidebar-border: oklch(0.92 0.005 255);
     --sidebar-ring: oklch(0.645 0.185 40);
+    --gutter: color-mix(in oklch, var(--muted) 40%, var(--background));
 }
 
 .dark {
@@ -135,6 +136,7 @@
     --sidebar-accent-foreground: oklch(0.94 0.005 255);
     --sidebar-border: oklch(0.39 0.012 255);
     --sidebar-ring: oklch(0.70 0.165 44);
+    --gutter: var(--sidebar);
 }
 
 @layer base {
@@ -183,6 +185,8 @@
         var(--sidebar-foreground);
     --color-sidebar:
         var(--sidebar);
+    --color-gutter:
+        var(--gutter);
     --color-chart-5:
         var(--chart-5);
     --color-chart-4:

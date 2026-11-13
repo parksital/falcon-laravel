@@ -111,8 +111,8 @@ function PublicDesktopHeader({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbIte
     const { layoutCopy } = usePage<SharedData>().props;
 
     return (
-        <header className="sticky top-0 z-10 border-b bg-background">
-            <div className="container mx-auto flex h-16 items-center gap-3 px-4 sm:gap-4 sm:px-6">
+        <header className="sticky top-0 z-10">
+            <div className="mx-auto flex h-16 w-full max-w-5xl items-center gap-3 border-b bg-background px-4 sm:gap-4 sm:px-6 lg:border-x">
                 <Link href={home()} className="flex min-w-0 items-center gap-2 font-heading text-sm font-semibold">
                     <AppLogoIcon className="size-6 shrink-0 fill-current text-black dark:text-white" />
                     <span className="truncate">{layoutCopy.app_name}</span>
@@ -189,7 +189,7 @@ export default function PublicLayout({ breadcrumbs = [], children }: PublicLayou
     ) : (
         <DesktopPublicLayout>
             <PublicDesktopHeader breadcrumbs={breadcrumbs} />
-            <div className="flex-1">{children}</div>
+            <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col bg-background lg:border-x">{children}</div>
             <DesktopPublicFooter />
             <Toaster />
         </DesktopPublicLayout>
