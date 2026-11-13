@@ -1,4 +1,4 @@
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from '@/components/ui/carousel';
+import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from '@/components/ui/carousel';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
@@ -42,13 +42,6 @@ export function PublicServiceMediaCarousel({ copy, serviceName, media }: PublicS
                         </CarouselItem>
                     ))}
                 </CarouselContent>
-
-                {hasMultiplePhotos && !isMobile ? (
-                    <>
-                        <CarouselPrevious size="icon-lg" aria-label={copy.previous_photo} className="left-3 bg-background dark:bg-background" />
-                        <CarouselNext size="icon-lg" aria-label={copy.next_photo} className="right-3 bg-background dark:bg-background" />
-                    </>
-                ) : null}
 
                 {hasMultiplePhotos ? (
                     <span aria-hidden="true" className="pointer-events-none absolute right-3 bottom-3 rounded-full bg-background px-2 text-xs/relaxed tabular-nums ring-1 ring-foreground/10">

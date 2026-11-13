@@ -19,8 +19,6 @@ return [
     'service_by_vendor' => 'Van :vendor',
     'back_to_services' => 'Alle services',
     'photos_label' => "Foto's",
-    'previous_photo' => 'Vorige foto',
-    'next_photo' => 'Volgende foto',
     'show_photo' => 'Toon foto :number',
     'contact_title' => 'Neem contact op met dit bedrijf',
     'contact_description' => ':vendor is hier nog niet te boeken. Neem direct contact met ze op.',
