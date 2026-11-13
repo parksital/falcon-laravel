@@ -52,6 +52,11 @@ class IndexPageController extends Controller
             ->when($category !== null, fn ($query) => $query->where('category', $category))
             ->orderBy('name')
             ->get();
+        $publicServiceCountsByCategory = Service::query()
+            ->where('is_public', true)
+            ->selectRaw('category, count(*) as aggregate')
+            ->groupBy('category')
+            ->pluck('aggregate', 'category');
         $copy = __('index');
         $categoryLabel = $category !== null ? $serviceCategoryLabels[$category] : null;
         $pageUrl = $category !== null ? route('category.show', config("service_categories.{$category}.slug")) : route('home');
@@ -142,19 +147,19 @@ class IndexPageController extends Controller
                 ->map(fn (string $label, string $value) => ['value' => $value, 'label' => $label, 'slug' => config("service_categories.{$value}.slug")])
                 ->values()
                 ->all(),
-            'category_counts' => $category === null
-                ? collect($serviceCategoryLabels)
-                    ->except('other')
-                    ->map(fn (string $label, string $value) => [
-                        'value' => $value,
-                        'label' => $label,
-                        'count' => $publicServices->where('category', $value)->count(),
-                        'url' => route('category.show', config("service_categories.{$value}.slug")),
-                    ])
-                    ->filter(fn (array $categoryCount) => $categoryCount['count'] > 0)
-                    ->values()
-                    ->all()
-                : [],
+            'service_count' => (int) $publicServiceCountsByCategory->sum(),
+            'vendor_count' => Vendor::query()->whereHas('services', fn ($query) => $query->where('is_public', true))->count(),
+            'category_counts' => collect($serviceCategoryLabels)
+                ->except('other')
+                ->map(fn (string $label, string $value) => [
+                    'value' => $value,
+                    'label' => $label,
+                    'count' => (int) ($publicServiceCountsByCategory[$value] ?? 0),
+                    'url' => route('category.show', config("service_categories.{$value}.slug")),
+                ])
+                ->filter(fn (array $categoryCount) => $categoryCount['count'] > 0 || $categoryCount['value'] === $category)
+                ->values()
+                ->all(),
             'new_vendors' => $category === null
                 ? Vendor::query()
                     ->whereHas('services', fn ($query) => $query->where('is_public', true))
