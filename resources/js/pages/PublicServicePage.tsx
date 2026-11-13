@@ -47,6 +47,32 @@ export default function PublicServicePage({ copy, vendor, service, categorySlug,
         </Breadcrumb>
     );
 
+    const titleBlock = (
+        <div className="flex flex-col gap-4">
+            {isMobile ? null : breadcrumbNav}
+            <header className="flex max-w-180 flex-col gap-2">
+                {!vendor.is_claimed ? <Badge variant="outline" className="self-start">{copy.found_by_huurmaar}</Badge> : null}
+                <h1 className="text-2xl/tight font-semibold tracking-tight text-balance sm:text-[2rem]">{service.name}</h1>
+                <p className="flex flex-col gap-1 text-sm text-muted-foreground sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4">
+                    <span className="inline-flex items-center gap-1.5">
+                        <StorefrontIcon aria-hidden="true" className="size-3.5 shrink-0" />
+                        <span>
+                            {serviceByVendorPrefix}
+                            <Link href={vendor.url} className="font-medium text-foreground underline-offset-3 hover:underline">{vendor.name}</Link>
+                            {serviceByVendorSuffix}
+                        </span>
+                    </span>
+                    {vendor.location ? (
+                        <span className="inline-flex items-center gap-1.5">
+                            <MapPinSimpleIcon aria-hidden="true" className="size-3.5 shrink-0" />
+                            {vendor.location}
+                        </span>
+                    ) : null}
+                </p>
+            </header>
+        </div>
+    );
+
     const contactCard = <PublicServiceContactCard copy={copy} vendor={vendor} className={isMobile ? undefined : 'sticky top-22 flex-[1_1_320px] self-start'} />;
 
     return (
@@ -64,33 +90,16 @@ export default function PublicServicePage({ copy, vendor, service, categorySlug,
                     </div>
                 ) : null}
 
-                <div className="flex flex-col gap-4">
-                    {isMobile ? null : breadcrumbNav}
-                    <header className="flex max-w-180 flex-col gap-2">
-                        {!vendor.is_claimed ? <Badge variant="outline" className="self-start">{copy.found_by_huurmaar}</Badge> : null}
-                        <h1 className="text-2xl/tight font-semibold tracking-tight text-balance sm:text-[2rem]">{service.name}</h1>
-                        <p className="flex flex-col gap-1 text-sm text-muted-foreground sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4">
-                            <span className="inline-flex items-center gap-1.5">
-                                <StorefrontIcon aria-hidden="true" className="size-3.5 shrink-0" />
-                                <span>
-                                    {serviceByVendorPrefix}
-                                    <Link href={vendor.url} className="font-medium text-foreground underline-offset-3 hover:underline">{vendor.name}</Link>
-                                    {serviceByVendorSuffix}
-                                </span>
-                            </span>
-                            {vendor.location ? (
-                                <span className="inline-flex items-center gap-1.5">
-                                    <MapPinSimpleIcon aria-hidden="true" className="size-3.5 shrink-0" />
-                                    {vendor.location}
-                                </span>
-                            ) : null}
-                        </p>
-                    </header>
-                </div>
+                {isMobile ? titleBlock : null}
 
                 <div className="flex flex-wrap items-start gap-10">
                     <div className="flex min-w-0 flex-[999_1_480px] flex-col gap-12">
-                        {!isMobile && service.media.length > 0 ? <PublicServiceMediaCarousel copy={copy} serviceName={service.name} media={service.media} /> : null}
+                        {isMobile ? null : (
+                            <div className="flex flex-col gap-8">
+                                {titleBlock}
+                                {service.media.length > 0 ? <PublicServiceMediaCarousel copy={copy} serviceName={service.name} media={service.media} /> : null}
+                            </div>
+                        )}
 
                         {service.description ? (
                             <section aria-labelledby="service-details-heading" className="flex flex-col gap-3">
