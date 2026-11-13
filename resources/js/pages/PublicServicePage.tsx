@@ -2,6 +2,7 @@ import { Badge } from '@/components/ui/badge';
 import { ServicePricingCard } from '@/components/service-pricing-card';
 import { Button } from '@/components/ui/button';
 import PublicLayout from '@/layouts/public/public-layout';
+import { PublicServiceMediaCarousel } from '@/pages/public-booking/public-service-media-carousel';
 import { PublicVendorContactCard } from '@/pages/public-booking/public-vendor-contact-card';
 import { type PublicServicePageProps } from '@/pages/public-booking/types';
 import { type BreadcrumbItem } from '@/types';
@@ -57,13 +58,7 @@ export default function PublicServicePage({ copy, vendor, service, seo }: Public
                     {!vendor.is_claimed && <PublicVendorContactCard copy={copy} vendor={vendor} />}
 
                     {service.media.length > 0 ? (
-                        <section className="grid grid-cols-3 gap-4">
-                            {service.media.map((media, index) => (
-                                <div key={media.id} className="overflow-hidden border">
-                                    <img src={media.url} alt={`${service.name} ${index + 1}`} className="size-full object-contain" />
-                                </div>
-                            ))}
-                        </section>
+                        <PublicServiceMediaCarousel copy={copy} serviceName={service.name} media={service.media} />
                     ) : null}
 
                     {service.description ? (
