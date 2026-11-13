@@ -321,7 +321,6 @@ function ServiceDetailsPage({
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    disabled={service.pricing_options.length >= 3}
                                     onClick={openAddPrice}
                                 >
                                     <PlusIcon data-icon="inline-start" />

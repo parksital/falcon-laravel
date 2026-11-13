@@ -18,7 +18,7 @@ use Laravel\Mcp\Server\Tool;
 #[Description(<<<'TEXT'
 Create a service for an unclaimed vendor. Claimed vendors manage their own services, so this tool refuses them.
 
-Use the category keys, price feature keys, pricing units and pricing option limit from `get-catalog-schema`. Use category "other" with a custom_category when no category fits.
+Use the category keys, price feature keys and pricing units from `get-catalog-schema`. Use category "other" with a custom_category when no category fits.
 
 Prices are in euro cents: €149.50 is 14950. A fixed price is the total price; a variable price is charged per pricing_unit.
 
@@ -38,7 +38,7 @@ class CreateService extends Tool
             'custom_category' => ['nullable', 'required_if:category,other', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:2000'],
             'is_public' => ['boolean'],
-            'pricing_options' => ['sometimes', 'array', 'max:3'],
+            'pricing_options' => ['sometimes', 'array'],
             'pricing_options.*.name' => ['nullable', 'string', 'max:120'],
             'pricing_options.*.description' => ['nullable', 'string', 'max:2000'],
             'pricing_options.*.price_in_minor' => ['required', 'integer', 'min:0', 'max:4294967295'],
@@ -123,7 +123,7 @@ class CreateService extends Tool
             'custom_category' => $schema->string()->description('The category name when category is "other".')->max(120),
             'description' => $schema->string()->description('What the service includes.')->max(2000),
             'is_public' => $schema->boolean()->description('Whether the service is shown on the public booking page.')->default(true),
-            'pricing_options' => $schema->array()->max(3)->items($schema->object([
+            'pricing_options' => $schema->array()->items($schema->object([
                 'name' => $schema->string()->description('The pricing option name, such as "Basic" or "3 hours". Defaults to "Price 1", "Price 2", and so on.')->max(120),
                 'description' => $schema->string()->description('What this pricing option includes.')->max(2000),
                 'price_in_minor' => $schema->integer()->description('The price in euro cents.')->min(0)->required(),

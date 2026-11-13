@@ -96,7 +96,6 @@ return [
     'validation_pricing_unit_invalid' => 'Choose a valid pricing unit.',
     'validation_price_feature_invalid' => 'Choose a valid included feature.',
     'validation_service_status_fixed' => 'Live services cannot be moved back to draft.',
-    'validation_price_limit' => 'You can add up to three prices.',
     'pricing_placeholder' => 'Pricing options for this service will appear here.',
     'pricing_empty_title' => 'No prices yet',
     'pricing_empty_description' => 'Add a price option when you are ready.',
