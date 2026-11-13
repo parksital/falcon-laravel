@@ -89,6 +89,14 @@ export default function PublicServicePage({ copy, vendor, service, seo }: Public
                                             label: feature.label,
                                             value: feature.value,
                                         }))}
+                                        addOns={pricingOption.add_ons.map((addOn) => ({
+                                            key: addOn.id,
+                                            name: addOn.name,
+                                            formattedPrice: addOn.formatted_price,
+                                            priceLabel: addOn.pricing_unit_label,
+                                            description: addOn.description,
+                                        }))}
+                                        addOnsHeading={copy.add_ons_heading}
                                     />
                                 ))}
                             </div>

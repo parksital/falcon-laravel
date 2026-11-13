@@ -28,6 +28,17 @@ export type ServicePriceFeature = {
     sort_order: number;
 };
 
+export type ServicePriceAddOn = {
+    id: number;
+    name: string;
+    description: string | null;
+    price_in_minor: number;
+    formatted_price: string;
+    pricing_unit: 'booking' | 'person' | 'item' | 'hour';
+    pricing_unit_label: string;
+    sort_order: number;
+};
+
 export type ServicePricingOption = {
     id: number;
     name: string;
@@ -37,6 +48,7 @@ export type ServicePricingOption = {
     pricing_unit: 'booking' | 'person' | 'item' | 'hour';
     pricing_unit_label: string;
     features: ServicePriceFeature[];
+    add_ons: ServicePriceAddOn[];
 };
 
 export type Service = {

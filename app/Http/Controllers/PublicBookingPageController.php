@@ -34,7 +34,7 @@ class PublicBookingPageController extends Controller
             ->with(['services' => function ($query) {
                 $query
                     ->where('is_public', true)
-                    ->with(['customCategory', 'media', 'prices.features'])
+                    ->with(['customCategory', 'media', 'prices.features', 'prices.addOns'])
                     ->orderBy('name');
             }])
             ->firstOrFail();
@@ -154,6 +154,21 @@ class PublicBookingPageController extends Controller
                 ])
                 ->values()
                 ->all(),
+            'add_ons' => $price->relationLoaded('addOns')
+                ? $price->addOns
+                    ->map(fn ($addOn) => [
+                        'id' => $addOn->id,
+                        'name' => $addOn->name,
+                        'description' => $addOn->description,
+                        'price_in_minor' => $addOn->price_in_minor,
+                        'formatted_price' => $this->formatPrice($addOn->price_in_minor),
+                        'pricing_unit' => $addOn->pricing_unit,
+                        'pricing_unit_label' => $this->pricingUnitLabel($addOn->pricing_unit),
+                        'sort_order' => $addOn->sort_order,
+                    ])
+                    ->values()
+                    ->all()
+                : [],
         ];
     }
 

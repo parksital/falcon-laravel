@@ -18,7 +18,7 @@ Update a service of an unclaimed vendor. Claimed vendors manage their own servic
 
 Only the fields you pass are changed. The category can't be changed; custom_category can only be set on a service in the "other" category.
 
-Passing pricing_options replaces all of the service's pricing options with the ones you pass; pass an empty array to remove them. Use the price feature keys, pricing units and pricing option limit from `get-catalog-schema`. Prices are in euro cents: €149.50 is 14950. A price is charged per pricing_unit; use booking for one price per booking.
+Passing pricing_options replaces all of the service's pricing options, with their features and add-ons, with the ones you pass; pass an empty array to remove them. Use the price feature keys, pricing units, pricing option limit and add-on limit from `get-catalog-schema`. Prices are in euro cents: €149.50 is 14950. A price is charged per pricing_unit; use booking for one price per booking.
 
 Returns the service's ID, public ID and public URL.
 TEXT)]
@@ -46,10 +46,17 @@ class UpdateService extends Tool
             'pricing_options.*.features.*.feature_key' => ['required', 'string', Rule::in(config("service_categories.{$category}.price_features", []))],
             'pricing_options.*.features.*.is_included' => ['boolean'],
             'pricing_options.*.features.*.value' => ['nullable', 'string', 'max:120'],
+            'pricing_options.*.add_ons' => ['sometimes', 'array', 'max:3'],
+            'pricing_options.*.add_ons.*.name' => ['required', 'string', 'max:120'],
+            'pricing_options.*.add_ons.*.description' => ['nullable', 'string', 'max:2000'],
+            'pricing_options.*.add_ons.*.price_in_minor' => ['required', 'integer', 'min:0', 'max:4294967295'],
+            'pricing_options.*.add_ons.*.pricing_unit' => ['required', 'string', Rule::in(config('service_pricing_units'))],
         ], [
             'service_public_id.exists' => 'No service has this public ID. Use the public_id returned by create-service.',
             'custom_category.prohibited' => 'Only a service in the "other" category has a custom_category.',
             'pricing_options.*.pricing_unit.required' => 'Every pricing option needs a pricing_unit. Use booking for one price per booking.',
+            'pricing_options.*.add_ons.max' => 'A pricing option can have at most 3 add-ons.',
+            'pricing_options.*.add_ons.*.pricing_unit.required' => 'Every add-on needs a pricing_unit. Use booking for one price per booking.',
             'pricing_options.*.features.*.feature_key.in' => 'This feature key is not allowed for the service\'s category. Use the price_features of the category from get-catalog-schema.',
         ]);
 
@@ -89,6 +96,16 @@ class UpdateService extends Tool
                             'sort_order' => $featureSortOrder,
                         ]);
                     }
+
+                    foreach ($pricingOptionData['add_ons'] ?? [] as $addOnSortOrder => $addOnData) {
+                        $price->addOns()->create([
+                            'name' => $addOnData['name'],
+                            'description' => $addOnData['description'] ?? null,
+                            'price_in_minor' => $addOnData['price_in_minor'],
+                            'pricing_unit' => $addOnData['pricing_unit'],
+                            'sort_order' => $addOnSortOrder,
+                        ]);
+                    }
                 }
             }
         });
@@ -123,6 +140,12 @@ class UpdateService extends Tool
                     'feature_key' => $schema->string()->description('A price feature key of the category.')->required(),
                     'is_included' => $schema->boolean()->description('Whether the feature is included in this pricing option.')->default(true),
                     'value' => $schema->string()->description('An optional detail, such as "unlimited" for prints.')->max(120),
+                ])),
+                'add_ons' => $schema->array()->description('Optional priced extras a client can add on top of this pricing option, such as a bouncy castle or a cleaning fee.')->max(3)->items($schema->object([
+                    'name' => $schema->string()->description('The add-on name, such as "Bouncy castle".')->max(120)->required(),
+                    'description' => $schema->string()->description('What the add-on includes.')->max(2000),
+                    'price_in_minor' => $schema->integer()->description('The add-on price in euro cents.')->min(0)->required(),
+                    'pricing_unit' => $schema->string()->enum(config('service_pricing_units'))->description('What the add-on price is charged per. Use "booking" for one price per booking.')->required(),
                 ])),
             ])),
         ];

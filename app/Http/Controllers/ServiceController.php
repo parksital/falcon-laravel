@@ -77,7 +77,7 @@ class ServiceController extends Controller
 
         abort_unless($service->vendor_id === $vendor->id, 404);
 
-        $service->loadMissing(['customCategory', 'media', 'prices.features']);
+        $service->loadMissing(['customCategory', 'media', 'prices.features', 'prices.addOns']);
         $categoryLabel = $service->category === 'other'
             ? $service->customCategory?->name
             : __("config-service-categories.{$service->category}");
@@ -122,6 +122,20 @@ class ServiceController extends Controller
                                 'is_included' => $feature->is_included,
                                 'value' => $feature->value,
                                 'sort_order' => $feature->sort_order,
+                            ])
+                            ->values()
+                            ->all(),
+                        'add_ons' => $pricingOption->addOns
+                            ->map(fn ($addOn) => [
+                                'id' => $addOn->id,
+                                'name' => $addOn->name,
+                                'description' => $addOn->description,
+                                'price_in_minor' => $addOn->price_in_minor,
+                                'formatted_amount' => Number::currency($addOn->price_in_minor / 100, 'EUR', app()->getLocale()),
+                                'currency' => $addOn->currency,
+                                'pricing_unit' => $addOn->pricing_unit,
+                                'pricing_unit_label' => $this->pricingUnitLabel($addOn->pricing_unit),
+                                'sort_order' => $addOn->sort_order,
                             ])
                             ->values()
                             ->all(),
@@ -183,6 +197,16 @@ class ServiceController extends Controller
                         'is_included' => $featureData['is_included'] ?? true,
                         'value' => $featureData['value'] ?? null,
                         'sort_order' => $featureSortOrder,
+                    ]);
+                }
+
+                foreach ($pricingOptionData['add_ons'] ?? [] as $addOnSortOrder => $addOnData) {
+                    $price->addOns()->create([
+                        'name' => $addOnData['name'],
+                        'description' => $addOnData['description'] ?? null,
+                        'price_in_minor' => $addOnData['price_in_minor'],
+                        'pricing_unit' => $addOnData['pricing_unit'],
+                        'sort_order' => $addOnSortOrder,
                     ]);
                 }
             }
@@ -256,7 +280,21 @@ class ServiceController extends Controller
                     if ($pricingOption) {
                         $pricingOption->update($pricingOptionAttributes);
                     } else {
-                        $service->prices()->create($pricingOptionAttributes);
+                        $pricingOption = $service->prices()->create($pricingOptionAttributes);
+                    }
+
+                    if (array_key_exists('add_ons', $pricingOptionData)) {
+                        $pricingOption->addOns()->delete();
+
+                        foreach ($pricingOptionData['add_ons'] as $addOnSortOrder => $addOnData) {
+                            $pricingOption->addOns()->create([
+                                'name' => $addOnData['name'],
+                                'description' => $addOnData['description'] ?? null,
+                                'price_in_minor' => $addOnData['price_in_minor'],
+                                'pricing_unit' => $addOnData['pricing_unit'],
+                                'sort_order' => $addOnSortOrder,
+                            ]);
+                        }
                     }
                 }
             }
@@ -302,6 +340,16 @@ class ServiceController extends Controller
                     'sort_order' => $featureSortOrder,
                 ]);
             }
+
+            foreach ($validated['add_ons'] ?? [] as $addOnSortOrder => $addOnData) {
+                $price->addOns()->create([
+                    'name' => $addOnData['name'],
+                    'description' => $addOnData['description'] ?? null,
+                    'price_in_minor' => $addOnData['price_in_minor'],
+                    'pricing_unit' => $addOnData['pricing_unit'],
+                    'sort_order' => $addOnSortOrder,
+                ]);
+            }
         });
 
         return to_route('services.show', $service)->with('success', __('service-details.price_saved'));
@@ -336,6 +384,18 @@ class ServiceController extends Controller
                     'is_included' => $featureData['is_included'] ?? true,
                     'value' => $featureData['value'] ?? null,
                     'sort_order' => $featureSortOrder,
+                ]);
+            }
+
+            $pricingOption->addOns()->delete();
+
+            foreach ($validated['add_ons'] ?? [] as $addOnSortOrder => $addOnData) {
+                $pricingOption->addOns()->create([
+                    'name' => $addOnData['name'],
+                    'description' => $addOnData['description'] ?? null,
+                    'price_in_minor' => $addOnData['price_in_minor'],
+                    'pricing_unit' => $addOnData['pricing_unit'],
+                    'sort_order' => $addOnSortOrder,
                 ]);
             }
         });
