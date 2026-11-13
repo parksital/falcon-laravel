@@ -11,5 +11,8 @@ return [
     'kids_activities' => 'Kinderactiviteiten',
     'florist' => 'Bloemen',
     'decor' => 'Decoratie',
+    'tents' => 'Tenten',
+    'furniture' => 'Meubilair',
+    'effects' => 'Effecten',
     'other' => 'Anders',
 ];

@@ -11,5 +11,8 @@ return [
     'kids_activities' => 'Kids Activities',
     'florist' => 'Flowers',
     'decor' => 'Decor',
+    'tents' => 'Tents',
+    'furniture' => 'Furniture',
+    'effects' => 'Effects',
     'other' => 'Other',
 ];
