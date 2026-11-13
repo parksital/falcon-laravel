@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge';
+import { Breadcrumb, BreadcrumbItem as BreadcrumbListItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
 import { ServiceCard } from '@/components/service-card';
 import { ServiceListItem } from '@/components/service-list-item';
@@ -12,6 +13,7 @@ import { home } from '@/routes';
 import { show as showCategory } from '@/routes/category';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
+import { Fragment } from 'react';
 import { ArrowRightIcon, MapPinSimpleIcon, StorefrontIcon } from '@phosphor-icons/react';
 
 export default function PublicServicePage({ copy, vendor, service, categorySlug, otherServices, seo }: PublicServicePageProps) {
@@ -34,7 +36,29 @@ export default function PublicServicePage({ copy, vendor, service, categorySlug,
             </Head>
 
             <main className="flex flex-col gap-8 px-4 pt-6 pb-12 sm:px-6 sm:pb-16">
-                {isMobile && service.media.length > 0 ? <div className="-mt-6"><PublicServiceMediaCarousel copy={copy} serviceName={service.name} media={service.media} /></div> : null}
+                {isMobile ? (
+                    <div className="-mt-6 flex flex-col">
+                        <Breadcrumb className="py-3">
+                            <BreadcrumbList className="flex-nowrap gap-1 text-xs whitespace-nowrap">
+                                {breadcrumbs.map((item, index) => (
+                                    <Fragment key={item.href}>
+                                        {index > 0 ? <BreadcrumbSeparator /> : null}
+                                        <BreadcrumbListItem className={index === breadcrumbs.length - 1 ? 'min-w-0' : 'shrink-0'}>
+                                            {index === breadcrumbs.length - 1 ? (
+                                                <BreadcrumbPage className="truncate">{item.title}</BreadcrumbPage>
+                                            ) : (
+                                                <BreadcrumbLink asChild>
+                                                    <Link href={item.href} className="inline-flex min-h-6 items-center">{item.title}</Link>
+                                                </BreadcrumbLink>
+                                            )}
+                                        </BreadcrumbListItem>
+                                    </Fragment>
+                                ))}
+                            </BreadcrumbList>
+                        </Breadcrumb>
+                        {service.media.length > 0 ? <PublicServiceMediaCarousel copy={copy} serviceName={service.name} media={service.media} /> : null}
+                    </div>
+                ) : null}
 
                 <header className="flex max-w-180 flex-col gap-2">
                     {!vendor.is_claimed ? <Badge variant="outline" className="self-start">{copy.found_by_huurmaar}</Badge> : null}
