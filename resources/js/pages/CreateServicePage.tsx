@@ -52,7 +52,7 @@ import { overview } from '@/routes';
 import { create, store } from '@/routes/services';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, setLayoutProps, useForm } from '@inertiajs/react';
-import { ArrowLeftIcon, ArrowRightIcon, CheckIcon, CurrencyEurIcon, FileDashedIcon, GlobeSimpleIcon, ImageIcon, ImagesSquareIcon, PlusIcon, TrashIcon, WarningCircleIcon, XIcon } from '@phosphor-icons/react';
+import { ArrowLeftIcon, ArrowRightIcon, CheckIcon, CurrencyEurIcon, FileDashedIcon, GlobeSimpleIcon, ImagesSquareIcon, PlusIcon, TrashIcon, WarningCircleIcon, XIcon } from '@phosphor-icons/react';
 import { type ReactNode, useState } from 'react';
 
 type PricingUnit = 'booking' | 'person' | 'item' | 'hour';

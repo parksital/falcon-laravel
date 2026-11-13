@@ -1,5 +1,4 @@
 import { AppContent } from '@/components/app-content';
-import AppLogoIcon from '@/components/app-logo-icon';
 import { AppShell } from '@/components/app-shell';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {

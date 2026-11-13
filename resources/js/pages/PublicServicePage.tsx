@@ -26,10 +26,31 @@ export default function PublicServicePage({ copy, vendor, service, categorySlug,
     const lowestPricingOption = service.pricing_options.toSorted((first, second) => first.price_in_minor - second.price_in_minor)[0];
     const [serviceByVendorPrefix, serviceByVendorSuffix] = copy.service_by_vendor.split(':vendor');
 
+    const breadcrumbNav = (
+        <Breadcrumb className={isMobile ? 'py-3' : undefined}>
+            <BreadcrumbList className="flex-nowrap gap-1 text-xs whitespace-nowrap">
+                {breadcrumbs.map((item, index) => (
+                    <Fragment key={item.href}>
+                        {index > 0 ? <BreadcrumbSeparator /> : null}
+                        <BreadcrumbListItem className={index === breadcrumbs.length - 1 ? 'min-w-0' : 'shrink-0'}>
+                            {index === breadcrumbs.length - 1 ? (
+                                <BreadcrumbPage className="truncate">{item.title}</BreadcrumbPage>
+                            ) : (
+                                <BreadcrumbLink asChild>
+                                    <Link href={item.href} className="inline-flex min-h-6 items-center">{item.title}</Link>
+                                </BreadcrumbLink>
+                            )}
+                        </BreadcrumbListItem>
+                    </Fragment>
+                ))}
+            </BreadcrumbList>
+        </Breadcrumb>
+    );
+
     const contactCard = <PublicServiceContactCard copy={copy} vendor={vendor} className={isMobile ? undefined : 'sticky top-22 flex-[1_1_320px] self-start'} />;
 
     return (
-        <PublicLayout breadcrumbs={breadcrumbs}>
+        <PublicLayout>
             <Head title={seo.title}>
                 <meta name="description" content={seo.description} />
                 <link rel="canonical" href={seo.canonical} />
@@ -38,48 +59,34 @@ export default function PublicServicePage({ copy, vendor, service, categorySlug,
             <main className="flex flex-col gap-8 px-4 pt-6 pb-12 sm:px-6 sm:pb-16">
                 {isMobile ? (
                     <div className="-mt-6 flex flex-col">
-                        <Breadcrumb className="py-3">
-                            <BreadcrumbList className="flex-nowrap gap-1 text-xs whitespace-nowrap">
-                                {breadcrumbs.map((item, index) => (
-                                    <Fragment key={item.href}>
-                                        {index > 0 ? <BreadcrumbSeparator /> : null}
-                                        <BreadcrumbListItem className={index === breadcrumbs.length - 1 ? 'min-w-0' : 'shrink-0'}>
-                                            {index === breadcrumbs.length - 1 ? (
-                                                <BreadcrumbPage className="truncate">{item.title}</BreadcrumbPage>
-                                            ) : (
-                                                <BreadcrumbLink asChild>
-                                                    <Link href={item.href} className="inline-flex min-h-6 items-center">{item.title}</Link>
-                                                </BreadcrumbLink>
-                                            )}
-                                        </BreadcrumbListItem>
-                                    </Fragment>
-                                ))}
-                            </BreadcrumbList>
-                        </Breadcrumb>
+                        {breadcrumbNav}
                         {service.media.length > 0 ? <PublicServiceMediaCarousel copy={copy} serviceName={service.name} media={service.media} /> : null}
                     </div>
                 ) : null}
 
-                <header className="flex max-w-180 flex-col gap-2">
-                    {!vendor.is_claimed ? <Badge variant="outline" className="self-start">{copy.found_by_huurmaar}</Badge> : null}
-                    <h1 className="text-2xl/tight font-semibold tracking-tight text-balance sm:text-[2rem]">{service.name}</h1>
-                    <p className="flex flex-col gap-1 text-sm text-muted-foreground sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4">
-                        <span className="inline-flex items-center gap-1.5">
-                            <StorefrontIcon aria-hidden="true" className="size-3.5 shrink-0" />
-                            <span>
-                                {serviceByVendorPrefix}
-                                <Link href={vendor.url} className="font-medium text-foreground underline-offset-3 hover:underline">{vendor.name}</Link>
-                                {serviceByVendorSuffix}
-                            </span>
-                        </span>
-                        {vendor.location ? (
+                <div className="flex flex-col gap-4">
+                    {isMobile ? null : breadcrumbNav}
+                    <header className="flex max-w-180 flex-col gap-2">
+                        {!vendor.is_claimed ? <Badge variant="outline" className="self-start">{copy.found_by_huurmaar}</Badge> : null}
+                        <h1 className="text-2xl/tight font-semibold tracking-tight text-balance sm:text-[2rem]">{service.name}</h1>
+                        <p className="flex flex-col gap-1 text-sm text-muted-foreground sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4">
                             <span className="inline-flex items-center gap-1.5">
-                                <MapPinSimpleIcon aria-hidden="true" className="size-3.5 shrink-0" />
-                                {vendor.location}
+                                <StorefrontIcon aria-hidden="true" className="size-3.5 shrink-0" />
+                                <span>
+                                    {serviceByVendorPrefix}
+                                    <Link href={vendor.url} className="font-medium text-foreground underline-offset-3 hover:underline">{vendor.name}</Link>
+                                    {serviceByVendorSuffix}
+                                </span>
                             </span>
-                        ) : null}
-                    </p>
-                </header>
+                            {vendor.location ? (
+                                <span className="inline-flex items-center gap-1.5">
+                                    <MapPinSimpleIcon aria-hidden="true" className="size-3.5 shrink-0" />
+                                    {vendor.location}
+                                </span>
+                            ) : null}
+                        </p>
+                    </header>
+                </div>
 
                 <div className="flex flex-wrap items-start gap-10">
                     <div className="flex min-w-0 flex-[999_1_480px] flex-col gap-12">
