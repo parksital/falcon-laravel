@@ -19,7 +19,6 @@ import {
 import {
     Sheet,
     SheetContent,
-    SheetFooter,
     SheetHeader,
     SheetTitle,
     SheetTrigger,
@@ -68,13 +67,13 @@ function Breadcrumbs({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbItemType[] 
     );
 }
 
-function LanguageSwitcher({ showLabel = false, size = 'sm' }: { showLabel?: boolean; size?: 'sm' | 'lg' }) {
+function LanguageSwitcher({ showLabel = false, size = 'sm', className }: { showLabel?: boolean; size?: 'sm' | 'lg'; className?: string }) {
     const { layoutCopy, locale } = usePage<SharedData>().props;
 
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button type="button" variant="ghost" size={size}>
+                <Button type="button" variant="ghost" size={size} className={className}>
                     <GlobeIcon data-icon="inline-start" />
                     <span className={showLabel ? undefined : 'hidden sm:inline'}>
                         {locale === 'nl' ? layoutCopy.language_dutch : layoutCopy.language_english}
@@ -168,17 +167,8 @@ function PublicMobileHeader() {
                         </SheetHeader>
 
                         <div className="flex flex-col items-stretch gap-2 px-4">
-                            <LanguageSwitcher showLabel size="lg" />
+                            <LanguageSwitcher showLabel size="lg" className="justify-start" />
                         </div>
-
-                        <SheetFooter>
-                            <Button asChild variant="outline" size="lg">
-                                <Link href={login()}>{layoutCopy.nav_login}</Link>
-                            </Button>
-                            <Button asChild variant="secondary" size="lg">
-                                <Link href={register()}>{layoutCopy.nav_register}</Link>
-                            </Button>
-                        </SheetFooter>
                     </SheetContent>
                 </Sheet>
             </div>
