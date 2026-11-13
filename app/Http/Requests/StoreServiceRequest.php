@@ -21,6 +21,7 @@ class StoreServiceRequest extends FormRequest
                 || filled($pricingOption['price_in_minor'] ?? null)
                 || filled($pricingOption['pricing_unit'] ?? null)
                 || ! empty($pricingOption['features'] ?? [])
+                || ! empty($pricingOption['add_ons'] ?? [])
             ))
             ->values()
             ->all();
@@ -53,6 +54,11 @@ class StoreServiceRequest extends FormRequest
             'pricing_options.*.features.*.feature_key' => ['required', 'string', Rule::in($priceFeatures)],
             'pricing_options.*.features.*.is_included' => ['boolean'],
             'pricing_options.*.features.*.value' => ['nullable', 'string', 'max:120'],
+            'pricing_options.*.add_ons' => ['sometimes', 'array', 'max:3'],
+            'pricing_options.*.add_ons.*.name' => ['required', 'string', 'max:120'],
+            'pricing_options.*.add_ons.*.description' => ['nullable', 'string', 'max:2000'],
+            'pricing_options.*.add_ons.*.price_in_minor' => ['required', 'integer', 'min:0', 'max:4294967295'],
+            'pricing_options.*.add_ons.*.pricing_unit' => ['required', 'string', Rule::in($this->pricingUnits())],
             'media' => ['sometimes', 'array', 'max:3'],
             'media.*' => ['image', 'max:4096'],
             'is_public' => ['boolean'],
@@ -79,6 +85,14 @@ class StoreServiceRequest extends FormRequest
             'pricing_options.*.price_in_minor.integer' => __('create-service.validation_price_invalid'),
             'pricing_options.*.price_in_minor.min' => __('create-service.validation_price_invalid'),
             'pricing_options.*.price_in_minor.max' => __('create-service.validation_price_invalid'),
+            'pricing_options.*.add_ons.max' => __('create-service.validation_add_on_limit'),
+            'pricing_options.*.add_ons.*.name.required' => __('create-service.validation_add_on_name_required'),
+            'pricing_options.*.add_ons.*.price_in_minor.required' => __('create-service.validation_price_required'),
+            'pricing_options.*.add_ons.*.price_in_minor.integer' => __('create-service.validation_price_invalid'),
+            'pricing_options.*.add_ons.*.price_in_minor.min' => __('create-service.validation_price_invalid'),
+            'pricing_options.*.add_ons.*.price_in_minor.max' => __('create-service.validation_price_invalid'),
+            'pricing_options.*.add_ons.*.pricing_unit.required' => __('create-service.validation_pricing_unit_required'),
+            'pricing_options.*.add_ons.*.pricing_unit.in' => __('create-service.validation_pricing_unit_invalid'),
             'media.max' => __('create-service.validation_media_limit'),
             'media.*.image' => __('create-service.validation_media_image'),
             'media.*.max' => __('create-service.validation_media_size'),

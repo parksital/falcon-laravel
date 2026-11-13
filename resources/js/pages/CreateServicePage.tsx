@@ -64,6 +64,14 @@ interface PricingOption {
     price_in_minor: string;
     pricing_unit: PricingUnit;
     features: PriceFeature[];
+    add_ons: PriceAddOn[];
+}
+
+interface PriceAddOn {
+    name: string;
+    description: string;
+    price_in_minor: string;
+    pricing_unit: PricingUnit;
 }
 
 interface PriceFeature {
@@ -114,6 +122,16 @@ function emptyPrice(): PricingOption {
         price_in_minor: '',
         pricing_unit: 'booking',
         features: [],
+        add_ons: [],
+    };
+}
+
+function emptyAddOn(): PriceAddOn {
+    return {
+        name: '',
+        description: '',
+        price_in_minor: '',
+        pricing_unit: 'booking',
     };
 }
 
@@ -264,11 +282,27 @@ const CreateServicePage: CreateServicePageComponent = function CreateServicePage
         }));
     }
 
+    function addPricingOptionAddOn(index: number) {
+        setData('pricing_options', data.pricing_options.map((option, optionIndex) => optionIndex === index ? { ...option, add_ons: [...option.add_ons, emptyAddOn()] } : option));
+    }
+
+    function changePricingOptionAddOn(index: number, addOnIndex: number, addOn: PriceAddOn) {
+        setData('pricing_options', data.pricing_options.map((option, optionIndex) => optionIndex === index
+            ? { ...option, add_ons: option.add_ons.map((currentAddOn, currentAddOnIndex) => currentAddOnIndex === addOnIndex ? addOn : currentAddOn) }
+            : option));
+    }
+
+    function removePricingOptionAddOn(index: number, addOnIndex: number) {
+        setData('pricing_options', data.pricing_options.map((option, optionIndex) => optionIndex === index
+            ? { ...option, add_ons: option.add_ons.filter((_, currentAddOnIndex) => currentAddOnIndex !== addOnIndex) }
+            : option));
+    }
+
     function selectedFeatureLabels(pricingOption: PricingOption) {
         return priceFeatures.filter((feature) => pricingOption.features.some((selectedFeature) => selectedFeature.feature_key === feature.value));
     }
 
-    function pricingOptionPriceLabel(pricingOption: PricingOption) {
+    function pricingOptionPriceLabel(pricingOption: PricingOption | PriceAddOn) {
         const pricingUnit = pricingUnits.find((unit) => unit.value === pricingOption.pricing_unit);
 
         return pricingUnit
@@ -281,7 +315,8 @@ const CreateServicePage: CreateServicePageComponent = function CreateServicePage
             pricingOption.name.trim()
             || pricingOption.description.trim()
             || pricingOption.price_in_minor
-            || pricingOption.features.length > 0,
+            || pricingOption.features.length > 0
+            || pricingOption.add_ons.length > 0,
         );
     }
 
@@ -335,6 +370,12 @@ const CreateServicePage: CreateServicePageComponent = function CreateServicePage
                             is_included: feature.is_included,
                             value: feature.value,
                         })),
+                    add_ons: pricingOption.add_ons.map((addOn) => ({
+                        name: addOn.name,
+                        description: addOn.description,
+                        price_in_minor: priceAmountToMinor(addOn.price_in_minor),
+                        pricing_unit: addOn.pricing_unit,
+                    })),
                 })),
         }));
 
@@ -637,6 +678,101 @@ const CreateServicePage: CreateServicePageComponent = function CreateServicePage
                                                             />
                                                             <FieldError>{formErrors[`pricing_options.${index}.description`]}</FieldError>
                                                         </Field>
+
+                                                        <FieldSet>
+                                                            <FieldLegend>{copy.add_ons_label}</FieldLegend>
+                                                            <FieldDescription>{copy.add_ons_help}</FieldDescription>
+                                                            <FieldError>{formErrors[`pricing_options.${index}.add_ons`]}</FieldError>
+
+                                                            {pricingOption.add_ons.map((addOn, addOnIndex) => {
+                                                                const addOnErrorPrefix = `pricing_options.${index}.add_ons.${addOnIndex}`;
+
+                                                                return (
+                                                                    <FieldGroup key={addOnIndex} className="border p-4">
+                                                                        <div className="flex items-center justify-between gap-4">
+                                                                            <h3 className="text-sm font-medium">{copy.add_on_legend.replace(':number', `${addOnIndex + 1}`)}</h3>
+                                                                            <Button type="button" variant="ghost" size="sm" onClick={() => removePricingOptionAddOn(index, addOnIndex)}>
+                                                                                <TrashIcon data-icon="inline-start" />
+                                                                                {copy.remove_add_on}
+                                                                            </Button>
+                                                                        </div>
+
+                                                                        <Field data-invalid={formErrors[`${addOnErrorPrefix}.name`] ? true : undefined}>
+                                                                            <FieldLabel htmlFor={`add-on-name-${index}-${addOnIndex}`}>{copy.add_on_name_label}</FieldLabel>
+                                                                            <Input
+                                                                                id={`add-on-name-${index}-${addOnIndex}`}
+                                                                                value={addOn.name}
+                                                                                onChange={(event) => changePricingOptionAddOn(index, addOnIndex, { ...addOn, name: event.target.value })}
+                                                                                maxLength={120}
+                                                                                placeholder={copy.add_on_name_placeholder}
+                                                                                aria-invalid={Boolean(formErrors[`${addOnErrorPrefix}.name`])}
+                                                                            />
+                                                                            <FieldError>{formErrors[`${addOnErrorPrefix}.name`]}</FieldError>
+                                                                        </Field>
+
+                                                                        <Field data-invalid={formErrors[`${addOnErrorPrefix}.pricing_unit`] ? true : undefined}>
+                                                                            <FieldLabel>{copy.pricing_unit_label}</FieldLabel>
+                                                                            <Select value={addOn.pricing_unit} onValueChange={(value) => changePricingOptionAddOn(index, addOnIndex, { ...addOn, pricing_unit: value as PricingUnit })}>
+                                                                                <SelectTrigger className="w-full" aria-invalid={Boolean(formErrors[`${addOnErrorPrefix}.pricing_unit`])}>
+                                                                                    <SelectValue placeholder={copy.pricing_unit_placeholder} />
+                                                                                </SelectTrigger>
+                                                                                <SelectContent position="popper">
+                                                                                    <SelectGroup>
+                                                                                        {pricingUnits.map((pricingUnit) => (
+                                                                                            <SelectItem key={pricingUnit.value} value={pricingUnit.value}>
+                                                                                                {pricingUnit.label}
+                                                                                            </SelectItem>
+                                                                                        ))}
+                                                                                    </SelectGroup>
+                                                                                </SelectContent>
+                                                                            </Select>
+                                                                            <FieldError>{formErrors[`${addOnErrorPrefix}.pricing_unit`]}</FieldError>
+                                                                        </Field>
+
+                                                                        <Field data-invalid={formErrors[`${addOnErrorPrefix}.price_in_minor`] ? true : undefined}>
+                                                                            <FieldLabel htmlFor={`add-on-amount-${index}-${addOnIndex}`}>{copy.price_amount_label}</FieldLabel>
+                                                                            <InputGroup>
+                                                                                <InputGroupAddon>EUR</InputGroupAddon>
+                                                                                <InputGroupInput
+                                                                                    id={`add-on-amount-${index}-${addOnIndex}`}
+                                                                                    inputMode="decimal"
+                                                                                    value={addOn.price_in_minor}
+                                                                                    onChange={(event) => changePricingOptionAddOn(index, addOnIndex, { ...addOn, price_in_minor: normalizePriceAmount(event.target.value) })}
+                                                                                    placeholder={copy.price_placeholder}
+                                                                                    aria-invalid={Boolean(formErrors[`${addOnErrorPrefix}.price_in_minor`])}
+                                                                                />
+                                                                                <InputGroupAddon align="inline-end">
+                                                                                    {`${formatPriceAmountDescription(addOn.price_in_minor, locale)} / ${pricingUnits.find((pricingUnit) => pricingUnit.value === addOn.pricing_unit)?.priceUnit || ''}`}
+                                                                                </InputGroupAddon>
+                                                                            </InputGroup>
+                                                                            <FieldError>{formErrors[`${addOnErrorPrefix}.price_in_minor`]}</FieldError>
+                                                                        </Field>
+
+                                                                        <Field data-invalid={formErrors[`${addOnErrorPrefix}.description`] ? true : undefined}>
+                                                                            <FieldLabel htmlFor={`add-on-description-${index}-${addOnIndex}`}>{copy.add_on_description_label}</FieldLabel>
+                                                                            <Textarea
+                                                                                id={`add-on-description-${index}-${addOnIndex}`}
+                                                                                className="field-sizing-fixed"
+                                                                                value={addOn.description}
+                                                                                rows={2}
+                                                                                maxLength={2000}
+                                                                                onChange={(event) => changePricingOptionAddOn(index, addOnIndex, { ...addOn, description: event.target.value })}
+                                                                                placeholder={copy.add_on_description_placeholder}
+                                                                                aria-invalid={Boolean(formErrors[`${addOnErrorPrefix}.description`])}
+                                                                            />
+                                                                            <FieldError>{formErrors[`${addOnErrorPrefix}.description`]}</FieldError>
+                                                                        </Field>
+                                                                    </FieldGroup>
+                                                                );
+                                                            })}
+
+                                                            {pricingOption.add_ons.length < 3 ? (
+                                                                <Button type="button" variant="outline" size="sm" className="self-start" onClick={() => addPricingOptionAddOn(index)}>
+                                                                    <PlusIcon data-icon="inline-start" />
+                                                                    {copy.add_add_on}
+                                                                </Button>
+                                                            ) : null}
+                                                        </FieldSet>
                                                     </div>
                                                 ))}
 
@@ -765,6 +901,14 @@ const CreateServicePage: CreateServicePageComponent = function CreateServicePage
                                                             key: feature.value,
                                                             label: feature.label,
                                                         }))}
+                                                        addOns={pricingOption.add_ons.filter((addOn) => addOn.name.trim() && addOn.price_in_minor).map((addOn, addOnIndex) => ({
+                                                            key: addOnIndex,
+                                                            name: addOn.name,
+                                                            formattedPrice: formatPriceAmountDescription(addOn.price_in_minor, locale),
+                                                            priceLabel: pricingOptionPriceLabel(addOn),
+                                                            description: addOn.description,
+                                                        }))}
+                                                        addOnsHeading={copy.add_ons_label}
                                                     />
                                                 ))}
                                             </CardContent>

@@ -6,12 +6,22 @@ interface ServicePricingCardFeature {
     value?: string | null;
 }
 
+interface ServicePricingCardAddOn {
+    key: string | number;
+    name: string;
+    formattedPrice: string;
+    priceLabel?: string | null;
+    description?: string | null;
+}
+
 interface ServicePricingCardProps {
     title: string;
     formattedPrice: string;
     priceLabel?: string | null;
     description?: string | null;
     features?: ServicePricingCardFeature[];
+    addOns?: ServicePricingCardAddOn[];
+    addOnsHeading?: string;
 }
 
 export function ServicePricingCard({
@@ -20,6 +30,8 @@ export function ServicePricingCard({
     priceLabel,
     description,
     features = [],
+    addOns = [],
+    addOnsHeading,
 }: ServicePricingCardProps) {
 
     return (
@@ -50,6 +62,26 @@ export function ServicePricingCard({
 
             {description ? (
                 <p className="whitespace-pre-line text-sm/relaxed text-muted-foreground">{description}</p>
+            ) : null}
+
+            {addOns.length > 0 ? (
+                <div className="flex flex-col gap-2 border-t pt-3">
+                    {addOnsHeading ? <h4 className="text-sm font-medium">{addOnsHeading}</h4> : null}
+                    <ul className="flex flex-col gap-2">
+                        {addOns.map((addOn) => (
+                            <li key={addOn.key} className="flex flex-col gap-1">
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <span className="text-sm">{addOn.name}</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm font-medium">+ {addOn.formattedPrice}</span>
+                                        {addOn.priceLabel ? <Badge variant="secondary">{addOn.priceLabel}</Badge> : null}
+                                    </div>
+                                </div>
+                                {addOn.description ? <p className="whitespace-pre-line text-sm/relaxed text-muted-foreground">{addOn.description}</p> : null}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
             ) : null}
         </div>
     );

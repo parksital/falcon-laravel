@@ -30,4 +30,9 @@ class ServicePrice extends Model
     {
         return $this->hasMany(ServicePriceFeature::class)->orderBy('sort_order');
     }
+
+    public function addOns(): HasMany
+    {
+        return $this->hasMany(ServicePriceAddOn::class)->orderBy('sort_order');
+    }
 }

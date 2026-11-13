@@ -24,7 +24,31 @@ class UpdateServiceRequest extends FormRequest
             'pricing_options.*.description' => ['nullable', 'string', 'max:2000'],
             'pricing_options.*.price_in_minor' => ['required', 'integer', 'min:0', 'max:4294967295'],
             'pricing_options.*.pricing_unit' => ['required', 'string', Rule::in($this->pricingUnits())],
+            'pricing_options.*.add_ons' => ['sometimes', 'array', 'max:3'],
+            'pricing_options.*.add_ons.*.name' => ['required', 'string', 'max:120'],
+            'pricing_options.*.add_ons.*.description' => ['nullable', 'string', 'max:2000'],
+            'pricing_options.*.add_ons.*.price_in_minor' => ['required', 'integer', 'min:0', 'max:4294967295'],
+            'pricing_options.*.add_ons.*.pricing_unit' => ['required', 'string', Rule::in($this->pricingUnits())],
             'is_public' => ['boolean'],
+        ];
+    }
+
+    /**
+     * Get the validation messages that apply to the request.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'pricing_options.*.add_ons.max' => __('service-details.validation_add_on_limit'),
+            'pricing_options.*.add_ons.*.name.required' => __('service-details.validation_add_on_name_required'),
+            'pricing_options.*.add_ons.*.price_in_minor.required' => __('service-details.validation_price_required'),
+            'pricing_options.*.add_ons.*.price_in_minor.integer' => __('service-details.validation_price_invalid'),
+            'pricing_options.*.add_ons.*.price_in_minor.min' => __('service-details.validation_price_invalid'),
+            'pricing_options.*.add_ons.*.price_in_minor.max' => __('service-details.validation_price_invalid'),
+            'pricing_options.*.add_ons.*.pricing_unit.required' => __('service-details.validation_pricing_unit_required'),
+            'pricing_options.*.add_ons.*.pricing_unit.in' => __('service-details.validation_pricing_unit_invalid'),
         ];
     }
 

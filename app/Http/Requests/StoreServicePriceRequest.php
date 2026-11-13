@@ -26,6 +26,11 @@ class StoreServicePriceRequest extends FormRequest
             'features.*.feature_key' => ['required', 'string', Rule::in($priceFeatures)],
             'features.*.is_included' => ['boolean'],
             'features.*.value' => ['nullable', 'string', 'max:120'],
+            'add_ons' => ['sometimes', 'array', 'max:3'],
+            'add_ons.*.name' => ['required', 'string', 'max:120'],
+            'add_ons.*.description' => ['nullable', 'string', 'max:2000'],
+            'add_ons.*.price_in_minor' => ['required', 'integer', 'min:0', 'max:4294967295'],
+            'add_ons.*.pricing_unit' => ['required', 'string', Rule::in($this->pricingUnits())],
         ];
     }
 
@@ -45,6 +50,14 @@ class StoreServicePriceRequest extends FormRequest
             'pricing_unit.required' => __('service-details.validation_pricing_unit_required'),
             'pricing_unit.in' => __('service-details.validation_pricing_unit_invalid'),
             'features.*.feature_key.in' => __('service-details.validation_price_feature_invalid'),
+            'add_ons.max' => __('service-details.validation_add_on_limit'),
+            'add_ons.*.name.required' => __('service-details.validation_add_on_name_required'),
+            'add_ons.*.price_in_minor.required' => __('service-details.validation_price_required'),
+            'add_ons.*.price_in_minor.integer' => __('service-details.validation_price_invalid'),
+            'add_ons.*.price_in_minor.min' => __('service-details.validation_price_invalid'),
+            'add_ons.*.price_in_minor.max' => __('service-details.validation_price_invalid'),
+            'add_ons.*.pricing_unit.required' => __('service-details.validation_pricing_unit_required'),
+            'add_ons.*.pricing_unit.in' => __('service-details.validation_pricing_unit_invalid'),
         ];
     }
 
