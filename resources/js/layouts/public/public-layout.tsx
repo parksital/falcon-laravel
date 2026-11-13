@@ -180,14 +180,14 @@ export default function PublicLayout({ breadcrumbs = [], children }: PublicLayou
     return isMobile ? (
         <MobilePublicLayout>
             <PublicMobileHeader />
-            {children}
+            <div className="flex-1">{children}</div>
             <MobilePublicFooter />
             <Toaster />
         </MobilePublicLayout>
     ) : (
         <DesktopPublicLayout>
             <PublicDesktopHeader breadcrumbs={breadcrumbs} />
-            {children}
+            <div className="flex-1">{children}</div>
             <DesktopPublicFooter />
             <Toaster />
         </DesktopPublicLayout>

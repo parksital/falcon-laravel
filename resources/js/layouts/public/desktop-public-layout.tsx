@@ -8,7 +8,7 @@ type DesktopPublicLayoutProps = {
 export default function DesktopPublicLayout({ children }: DesktopPublicLayoutProps) {
     return (
         <AppShell>
-            <div className="h-dvh w-full overflow-y-auto overscroll-contain bg-background text-foreground">
+            <div className="flex h-dvh w-full flex-col overflow-y-auto overscroll-contain bg-background text-foreground">
                 {children}
             </div>
         </AppShell>
