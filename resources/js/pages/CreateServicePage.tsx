@@ -684,10 +684,12 @@ const CreateServicePage: CreateServicePageComponent = function CreateServicePage
                                                     </div>
                                                 ))}
 
-                                                <Button type="button" variant="outline" onClick={addPrice}>
-                                                    <PlusIcon data-icon="inline-start" />
-                                                    {copy.add_price}
-                                                </Button>
+                                                {data.pricing_options.length < 5 ? (
+                                                    <Button type="button" variant="outline" onClick={addPrice}>
+                                                        <PlusIcon data-icon="inline-start" />
+                                                        {copy.add_price}
+                                                    </Button>
+                                                ) : null}
                                             </FieldGroup>
                                     )}
                                 </CardContent>
