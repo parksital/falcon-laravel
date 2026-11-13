@@ -19,6 +19,7 @@ import {
 import {
     Sheet,
     SheetContent,
+    SheetFooter,
     SheetHeader,
     SheetTitle,
     SheetTrigger,
@@ -127,7 +128,7 @@ function PublicDesktopHeader({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbIte
                 <Button asChild variant="outline" size="sm">
                     <Link href={login()}>{layoutCopy.nav_login}</Link>
                 </Button>
-                <Button asChild size="sm">
+                <Button asChild variant="secondary" size="sm">
                     <Link href={register()}>{layoutCopy.nav_register}</Link>
                 </Button>
             </div>
@@ -167,6 +168,15 @@ function PublicMobileHeader() {
                         <div className="flex flex-col items-stretch gap-2 px-4">
                             <LanguageSwitcher showLabel size="lg" />
                         </div>
+
+                        <SheetFooter>
+                            <Button asChild variant="outline" size="lg">
+                                <Link href={login()}>{layoutCopy.nav_login}</Link>
+                            </Button>
+                            <Button asChild variant="secondary" size="lg">
+                                <Link href={register()}>{layoutCopy.nav_register}</Link>
+                            </Button>
+                        </SheetFooter>
                     </SheetContent>
                 </Sheet>
             </div>
