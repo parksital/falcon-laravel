@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Number;
 use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
@@ -285,12 +284,6 @@ class ServiceController extends Controller
         abort_unless($service->vendor_id === $vendor->id, 404);
 
         $validated = $request->validated();
-
-        if ($service->prices()->count() >= 3) {
-            throw ValidationException::withMessages([
-                'pricing_mode' => __('service-details.validation_price_limit'),
-            ]);
-        }
 
         $sortOrder = ($service->prices()->max('sort_order') ?? -1) + 1;
 

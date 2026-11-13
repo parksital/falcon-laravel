@@ -96,7 +96,6 @@ return [
     'validation_pricing_unit_invalid' => 'Kies een geldige prijseenheid.',
     'validation_price_feature_invalid' => 'Kies een geldige inbegrepen optie.',
     'validation_service_status_fixed' => 'Live services kunnen niet terug naar concept.',
-    'validation_price_limit' => 'Je kunt maximaal drie prijzen toevoegen.',
     'pricing_placeholder' => 'Prijsopties voor deze service worden hier weergegeven.',
     'pricing_empty_title' => 'Nog geen prijzen',
     'pricing_empty_description' => 'Voeg een prijsoptie toe wanneer je zover bent.',

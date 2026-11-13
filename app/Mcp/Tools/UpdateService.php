@@ -18,7 +18,7 @@ Update a service of an unclaimed vendor. Claimed vendors manage their own servic
 
 Only the fields you pass are changed. The category can't be changed; custom_category can only be set on a service in the "other" category.
 
-Passing pricing_options replaces all of the service's pricing options with the ones you pass; pass an empty array to remove them. Use the price feature keys, pricing units and pricing option limit from `get-catalog-schema`. Prices are in euro cents: €149.50 is 14950.
+Passing pricing_options replaces all of the service's pricing options with the ones you pass; pass an empty array to remove them. Use the price feature keys and pricing units from `get-catalog-schema`. Prices are in euro cents: €149.50 is 14950.
 
 Returns the service's ID, public ID and public URL.
 TEXT)]
@@ -37,7 +37,7 @@ class UpdateService extends Tool
             'custom_category' => ['sometimes', Rule::prohibitedIf($category !== 'other'), 'string', 'max:120'],
             'description' => ['sometimes', 'nullable', 'string', 'max:2000'],
             'is_public' => ['sometimes', 'boolean'],
-            'pricing_options' => ['sometimes', 'array', 'max:3'],
+            'pricing_options' => ['sometimes', 'array'],
             'pricing_options.*.name' => ['nullable', 'string', 'max:120'],
             'pricing_options.*.description' => ['nullable', 'string', 'max:2000'],
             'pricing_options.*.price_in_minor' => ['required', 'integer', 'min:0', 'max:4294967295'],
@@ -118,7 +118,7 @@ class UpdateService extends Tool
             'custom_category' => $schema->string()->description('The category name, only for a service in the "other" category.')->max(120),
             'description' => $schema->string()->description('What the service includes.')->max(2000)->nullable(),
             'is_public' => $schema->boolean()->description('Whether the service is shown on the public booking page.'),
-            'pricing_options' => $schema->array()->description('Replaces all of the service\'s pricing options.')->max(3)->items($schema->object([
+            'pricing_options' => $schema->array()->description('Replaces all of the service\'s pricing options.')->items($schema->object([
                 'name' => $schema->string()->description('The pricing option name, such as "Basic" or "3 hours". Defaults to "Price 1", "Price 2", and so on.')->max(120),
                 'description' => $schema->string()->description('What this pricing option includes.')->max(2000),
                 'price_in_minor' => $schema->integer()->description('The price in euro cents.')->min(0)->required(),
