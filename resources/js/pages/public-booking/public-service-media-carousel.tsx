@@ -57,7 +57,7 @@ export function PublicServiceMediaCarousel({ copy, serviceName, media }: PublicS
                 ) : null}
             </Carousel>
 
-            {hasMultiplePhotos && isMobile ? (
+            {hasMultiplePhotos ? (
                 <div className="flex justify-center">
                     {media.map((item, index) => (
                         <button
