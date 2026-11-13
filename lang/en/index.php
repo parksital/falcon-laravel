@@ -27,6 +27,7 @@ return [
     'prices_count' => ':count prices',
     'view_service' => 'View service',
     'found_by_huurmaar' => 'Found by HuurMaar',
+    'bookable_directly' => 'Book directly',
     'pricing_mode_fixed_label' => 'Fixed',
     'pricing_mode_variable_label' => 'Variable',
     'price_not_set' => 'Price not set',

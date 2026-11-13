@@ -11,12 +11,9 @@ import {
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { toggleVariants } from '@/components/ui/toggle';
 import { useInitials } from '@/hooks/use-initials';
-import { useMediaQuery } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils';
 import PublicLayout from '@/layouts/public/public-layout';
-import { DesktopIndexServiceCard } from '@/pages/public-booking/desktop-index-service-card';
-import { MobileIndexServiceCard } from '@/pages/public-booking/mobile-index-service-card';
-import { type Service } from '@/pages/public-booking/types';
+import { ServiceCard, type ServiceCardService } from '@/components/service-card';
 import { home, register } from '@/routes';
 import { show as showCategory } from '@/routes/category';
 import { type SharedData } from '@/types';
@@ -67,7 +64,7 @@ function VendorCard({ vendor, isFoundByHuurMaar, copy }: { vendor: Vendor; isFou
 }
 
 type IndexPageProps = {
-    services: Service[];
+    services: ServiceCardService[];
     categories: { value: string; label: string; slug: string }[];
     category_counts: { value: string; label: string; count: number; url: string }[];
     new_vendors: (Vendor & { is_claimed: boolean })[];
@@ -77,7 +74,6 @@ type IndexPageProps = {
 };
 
 export default function IndexPage({ services, categories, category_counts, new_vendors, verified_vendors, selectedCategory, copy }: IndexPageProps) {
-    const isMobile = useMediaQuery('(max-width: 640px)');
     const { name } = usePage<SharedData>().props;
     const selectedCategoryLabel = categories.find((category) => category.value === selectedCategory)?.label ?? selectedCategory;
     const categoryTitle = selectedCategoryLabel ? copy.category_title.replace(':category', selectedCategoryLabel) : null;
@@ -177,12 +173,8 @@ export default function IndexPage({ services, categories, category_counts, new_v
                                 </Card>
 
                                 {services.map((service) => (
-                                    <Link key={service.id} href={service.url} className="flex h-full flex-col text-left outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                                        {isMobile ? (
-                                            <MobileIndexServiceCard copy={copy} service={service} />
-                                        ) : (
-                                            <DesktopIndexServiceCard copy={copy} service={service} />
-                                        )}
+                                    <Link key={service.id} href={service.url} className="flex flex-col self-start text-left outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                                        <ServiceCard copy={copy} service={service} />
                                     </Link>
                                 ))}
 
