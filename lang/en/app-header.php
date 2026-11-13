@@ -8,7 +8,7 @@ return [
     'language_english' => 'English',
     'language_dutch' => 'Nederlands',
     'nav_login' => 'Log in',
-    'nav_register' => 'List your business',
+    'nav_register' => 'List your services',
     'logout' => 'Log out',
     'footer_tagline' => 'Everything for your event, in one place.',
     'footer_contact' => 'Contact',
