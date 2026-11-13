@@ -8,7 +8,7 @@ return [
     'language_english' => 'English',
     'language_dutch' => 'Nederlands',
     'nav_login' => 'Log in',
-    'nav_register' => 'Meld bedrijf aan',
+    'nav_register' => 'Plaats je aanbod',
     'logout' => 'Log uit',
     'footer_tagline' => 'Alles voor je evenement, op één plek.',
     'footer_contact' => 'Contact',
