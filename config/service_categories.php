@@ -42,6 +42,18 @@ return [
         'slug' => 'decor',
     ],
 
+    'tents' => [
+        'slug' => 'tents',
+    ],
+
+    'furniture' => [
+        'slug' => 'furniture',
+    ],
+
+    'effects' => [
+        'slug' => 'effects',
+    ],
+
     'other' => [
         'slug' => 'other',
     ],
