@@ -151,7 +151,7 @@ export default function IndexPage({ services, categories, category_counts, servi
                         </section>
                     ) : null}
 
-                    <Card className="gap-3 p-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
+                    <Card className="gap-3 p-4 sm:mx-auto sm:w-full sm:max-w-3xl sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
                         <div className="flex min-w-0 flex-col gap-1 sm:flex-[1_1_20rem]">
                             <CardTitle className="text-balance">{copy.cta_title}</CardTitle>
                             <CardDescription className="text-pretty">{copy.cta_description}</CardDescription>
