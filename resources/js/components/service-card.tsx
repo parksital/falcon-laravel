@@ -27,17 +27,17 @@ export function ServiceCard({ copy, service }: ServiceCardProps) {
                 <span className="flex min-w-0 items-center gap-1 whitespace-nowrap text-muted-foreground">
                     <StorefrontIcon aria-hidden="true" className="size-3 shrink-0" />
                     <span className="truncate">{service.vendor_name}</span>
+                    {service.vendor_is_claimed ? (
+                        <>
+                            <SealCheckIcon aria-hidden="true" weight="fill" className="size-3 shrink-0 text-primary" />
+                            <span className="sr-only">{copy.bookable_directly}</span>
+                        </>
+                    ) : null}
                 </span>
                 {service.vendor_location ? (
                     <span className="flex min-w-0 items-center gap-1 whitespace-nowrap text-muted-foreground">
                         <MapPinSimpleIcon aria-hidden="true" className="size-3 shrink-0" />
                         <span className="truncate">{service.vendor_location}</span>
-                    </span>
-                ) : null}
-                {service.vendor_is_claimed ? (
-                    <span className="flex items-center gap-1 font-medium">
-                        <SealCheckIcon aria-hidden="true" weight="fill" className="size-3 shrink-0 text-primary" />
-                        {copy.bookable_directly}
                     </span>
                 ) : null}
             </CardHeader>
