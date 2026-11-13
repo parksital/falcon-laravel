@@ -33,7 +33,7 @@ export default function PublicServicePage({ copy, vendor, service, seo }: Public
             </Head>
 
             <main className="w-full">
-                <section className='mx-auto flex max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-12'>
+                <section className='container mx-auto flex flex-col gap-6 px-4 py-8 sm:px-6 sm:py-12'>
 
 
                     <section className="flex items-start justify-between gap-2">

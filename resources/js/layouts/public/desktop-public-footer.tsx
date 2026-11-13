@@ -8,7 +8,7 @@ export default function DesktopPublicFooter() {
 
     return (
         <footer className="border-t bg-background">
-            <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 pt-10">
+            <div className="container mx-auto flex flex-col gap-8 px-6 pt-10">
                 <div className="flex items-center justify-between gap-4 text-sm text-muted-foreground">
                     <p>{layoutCopy.footer_tagline}</p>
                     <nav className="flex">

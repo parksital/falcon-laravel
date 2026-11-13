@@ -25,7 +25,7 @@ export default function DesktopPublicBookingLayout({ breadcrumbs, children, head
     return (
         <div className="flex h-dvh w-full flex-col overflow-hidden bg-background text-foreground">
             <header className="shrink-0 border-b border-sidebar-border/80 bg-background">
-                <div className="mx-auto flex max-w-7xl flex-col px-4">
+                <div className="container mx-auto flex flex-col px-4">
                     <div className="flex h-16 items-center gap-6">
                         <Link href={home()} className="flex items-center gap-2">
                             <AppLogoIcon className="size-6 fill-current text-black dark:text-white" />
