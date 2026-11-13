@@ -123,14 +123,16 @@ function PublicDesktopHeader({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbIte
 
                 <div className="flex-1" />
 
-                <LanguageSwitcher />
+                <div className="flex items-center gap-2">
+                    <LanguageSwitcher />
 
-                <Button asChild variant="outline" size="sm">
-                    <Link href={login()}>{layoutCopy.nav_login}</Link>
-                </Button>
-                <Button asChild variant="secondary" size="sm">
-                    <Link href={register()}>{layoutCopy.nav_register}</Link>
-                </Button>
+                    <Button asChild variant="outline" size="sm">
+                        <Link href={login()}>{layoutCopy.nav_login}</Link>
+                    </Button>
+                    <Button asChild variant="secondary" size="sm">
+                        <Link href={register()}>{layoutCopy.nav_register}</Link>
+                    </Button>
+                </div>
             </div>
         </header>
     );
