@@ -95,7 +95,7 @@ class IndexPageController extends Controller
 
         return Inertia::render('IndexPage', [
             'services' => $publicServices
-                ->map(function (Service $service) use ($copy, $serviceCategoryLabels, $pricingUnitLabels) {
+                ->map(function (Service $service) use ($serviceCategoryLabels, $pricingUnitLabels) {
                     $price = $service->prices->first();
 
                     return [
@@ -111,8 +111,6 @@ class IndexPageController extends Controller
                         'vendor_location' => $service->vendor->location,
                         'vendor_is_claimed' => $service->vendor->isClaimed(),
                         'price_in_minor' => $price?->price_in_minor,
-                        'pricing_mode' => $price?->pricing_mode,
-                        'pricing_mode_label' => $price?->pricing_mode ? ($copy["pricing_mode_{$price->pricing_mode}_label"] ?? $price->pricing_mode) : null,
                         'pricing_unit' => $price?->pricing_unit,
                         'pricing_unit_label' => $price?->pricing_unit ? ($pricingUnitLabels[$price->pricing_unit] ?? $price->pricing_unit) : null,
                         'formatted_price' => $price?->price_in_minor !== null ? Number::currency($price->price_in_minor / 100, 'EUR', app()->getLocale()) : null,
@@ -124,8 +122,6 @@ class IndexPageController extends Controller
                                 'description' => $price->description,
                                 'price_in_minor' => $price->price_in_minor,
                                 'formatted_price' => Number::currency($price->price_in_minor / 100, 'EUR', app()->getLocale()),
-                                'pricing_mode' => $price->pricing_mode,
-                                'pricing_mode_label' => $copy["pricing_mode_{$price->pricing_mode}_label"] ?? $price->pricing_mode,
                                 'pricing_unit' => $price->pricing_unit,
                                 'pricing_unit_label' => $price->pricing_unit ? ($pricingUnitLabels[$price->pricing_unit] ?? $price->pricing_unit) : null,
                                 'features' => [],

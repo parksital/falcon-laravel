@@ -18,7 +18,7 @@ Update a service of an unclaimed vendor. Claimed vendors manage their own servic
 
 Only the fields you pass are changed. The category can't be changed; custom_category can only be set on a service in the "other" category.
 
-Passing pricing_options replaces all of the service's pricing options with the ones you pass; pass an empty array to remove them. Use the price feature keys, pricing units and pricing option limit from `get-catalog-schema`. Prices are in euro cents: €149.50 is 14950.
+Passing pricing_options replaces all of the service's pricing options with the ones you pass; pass an empty array to remove them. Use the price feature keys, pricing units and pricing option limit from `get-catalog-schema`. Prices are in euro cents: €149.50 is 14950. A price is charged per pricing_unit; use booking for one price per booking.
 
 Returns the service's ID, public ID and public URL.
 TEXT)]
@@ -41,8 +41,7 @@ class UpdateService extends Tool
             'pricing_options.*.name' => ['nullable', 'string', 'max:120'],
             'pricing_options.*.description' => ['nullable', 'string', 'max:2000'],
             'pricing_options.*.price_in_minor' => ['required', 'integer', 'min:0', 'max:4294967295'],
-            'pricing_options.*.pricing_mode' => ['required', 'string', Rule::in(['fixed', 'variable'])],
-            'pricing_options.*.pricing_unit' => ['nullable', 'required_if:pricing_options.*.pricing_mode,variable', 'string', Rule::in(config('service_pricing_units'))],
+            'pricing_options.*.pricing_unit' => ['required', 'string', Rule::in(config('service_pricing_units'))],
             'pricing_options.*.features' => ['sometimes', 'array'],
             'pricing_options.*.features.*.feature_key' => ['required', 'string', Rule::in(config("service_categories.{$category}.price_features", []))],
             'pricing_options.*.features.*.is_included' => ['boolean'],
@@ -50,7 +49,7 @@ class UpdateService extends Tool
         ], [
             'service_public_id.exists' => 'No service has this public ID. Use the public_id returned by create-service.',
             'custom_category.prohibited' => 'Only a service in the "other" category has a custom_category.',
-            'pricing_options.*.pricing_unit.required_if' => 'A variable price needs a pricing_unit.',
+            'pricing_options.*.pricing_unit.required' => 'Every pricing option needs a pricing_unit. Use booking for one price per booking.',
             'pricing_options.*.features.*.feature_key.in' => 'This feature key is not allowed for the service\'s category. Use the price_features of the category from get-catalog-schema.',
         ]);
 
@@ -78,10 +77,7 @@ class UpdateService extends Tool
                         'name' => $pricingOptionData['name'] ?? 'Price '.($sortOrder + 1),
                         'description' => $pricingOptionData['description'] ?? null,
                         'price_in_minor' => $pricingOptionData['price_in_minor'],
-                        'pricing_mode' => $pricingOptionData['pricing_mode'],
-                        'pricing_unit' => $pricingOptionData['pricing_mode'] === 'variable'
-                            ? $pricingOptionData['pricing_unit']
-                            : null,
+                        'pricing_unit' => $pricingOptionData['pricing_unit'],
                         'sort_order' => $sortOrder,
                     ]);
 
@@ -122,8 +118,7 @@ class UpdateService extends Tool
                 'name' => $schema->string()->description('The pricing option name, such as "Basic" or "3 hours". Defaults to "Price 1", "Price 2", and so on.')->max(120),
                 'description' => $schema->string()->description('What this pricing option includes.')->max(2000),
                 'price_in_minor' => $schema->integer()->description('The price in euro cents.')->min(0)->required(),
-                'pricing_mode' => $schema->string()->enum(['fixed', 'variable'])->description('"fixed" for a total price, "variable" for a price per pricing_unit.')->required(),
-                'pricing_unit' => $schema->string()->enum(config('service_pricing_units'))->description('What a variable price is charged per. Required when pricing_mode is "variable".'),
+                'pricing_unit' => $schema->string()->enum(config('service_pricing_units'))->description('What the price is charged per. Use "booking" for one price per booking.')->required(),
                 'features' => $schema->array()->items($schema->object([
                     'feature_key' => $schema->string()->description('A price feature key of the category.')->required(),
                     'is_included' => $schema->boolean()->description('Whether the feature is included in this pricing option.')->default(true),

@@ -34,10 +34,8 @@ export type ServicePricingOption = {
     description: string | null;
     price_in_minor: number;
     formatted_price: string;
-    pricing_mode: 'fixed' | 'variable';
-    pricing_mode_label: string;
-    pricing_unit: 'person' | 'item' | 'hour' | null;
-    pricing_unit_label: string | null;
+    pricing_unit: 'booking' | 'person' | 'item' | 'hour';
+    pricing_unit_label: string;
     features: ServicePriceFeature[];
 };
 
@@ -52,9 +50,7 @@ export type Service = {
     vendor_is_claimed: boolean;
     price_in_minor: number | null;
     formatted_price: string | null;
-    pricing_mode: 'fixed' | 'variable' | null;
-    pricing_mode_label: string | null;
-    pricing_unit: 'person' | 'item' | 'hour' | null;
+    pricing_unit: 'booking' | 'person' | 'item' | 'hour' | null;
     pricing_unit_label: string | null;
     url: string;
     pricing_options: ServicePricingOption[];

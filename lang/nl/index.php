@@ -24,8 +24,6 @@ return [
     'prices_count' => ':count prijzen',
     'view_service' => 'Bekijk service',
     'bookable_directly' => 'Direct te boeken',
-    'pricing_mode_fixed_label' => 'Vast',
-    'pricing_mode_variable_label' => 'Variabel',
     'price_not_set' => 'Prijs niet ingesteld',
     'unit_not_set' => 'eenheid',
     'vendor_not_set' => 'Onbekende vendor',

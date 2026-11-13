@@ -9,8 +9,6 @@ return [
     'found_by_huurmaar' => 'Found by HuurMaar',
     'service_details_heading' => 'About this service',
     'pricing_heading' => 'Pricing',
-    'pricing_mode_fixed_label' => 'Fixed',
-    'pricing_mode_variable_label' => 'Variable',
     'starting_from' => 'From',
     'prices_count' => ':count prices',
     'per_unit' => 'per :unit',

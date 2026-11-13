@@ -2,19 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreServiceRequest;
 use App\Http\Requests\StoreServicePriceRequest;
+use App\Http\Requests\StoreServiceRequest;
 use App\Http\Requests\UpdateServiceRequest;
 use App\Models\Service;
 use App\Models\ServicePrice;
-use App\Models\Vendor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Number;
 use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 class ServiceController extends Controller
@@ -113,8 +112,6 @@ class ServiceController extends Controller
                         'price_in_minor' => $pricingOption->price_in_minor,
                         'formatted_amount' => Number::currency($pricingOption->price_in_minor / 100, 'EUR', app()->getLocale()),
                         'currency' => $pricingOption->currency,
-                        'pricing_mode' => $pricingOption->pricing_mode,
-                        'pricing_mode_label' => $this->pricingModeLabel($pricingOption->pricing_mode),
                         'pricing_unit' => $pricingOption->pricing_unit,
                         'pricing_unit_label' => $this->pricingUnitLabel($pricingOption->pricing_unit),
                         'features' => $pricingOption->features
@@ -131,7 +128,7 @@ class ServiceController extends Controller
                     ])
                     ->values()
                     ->all(),
-                    'formatted_created_at' => $service->created_at->translatedFormat(__('service-details.created_at_date_format'))
+                'formatted_created_at' => $service->created_at->translatedFormat(__('service-details.created_at_date_format')),
             ],
             'priceFeatures' => collect($this->priceFeaturesForCategory($service->category))
                 ->map(fn (string $value) => [
@@ -176,10 +173,7 @@ class ServiceController extends Controller
                     'name' => $pricingOptionData['name'] ?? 'Price '.($sortOrder + 1),
                     'description' => $pricingOptionData['description'] ?? null,
                     'price_in_minor' => $pricingOptionData['price_in_minor'],
-                    'pricing_mode' => $pricingOptionData['pricing_mode'],
-                    'pricing_unit' => $pricingOptionData['pricing_mode'] === 'variable'
-                        ? $pricingOptionData['pricing_unit']
-                        : null,
+                    'pricing_unit' => $pricingOptionData['pricing_unit'],
                     'sort_order' => $sortOrder,
                 ]);
 
@@ -255,10 +249,7 @@ class ServiceController extends Controller
                             ? $pricingOptionData['description']
                             : $pricingOption?->description,
                         'price_in_minor' => $pricingOptionData['price_in_minor'],
-                        'pricing_mode' => $pricingOptionData['pricing_mode'],
-                        'pricing_unit' => $pricingOptionData['pricing_mode'] === 'variable'
-                            ? $pricingOptionData['pricing_unit']
-                            : null,
+                        'pricing_unit' => $pricingOptionData['pricing_unit'],
                         'sort_order' => $sortOrder,
                     ];
 
@@ -288,7 +279,7 @@ class ServiceController extends Controller
 
         if ($service->prices()->count() >= 5) {
             throw ValidationException::withMessages([
-                'pricing_mode' => __('service-details.validation_price_limit'),
+                'pricing_unit' => __('service-details.validation_price_limit'),
             ]);
         }
 
@@ -299,10 +290,7 @@ class ServiceController extends Controller
                 'name' => $validated['name'] ?? 'Price '.($sortOrder + 1),
                 'description' => $validated['description'] ?? null,
                 'price_in_minor' => $validated['price_in_minor'],
-                'pricing_mode' => $validated['pricing_mode'],
-                'pricing_unit' => $validated['pricing_mode'] === 'variable'
-                    ? $validated['pricing_unit']
-                    : null,
+                'pricing_unit' => $validated['pricing_unit'],
                 'sort_order' => $sortOrder,
             ]);
 
@@ -337,10 +325,7 @@ class ServiceController extends Controller
                 'name' => $validated['name'] ?? 'Price '.($pricingOption->sort_order + 1),
                 'description' => $validated['description'] ?? null,
                 'price_in_minor' => $validated['price_in_minor'],
-                'pricing_mode' => $validated['pricing_mode'],
-                'pricing_unit' => $validated['pricing_mode'] === 'variable'
-                    ? $validated['pricing_unit']
-                    : null,
+                'pricing_unit' => $validated['pricing_unit'],
             ]);
 
             $pricingOption->features()->delete();
@@ -402,19 +387,6 @@ class ServiceController extends Controller
         } while (Service::query()->where('public_id', $publicId)->exists());
 
         return $publicId;
-    }
-
-    private function pricingModeLabel(?string $mode): ?string
-    {
-        if (! $mode) {
-            return null;
-        }
-
-        return match ($mode) {
-            'fixed' => __('service-details.pricing_mode_fixed_label'),
-            'variable' => __('service-details.pricing_mode_variable_label'),
-            default => $mode,
-        };
     }
 
     private function pricingUnitLabel(?string $unit): ?string

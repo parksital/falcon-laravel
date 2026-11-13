@@ -9,8 +9,6 @@ return [
     'found_by_huurmaar' => 'Gevonden door HuurMaar',
     'service_details_heading' => 'Over deze service',
     'pricing_heading' => 'Prijzen',
-    'pricing_mode_fixed_label' => 'Vast',
-    'pricing_mode_variable_label' => 'Variabel',
     'starting_from' => 'Vanaf',
     'prices_count' => ':count prijzen',
     'per_unit' => 'per :unit',
