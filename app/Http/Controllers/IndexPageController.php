@@ -103,6 +103,7 @@ class IndexPageController extends Controller
                             : $serviceCategoryLabels[$service->category] ?? $service->category,
                         'description' => $service->description,
                         'vendor_name' => $service->vendor->name,
+                        'vendor_location' => $service->vendor->location,
                         'vendor_is_claimed' => $service->vendor->isClaimed(),
                         'price_in_minor' => $price?->price_in_minor,
                         'pricing_mode' => $price?->pricing_mode,
