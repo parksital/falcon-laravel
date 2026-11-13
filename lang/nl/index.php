@@ -23,7 +23,7 @@ return [
     'starting_from' => 'Vanaf',
     'prices_count' => ':count prijzen',
     'view_service' => 'Bekijk service',
-    'bookable_directly' => 'Direct te boeken',
+    'verified_vendor' => 'Geverifieerde aanbieder',
     'price_not_set' => 'Prijs niet ingesteld',
     'unit_not_set' => 'eenheid',
     'vendor_not_set' => 'Onbekende vendor',

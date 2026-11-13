@@ -43,7 +43,7 @@ export function PublicServiceMediaCarousel({ copy, serviceName, media }: PublicS
                     ))}
                 </CarouselContent>
 
-                {hasMultiplePhotos ? (
+                {hasMultiplePhotos && isMobile ? (
                     <span aria-hidden="true" className="pointer-events-none absolute right-3 bottom-3 rounded-full bg-background px-2 text-xs/relaxed tabular-nums ring-1 ring-foreground/10">
                         {selectedIndex + 1} / {media.length}
                     </span>

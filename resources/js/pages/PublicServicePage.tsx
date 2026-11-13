@@ -1,30 +1,30 @@
 import { Badge } from '@/components/ui/badge';
-import { ServicePricingCard } from '@/components/service-pricing-card';
 import { Button } from '@/components/ui/button';
+import { ServiceCard } from '@/components/service-card';
+import { ServiceListItem } from '@/components/service-list-item';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import PublicLayout from '@/layouts/public/public-layout';
+import { PublicServiceContactCard } from '@/pages/public-booking/public-service-contact-card';
 import { PublicServiceMediaCarousel } from '@/pages/public-booking/public-service-media-carousel';
-import { PublicVendorContactCard } from '@/pages/public-booking/public-vendor-contact-card';
+import { PublicServicePricingCard } from '@/pages/public-booking/public-service-pricing-card';
 import { type PublicServicePageProps } from '@/pages/public-booking/types';
+import { home } from '@/routes';
+import { show as showCategory } from '@/routes/category';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
+import { ArrowRightIcon, MapPinSimpleIcon, StorefrontIcon } from '@phosphor-icons/react';
 
-function formattedPricingOptionPrice(
-    pricingOption: PublicServicePageProps['service']['pricing_options'][number],
-) {
-    return pricingOption.formatted_price;
-}
-
-function formattedServicePrice(service: PublicServicePageProps['service']) {
-    return service.formatted_price ?? '';
-}
-
-export default function PublicServicePage({ copy, vendor, service, seo }: PublicServicePageProps) {
+export default function PublicServicePage({ copy, vendor, service, categorySlug, otherServices, seo }: PublicServicePageProps) {
+    const isMobile = useMediaQuery('(max-width: 640px)');
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: vendor.name, href: vendor.url },
+        { title: 'HuurMaar', href: home().url },
+        { title: service.category_label, href: showCategory(categorySlug).url },
         { title: service.name, href: service.url },
     ];
-
+    const lowestPricingOption = service.pricing_options.toSorted((first, second) => first.price_in_minor - second.price_in_minor)[0];
     const [serviceByVendorPrefix, serviceByVendorSuffix] = copy.service_by_vendor.split(':vendor');
+
+    const contactCard = <PublicServiceContactCard copy={copy} vendor={vendor} className={isMobile ? undefined : 'sticky top-6 flex-[1_1_320px] self-start'} />;
 
     return (
         <PublicLayout breadcrumbs={breadcrumbs}>
@@ -33,78 +33,101 @@ export default function PublicServicePage({ copy, vendor, service, seo }: Public
                 <link rel="canonical" href={seo.canonical} />
             </Head>
 
-            <main className="w-full">
-                <section className='mx-auto flex max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-12'>
+            <main className="flex flex-col gap-8 px-4 pt-6 pb-12 sm:px-6 sm:pb-16">
+                <header className="flex max-w-180 flex-col gap-2">
+                    {!vendor.is_claimed ? <Badge variant="outline" className="self-start">{copy.found_by_huurmaar}</Badge> : null}
+                    <h1 className="text-2xl/tight font-semibold tracking-tight text-balance sm:text-[2rem]">{service.name}</h1>
+                    <p className="flex flex-col gap-1 text-sm text-muted-foreground sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4">
+                        <span className="inline-flex items-center gap-1.5">
+                            <StorefrontIcon aria-hidden="true" className="size-3.5 shrink-0" />
+                            <span>
+                                {serviceByVendorPrefix}
+                                <Link href={vendor.url} className="font-medium text-foreground underline-offset-3 hover:underline">{vendor.name}</Link>
+                                {serviceByVendorSuffix}
+                            </span>
+                        </span>
+                        {vendor.location ? (
+                            <span className="inline-flex items-center gap-1.5">
+                                <MapPinSimpleIcon aria-hidden="true" className="size-3.5 shrink-0" />
+                                {vendor.location}
+                            </span>
+                        ) : null}
+                    </p>
+                </header>
 
+                <div className="flex flex-wrap items-start gap-10">
+                    <div className="flex min-w-0 flex-[999_1_480px] flex-col gap-12">
+                        {service.media.length > 0 ? <PublicServiceMediaCarousel copy={copy} serviceName={service.name} media={service.media} /> : null}
 
-                    <section className="flex items-start justify-between gap-2">
-                        <div className="flex flex-col gap-2">
-                            <div className="flex flex-wrap items-center gap-2">
-                                <Badge variant="secondary">{service.category_label}</Badge>
-                                {!vendor.is_claimed && <Badge variant="outline">{copy.found_by_huurmaar}</Badge>}
-                                <p className="text-sm text-muted-foreground">{vendor.location}</p>
-                            </div>
-                            <h1 className="text-3xl font-semibold text-foreground">{service.name}</h1>
-                            <div className="flex items-baseline gap-1 text-sm text-muted-foreground">
-                                <span>{serviceByVendorPrefix}</span>
-                                <Button asChild variant="link" className="h-auto p-0 text-sm">
-                                    <Link href={vendor.url}>{vendor.name}</Link>
-                                </Button>
-                                <span>{serviceByVendorSuffix}</span>
-                            </div>
+                        {service.description ? (
+                            <section aria-labelledby="service-details-heading" className="flex flex-col gap-3">
+                                <h2 id="service-details-heading" className="text-lg font-semibold">{copy.service_details_heading}</h2>
+                                <p className="max-w-prose text-base/relaxed text-pretty whitespace-pre-line">{service.description}</p>
+                            </section>
+                        ) : null}
+
+                        {service.pricing_options.length > 0 ? (
+                            <section id="prices" aria-labelledby="prices-heading" className="flex flex-col gap-4">
+                                <div className="flex flex-col gap-1">
+                                    <h2 id="prices-heading" className="text-lg font-semibold">{copy.pricing_heading}</h2>
+                                    <p className="text-sm text-muted-foreground">{copy.options_count.replace(':count', String(service.pricing_options.length))}</p>
+                                </div>
+                                <div className="flex flex-col gap-3">
+                                    {service.pricing_options.map((pricingOption) => (
+                                        <PublicServicePricingCard key={pricingOption.id} copy={copy} pricingOption={pricingOption} />
+                                    ))}
+                                </div>
+                            </section>
+                        ) : null}
+
+                        {isMobile ? contactCard : null}
+                    </div>
+
+                    {isMobile ? null : contactCard}
+                </div>
+
+                {otherServices.length > 0 ? (
+                    <section aria-labelledby="more-from-vendor-heading" className="flex flex-col gap-4 border-t pt-10 sm:mt-8">
+                        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
+                            <h2 id="more-from-vendor-heading" className="text-lg font-semibold text-balance">{copy.more_from_vendor.replace(':vendor', vendor.name)}</h2>
+                            <Link href={vendor.url} className="inline-flex items-center gap-1 text-xs font-medium underline-offset-3 hover:underline">
+                                {copy.back_to_services}
+                                <ArrowRightIcon aria-hidden="true" className="size-3" />
+                            </Link>
                         </div>
-                    </section>
-
-                    {!vendor.is_claimed && <PublicVendorContactCard copy={copy} vendor={vendor} />}
-
-                    {service.media.length > 0 ? (
-                        <PublicServiceMediaCarousel copy={copy} serviceName={service.name} media={service.media} />
-                    ) : null}
-
-                    {service.description ? (
-                        <section className="flex flex-col gap-3">
-                            <h2 className="text-xl font-semibold text-foreground">{copy.service_details_heading}</h2>
-                            <p className="max-w-prose whitespace-pre-line text-base/relaxed text-foreground">{service.description}</p>
-                        </section>
-                    ) : null}
-
-                    {service.pricing_options.length > 0 ? (
-                        <section className="flex flex-col gap-3">
-                            <h2 className="text-xl font-semibold text-foreground">{copy.pricing_heading}</h2>
-                            <div className="grid gap-4">
-                                {service.pricing_options.map((pricingOption) => (
-                                    <ServicePricingCard
-                                        key={pricingOption.id}
-                                        title={pricingOption.name}
-                                        formattedPrice={formattedPricingOptionPrice(pricingOption)}
-                                        priceLabel={pricingOption.pricing_unit_label}
-                                        description={pricingOption.description}
-                                        features={pricingOption.features.map((feature) => ({
-                                            key: feature.id,
-                                            label: feature.label,
-                                            value: feature.value,
-                                        }))}
-                                        addOns={pricingOption.add_ons.map((addOn) => ({
-                                            key: addOn.id,
-                                            name: addOn.name,
-                                            formattedPrice: addOn.formatted_price,
-                                            priceLabel: addOn.pricing_unit_label,
-                                            description: addOn.description,
-                                        }))}
-                                        addOnsHeading={copy.add_ons_heading}
-                                    />
+                        {isMobile ? (
+                            <div className="flex flex-col overflow-hidden bg-card text-card-foreground ring-1 ring-foreground/10">
+                                {otherServices.map((otherService) => (
+                                    <ServiceListItem key={otherService.id} copy={copy} service={otherService} showVendor={false} />
                                 ))}
                             </div>
-                        </section>
-                    ) : service.formatted_price ? (
-                        <ServicePricingCard
-                            title={service.name}
-                            formattedPrice={formattedServicePrice(service)}
-                            priceLabel={service.pricing_unit_label}
-                        />
-                        ) : null}
-                </section>
+                        ) : (
+                            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                {otherServices.map((otherService) => (
+                                    <Link key={otherService.id} href={otherService.url} className="flex flex-col self-start text-left outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                                        <ServiceCard copy={copy} service={otherService} showVendor={false} />
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
+                    </section>
+                ) : null}
             </main>
+
+            {isMobile && lowestPricingOption ? (
+                <div className="sticky bottom-0 z-10 flex items-center gap-3 border-t bg-background px-4 py-3">
+                    <div className="flex min-w-0 flex-1 flex-col text-xs/snug">
+                        <span className="text-muted-foreground">{copy.starting_from}</span>
+                        <span className="whitespace-nowrap">
+                            <span className="text-sm font-semibold tabular-nums">{lowestPricingOption.formatted_price}</span>{' '}
+                            <span className="text-muted-foreground">{copy.per_unit.replace(':unit', lowestPricingOption.pricing_unit_label.toLocaleLowerCase())}</span>
+                        </span>
+                    </div>
+                    <Button asChild size="lg" className="h-11 px-5">
+                        <a href="#contact">{copy.contact_heading}</a>
+                    </Button>
+                </div>
+            ) : null}
         </PublicLayout>
     );
 }

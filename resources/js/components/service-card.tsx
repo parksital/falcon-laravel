@@ -7,9 +7,10 @@ export type ServiceCardService = Service & { vendor_location: string };
 type ServiceCardProps = {
     copy: Record<string, string>;
     service: ServiceCardService;
+    showVendor?: boolean;
 };
 
-export function ServiceCard({ copy, service }: ServiceCardProps) {
+export function ServiceCard({ copy, service, showVendor = true }: ServiceCardProps) {
     const lowestPrice = service.pricing_options.toSorted((first, second) => first.price_in_minor - second.price_in_minor)[0];
 
     return (
@@ -24,21 +25,25 @@ export function ServiceCard({ copy, service }: ServiceCardProps) {
 
             <CardHeader>
                 <CardTitle className="line-clamp-2 text-balance">{service.name}</CardTitle>
-                <span className="flex min-w-0 items-center gap-1 whitespace-nowrap text-muted-foreground">
-                    <StorefrontIcon aria-hidden="true" className="size-3 shrink-0" />
-                    <span className="truncate">{service.vendor_name}</span>
-                    {service.vendor_is_claimed ? (
-                        <>
-                            <SealCheckIcon aria-hidden="true" weight="fill" className="size-3 shrink-0 text-primary" />
-                            <span className="sr-only">{copy.bookable_directly}</span>
-                        </>
-                    ) : null}
-                </span>
-                {service.vendor_location ? (
-                    <span className="flex min-w-0 items-center gap-1 whitespace-nowrap text-muted-foreground">
-                        <MapPinSimpleIcon aria-hidden="true" className="size-3 shrink-0" />
-                        <span className="truncate">{service.vendor_location}</span>
-                    </span>
+                {showVendor ? (
+                    <>
+                        <span className="flex min-w-0 items-center gap-1 whitespace-nowrap text-muted-foreground">
+                            <StorefrontIcon aria-hidden="true" className="size-3 shrink-0" />
+                            <span className="truncate">{service.vendor_name}</span>
+                            {service.vendor_is_claimed ? (
+                                <>
+                                    <SealCheckIcon aria-hidden="true" weight="fill" className="size-3 shrink-0 text-primary" />
+                                    <span className="sr-only">{copy.verified_vendor}</span>
+                                </>
+                            ) : null}
+                        </span>
+                        {service.vendor_location ? (
+                            <span className="flex min-w-0 items-center gap-1 whitespace-nowrap text-muted-foreground">
+                                <MapPinSimpleIcon aria-hidden="true" className="size-3 shrink-0" />
+                                <span className="truncate">{service.vendor_location}</span>
+                            </span>
+                        ) : null}
+                    </>
                 ) : null}
             </CardHeader>
 

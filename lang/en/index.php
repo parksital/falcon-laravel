@@ -23,7 +23,7 @@ return [
     'starting_from' => 'From',
     'prices_count' => ':count prices',
     'view_service' => 'View service',
-    'bookable_directly' => 'Book directly',
+    'verified_vendor' => 'Verified vendor',
     'price_not_set' => 'Price not set',
     'unit_not_set' => 'unit',
     'vendor_not_set' => 'Unknown vendor',

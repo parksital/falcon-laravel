@@ -71,6 +71,15 @@ class PublicBookingPageController extends Controller
             'copy' => __('public-booking'),
             'vendor' => $this->vendorPayload($vendor),
             'service' => $this->servicePayload($vendor, $service),
+            'categorySlug' => config("service_categories.{$service->category}.slug"),
+            'otherServices' => $vendor->services
+                ->reject(fn (Service $otherService) => $otherService->is($service))
+                ->map(fn (Service $otherService) => [
+                    ...$this->servicePayload($vendor, $otherService),
+                    'vendor_location' => $vendor->location,
+                ])
+                ->values()
+                ->all(),
             'locale' => app()->getLocale(),
             'seo' => [
                 'title' => $seo['title'],
