@@ -3,6 +3,7 @@
 namespace App\Mcp\Tools;
 
 use App\Models\Service;
+use App\Models\ServicePriceFeature;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\JsonSchema\Types\Type;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +17,7 @@ use Laravel\Mcp\Server\Tool;
 #[Description(<<<'TEXT'
 Update a service of an unclaimed vendor. Claimed vendors manage their own services, so this tool refuses them.
 
-Only the fields you pass are changed. The category can't be changed; custom_category can only be set on a service in the "other" category.
+Only the fields you pass are changed. Use the category keys from `get-catalog-schema`. Moving a service to "other" needs a custom_category; moving it out of "other" removes its custom_category. When the category changes, price features the new category doesn't have are removed.
 
 Passing pricing_options replaces all of the service's pricing options, with their features and add-ons, with the ones you pass; pass an empty array to remove them. Use the price feature keys, pricing units, pricing option limit and add-on limit from `get-catalog-schema`. Prices are in euro cents: €149.50 is 14950. A price is charged per pricing_unit; use booking for one price per booking.
 
@@ -29,12 +30,14 @@ class UpdateService extends Tool
      */
     public function handle(Request $request): Response|ResponseFactory
     {
-        $category = Service::query()->where('public_id', $request->get('service_public_id'))->value('category');
+        $currentCategory = Service::query()->where('public_id', $request->get('service_public_id'))->value('category');
+        $category = $request->get('category', $currentCategory);
 
         $validated = $request->validate([
             'service_public_id' => ['required', 'string', Rule::exists('services', 'public_id')],
             'name' => ['sometimes', 'string', 'max:120'],
-            'custom_category' => ['sometimes', Rule::prohibitedIf($category !== 'other'), 'string', 'max:120'],
+            'category' => ['sometimes', 'string', Rule::in(array_keys(config('service_categories')))],
+            'custom_category' => [Rule::requiredIf($category === 'other' && $currentCategory !== 'other'), Rule::prohibitedIf($category !== 'other'), 'string', 'max:120'],
             'description' => ['sometimes', 'nullable', 'string', 'max:2000'],
             'is_public' => ['sometimes', 'boolean'],
             'pricing_options' => ['sometimes', 'array', 'max:5'],
@@ -53,6 +56,7 @@ class UpdateService extends Tool
             'pricing_options.*.add_ons.*.pricing_unit' => ['required', 'string', Rule::in(config('service_pricing_units'))],
         ], [
             'service_public_id.exists' => 'No service has this public ID. Use the public_id returned by create-service.',
+            'custom_category.required' => 'A service moved to the "other" category needs a custom_category.',
             'custom_category.prohibited' => 'Only a service in the "other" category has a custom_category.',
             'pricing_options.*.pricing_unit.required' => 'Every pricing option needs a pricing_unit. Use booking for one price per booking.',
             'pricing_options.*.add_ons.max' => 'A pricing option can have at most 3 add-ons.',
@@ -68,7 +72,20 @@ class UpdateService extends Tool
         }
 
         DB::transaction(function () use ($service, $validated) {
-            $service->update(collect($validated)->only(['name', 'description', 'is_public'])->all());
+            $previousCategory = $service->category;
+
+            $service->update(collect($validated)->only(['name', 'category', 'description', 'is_public'])->all());
+
+            if ($service->category !== 'other') {
+                $service->customCategory()->delete();
+            }
+
+            if ($service->category !== $previousCategory) {
+                ServicePriceFeature::query()
+                    ->whereIn('service_price_id', $service->prices()->select('id'))
+                    ->whereNotIn('feature_key', config("service_categories.{$service->category}.price_features", []))
+                    ->delete();
+            }
 
             if (array_key_exists('custom_category', $validated)) {
                 $service->customCategory()->updateOrCreate([], [
@@ -128,7 +145,8 @@ class UpdateService extends Tool
         return [
             'service_public_id' => $schema->string()->description('The public ID of the service to update, such as "svc_xxxxxxxxxx".')->required(),
             'name' => $schema->string()->description('The service name.')->max(120),
-            'custom_category' => $schema->string()->description('The category name, only for a service in the "other" category.')->max(120),
+            'category' => $schema->string()->enum(array_keys(config('service_categories')))->description('The category key. Use "other" with a custom_category when no category fits.'),
+            'custom_category' => $schema->string()->description('The category name, only for a service in the "other" category. Required when moving a service to "other".')->max(120),
             'description' => $schema->string()->description('What the service includes.')->max(2000)->nullable(),
             'is_public' => $schema->boolean()->description('Whether the service is shown on the public booking page.'),
             'pricing_options' => $schema->array()->description('Replaces all of the service\'s pricing options.')->max(5)->items($schema->object([
