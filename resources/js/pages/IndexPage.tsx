@@ -1,4 +1,3 @@
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -20,7 +19,7 @@ import { CaretRightIcon, ImageIcon, MapPinSimpleIcon, SealCheckIcon, StorefrontI
 
 type Vendor = { name: string; location: string | null; logo_url: string | null; url: string };
 
-function VendorCard({ vendor, isFoundByHuurMaar, copy }: { vendor: Vendor; isFoundByHuurMaar: boolean; copy: Record<string, string> }) {
+function VendorCard({ vendor }: { vendor: Vendor }) {
     return (
         <Link href={vendor.url} className="flex items-center gap-3 rounded-xl border bg-card p-3 text-card-foreground outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring sm:p-4">
             <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted text-muted-foreground sm:size-12">
@@ -36,7 +35,6 @@ function VendorCard({ vendor, isFoundByHuurMaar, copy }: { vendor: Vendor; isFou
                     </>
                 ) : null}
             </span>
-            {isFoundByHuurMaar ? <Badge variant="secondary" className="shrink-0">{copy.found_by_huurmaar}</Badge> : null}
             <CaretRightIcon aria-hidden="true" className="size-4 shrink-0 text-muted-foreground sm:hidden" />
         </Link>
     );
@@ -48,13 +46,12 @@ type IndexPageProps = {
     category_counts: { value: string; label: string; count: number; url: string }[];
     service_count: number;
     vendor_count: number;
-    new_vendors: (Vendor & { is_claimed: boolean })[];
     verified_vendors: Vendor[];
     selectedCategory: string | null;
     copy: Record<string, string>;
 };
 
-export default function IndexPage({ services, categories, category_counts, service_count, vendor_count, new_vendors, verified_vendors, selectedCategory, copy }: IndexPageProps) {
+export default function IndexPage({ services, categories, category_counts, service_count, vendor_count, verified_vendors, selectedCategory, copy }: IndexPageProps) {
     const isMobile = useMediaQuery('(max-width: 640px)');
     const { name } = usePage<SharedData>().props;
     const selectedCategoryLabel = categories.find((category) => category.value === selectedCategory)?.label ?? selectedCategory;
@@ -139,17 +136,6 @@ export default function IndexPage({ services, categories, category_counts, servi
                         </section>
                     ))}
 
-                    {new_vendors.length > 0 ? (
-                        <section className="flex flex-col gap-2 sm:gap-3">
-                            <h2 className="text-lg font-semibold text-balance">{copy.new_vendors_heading.replace(':appName', name)}</h2>
-                            <div className="grid gap-2 sm:grid-cols-2 sm:gap-3">
-                                {new_vendors.map((vendor) => (
-                                    <VendorCard key={vendor.url} vendor={vendor} isFoundByHuurMaar={!vendor.is_claimed} copy={copy} />
-                                ))}
-                            </div>
-                        </section>
-                    ) : null}
-
                     {verified_vendors.length > 0 ? (
                         <section className="flex flex-col gap-2 sm:gap-3">
                             <h2 className="flex items-center gap-2 text-lg font-semibold text-balance">
@@ -159,7 +145,7 @@ export default function IndexPage({ services, categories, category_counts, servi
                             <p className="text-sm text-pretty text-muted-foreground">{copy.verified_vendors_description.replace(':appName', name)}</p>
                             <div className="mt-1 grid gap-2 sm:mt-0 sm:grid-cols-2 sm:gap-3">
                                 {verified_vendors.map((vendor) => (
-                                    <VendorCard key={vendor.url} vendor={vendor} isFoundByHuurMaar={false} copy={copy} />
+                                    <VendorCard key={vendor.url} vendor={vendor} />
                                 ))}
                             </div>
                         </section>
