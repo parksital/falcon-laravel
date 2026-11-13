@@ -115,8 +115,6 @@ class PublicBookingPageController extends Controller
             'vendor_is_claimed' => $vendor->isClaimed(),
             'price_in_minor' => $price?->price_in_minor,
             'formatted_price' => $price?->price_in_minor !== null ? $this->formatPrice($price->price_in_minor) : null,
-            'pricing_mode' => $price?->pricing_mode,
-            'pricing_mode_label' => $this->pricingModeLabel($price?->pricing_mode),
             'pricing_unit' => $price?->pricing_unit,
             'pricing_unit_label' => $this->pricingUnitLabel($price?->pricing_unit),
             'url' => route('public.booking.service.show', [$vendor->slug, $service->public_id]),
@@ -143,8 +141,6 @@ class PublicBookingPageController extends Controller
             'description' => $price->description,
             'price_in_minor' => $price->price_in_minor,
             'formatted_price' => $this->formatPrice($price->price_in_minor),
-            'pricing_mode' => $price->pricing_mode,
-            'pricing_mode_label' => $this->pricingModeLabel($price->pricing_mode),
             'pricing_unit' => $price->pricing_unit,
             'pricing_unit_label' => $this->pricingUnitLabel($price->pricing_unit),
             'features' => $price->features
@@ -268,19 +264,6 @@ class PublicBookingPageController extends Controller
                 ];
             })
             ->all();
-    }
-
-    private function pricingModeLabel(?string $mode): ?string
-    {
-        if (! $mode) {
-            return null;
-        }
-
-        return match ($mode) {
-            'fixed' => __('public-booking.pricing_mode_fixed_label'),
-            'variable' => __('public-booking.pricing_mode_variable_label'),
-            default => $mode,
-        };
     }
 
     private function pricingUnitLabel(?string $unit): ?string

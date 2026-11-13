@@ -164,8 +164,7 @@ function slugify(text: string) {
 type EditPricingOption = {
     id: number | null;
     price_in_minor: string;
-    pricing_mode: 'fixed' | 'variable';
-    pricing_unit: '' | 'person' | 'item' | 'hour';
+    pricing_unit: 'booking' | 'person' | 'item' | 'hour';
 };
 
 type OverviewPageComponent = ((props: OverviewPageProps) => ReactNode) & {
@@ -229,6 +228,7 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
     const editingService = services.find((service) => service.id === editingServiceId);
     const editFormErrors = editForm.errors as Record<string, string | undefined>;
     const pricingUnits = [
+        { value: 'booking', label: copy.service_field_unit_booking },
         { value: 'person', label: copy.service_field_unit_person },
         { value: 'item', label: copy.service_field_unit_item },
         { value: 'hour', label: copy.service_field_unit_hour },
@@ -606,7 +606,6 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                                 pricing_options: formData.pricing_options.map((pricingOption) => ({
                                     ...pricingOption,
                                     price_in_minor: priceAmountToMinor(pricingOption.price_in_minor),
-                                    pricing_unit: pricingOption.pricing_mode === 'variable' ? pricingOption.pricing_unit : '',
                                 })),
                             }));
 
@@ -717,12 +716,11 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                                 <Field>
                                     <FieldLabel>{copy.service_pricing_label}</FieldLabel>
 
-                                    <div className="grid grid-cols-[minmax(0,1fr)_8rem_8rem] gap-2">
+                                    <div className="grid grid-cols-[minmax(0,1fr)_8rem] gap-2">
                                         <FieldLabel>
                                             {copy.service_field_price_in_minor}
                                         </FieldLabel>
 
-                                        <FieldLabel>{copy.service_field_pricing_mode}</FieldLabel>
                                         <FieldLabel>{copy.service_field_unit}</FieldLabel>
                                     </div>
 
@@ -730,7 +728,7 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                                         {editForm.data.pricing_options.map((pricingOption, index) => (
                                             <div
                                                 key={pricingOption.id ?? `new-${index}`}
-                                                className="grid grid-cols-[minmax(0,1fr)_8rem_8rem] gap-2"
+                                                className="grid grid-cols-[minmax(0,1fr)_8rem] gap-2"
                                             >
                                                 <Field data-invalid={editFormErrors[`pricing_options.${index}.price_in_minor`] ? true : undefined}>
                                                     <InputGroup>
@@ -760,38 +758,9 @@ const OverviewPage: OverviewPageComponent = function OverviewPage({
                                                     <InputError message={editFormErrors[`pricing_options.${index}.price_in_minor`]} />
                                                 </Field>
 
-                                                <Field data-invalid={editFormErrors[`pricing_options.${index}.pricing_mode`] ? true : undefined}>
-                                                    <Select
-                                                        value={pricingOption.pricing_mode}
-                                                        onValueChange={(value) => {
-                                                            const pricingOptions = editForm.data.pricing_options.map((option, optionIndex) =>
-                                                                optionIndex === index
-                                                                    ? { ...option, pricing_mode: value as EditPricingOption['pricing_mode'], pricing_unit: value === 'variable' ? option.pricing_unit : '' }
-                                                                    : option,
-                                                            );
-
-                                                            editForm.setData('pricing_options', pricingOptions);
-                                                        }}
-                                                    >
-                                                        <SelectTrigger
-                                                            aria-invalid={Boolean(editFormErrors[`pricing_options.${index}.pricing_mode`])}
-                                                        >
-                                                            <SelectValue placeholder={copy.service_field_pricing_mode_placeholder} />
-                                                        </SelectTrigger>
-                                                        <SelectContent position="popper">
-                                                            <SelectGroup>
-                                                                <SelectItem value="fixed">{copy.service_field_pricing_mode_fixed}</SelectItem>
-                                                                <SelectItem value="variable">{copy.service_field_pricing_mode_variable}</SelectItem>
-                                                            </SelectGroup>
-                                                        </SelectContent>
-                                                    </Select>
-                                                    <InputError message={editFormErrors[`pricing_options.${index}.pricing_mode`]} />
-                                                </Field>
-
                                                 <Field data-invalid={editFormErrors[`pricing_options.${index}.pricing_unit`] ? true : undefined}>
                                                     <Select
                                                         value={pricingOption.pricing_unit}
-                                                        disabled={pricingOption.pricing_mode !== 'variable'}
                                                         onValueChange={(value) => {
                                                             const pricingOptions = editForm.data.pricing_options.map((option, optionIndex) =>
                                                                 optionIndex === index

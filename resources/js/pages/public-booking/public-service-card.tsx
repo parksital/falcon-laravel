@@ -20,8 +20,7 @@ export type PublicServiceCardService = {
     pricing_options: {
         price_in_minor: number;
         formatted_price: string;
-        pricing_mode: 'fixed' | 'variable';
-        pricing_unit_label: string | null;
+        pricing_unit_label: string;
     }[];
     media: {
         id: number;
@@ -50,9 +49,7 @@ function servicePriceSummary(service: PublicServiceCardService, copy: PublicServ
 
     if (! lowestPrice) return null;
 
-    const unit = lowestPrice.pricing_mode === 'variable' && lowestPrice.pricing_unit_label
-        ? ` ${interpolate(copy.per_unit, { unit: lowestPrice.pricing_unit_label })}`
-        : '';
+    const unit = ` ${interpolate(copy.per_unit, { unit: lowestPrice.pricing_unit_label.toLocaleLowerCase() })}`;
 
     if (presentation === 'mobile' && service.pricing_options.length === 1) {
         return {

@@ -82,7 +82,7 @@ export default function PublicServicePage({ copy, vendor, service, seo }: Public
                                         key={pricingOption.id}
                                         title={pricingOption.name}
                                         formattedPrice={formattedPricingOptionPrice(pricingOption)}
-                                        priceLabel={pricingOption.pricing_mode === 'variable' ? pricingOption.pricing_unit_label : pricingOption.pricing_mode_label}
+                                        priceLabel={pricingOption.pricing_unit_label}
                                         description={pricingOption.description}
                                         features={pricingOption.features.map((feature) => ({
                                             key: feature.id,
@@ -97,7 +97,7 @@ export default function PublicServicePage({ copy, vendor, service, seo }: Public
                         <ServicePricingCard
                             title={service.name}
                             formattedPrice={formattedServicePrice(service)}
-                            priceLabel={service.pricing_mode === 'variable' ? service.pricing_unit_label : service.pricing_mode_label}
+                            priceLabel={service.pricing_unit_label}
                         />
                         ) : null}
                 </section>

@@ -46,7 +46,6 @@ import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useFileUpload } from '@/hooks/use-file-upload';
 import AppLayout from '@/layouts/app-layout';
 import { overview } from '@/routes';
@@ -56,15 +55,13 @@ import { Head, Link, setLayoutProps, useForm } from '@inertiajs/react';
 import { ArrowLeftIcon, ArrowRightIcon, CheckIcon, CurrencyEurIcon, FileDashedIcon, GlobeSimpleIcon, ImageIcon, ImagesSquareIcon, PlusIcon, TrashIcon, WarningCircleIcon, XIcon } from '@phosphor-icons/react';
 import { type ReactNode, useState } from 'react';
 
-type PricingMode = 'fixed' | 'variable';
-type PricingUnit = '' | 'person' | 'item' | 'hour';
+type PricingUnit = 'booking' | 'person' | 'item' | 'hour';
 type CreateServiceStep = 'service' | 'pricing' | 'photos' | 'review';
 
 interface PricingOption {
     name: string;
     description: string;
     price_in_minor: string;
-    pricing_mode: PricingMode;
     pricing_unit: PricingUnit;
     features: PriceFeature[];
 }
@@ -115,8 +112,7 @@ function emptyPrice(): PricingOption {
         name: '',
         description: '',
         price_in_minor: '',
-        pricing_mode: 'fixed',
-        pricing_unit: '',
+        pricing_unit: 'booking',
         features: [],
     };
 }
@@ -151,6 +147,7 @@ const CreateServicePage: CreateServicePageComponent = function CreateServicePage
 }: CreateServicePageProps) {
     const steps: CreateServiceStep[] = ['service', 'pricing', 'photos', 'review'];
     const pricingUnits: PricingUnitOption[] = [
+        { value: 'booking', label: copy.pricing_unit_booking_label, descriptionUnit: copy.pricing_unit_booking_description_unit, priceUnit: copy.pricing_unit_booking_price_unit },
         { value: 'person', label: copy.pricing_unit_person_label, descriptionUnit: copy.pricing_unit_person_description_unit, priceUnit: copy.pricing_unit_person_price_unit },
         { value: 'item', label: copy.pricing_unit_item_label, descriptionUnit: copy.pricing_unit_item_description_unit, priceUnit: copy.pricing_unit_item_price_unit },
         { value: 'hour', label: copy.pricing_unit_hour_label, descriptionUnit: copy.pricing_unit_hour_description_unit, priceUnit: copy.pricing_unit_hour_price_unit },
@@ -211,9 +208,7 @@ const CreateServicePage: CreateServicePageComponent = function CreateServicePage
     const serviceStepComplete = Boolean(data.category && data.name.trim() && (data.category !== 'other' || data.custom_category.trim()));
     const pricingStepComplete = Boolean(
         data.pricing_options.length > 0
-        && data.pricing_options.every((pricingOption) => pricingOption.price_in_minor && pricingOption.name.trim() && (
-            pricingOption.pricing_mode === 'fixed' || pricingOption.pricing_unit
-        )),
+        && data.pricing_options.every((pricingOption) => pricingOption.price_in_minor && pricingOption.name.trim()),
     );
     const photosStepComplete = files.length > 0 && ! errors.media && mediaUploadErrors.length === 0;
     const serviceStepHasErrors = Boolean(errors.category || errors.custom_category || errors.name || errors.description);
@@ -274,14 +269,10 @@ const CreateServicePage: CreateServicePageComponent = function CreateServicePage
     }
 
     function pricingOptionPriceLabel(pricingOption: PricingOption) {
-        if (pricingOption.pricing_mode === 'fixed') {
-            return copy.pricing_mode_fixed_label;
-        }
-
         const pricingUnit = pricingUnits.find((unit) => unit.value === pricingOption.pricing_unit);
 
         return pricingUnit
-            ? copy.per_unit.replace(':unit', pricingUnit.label)
+            ? copy.per_unit.replace(':unit', pricingUnit.priceUnit)
             : copy.review_empty_value;
     }
 
@@ -336,8 +327,7 @@ const CreateServicePage: CreateServicePageComponent = function CreateServicePage
                     name: pricingOption.name || copy.price_legend.replace(':number', `${index + 1}`),
                     description: pricingOption.description,
                     price_in_minor: priceAmountToMinor(pricingOption.price_in_minor),
-                    pricing_mode: pricingOption.pricing_mode,
-                    pricing_unit: pricingOption.pricing_mode === 'variable' ? pricingOption.pricing_unit : '',
+                    pricing_unit: pricingOption.pricing_unit,
                     features: pricingOption.features
                         .filter((feature) => feature.is_included)
                         .map((feature) => ({
@@ -562,63 +552,31 @@ const CreateServicePage: CreateServicePageComponent = function CreateServicePage
                                                             <FieldError>{formErrors[`pricing_options.${index}.name`]}</FieldError>
                                                         </Field>
 
-                                                        <Field data-invalid={formErrors[`pricing_options.${index}.pricing_mode`] ? true : undefined}>
-                                                            <FieldLabel>{copy.pricing_mode_label}</FieldLabel>
-                                                            <FieldDescription>{copy.pricing_mode_description}</FieldDescription>
-                                                            <ToggleGroup
-                                                                type="single"
-                                                                variant="outline"
-                                                                className="w-full"
-                                                                value={pricingOption.pricing_mode}
-                                                                onValueChange={(value) => {
-                                                                    if (! value) {
-                                                                        return;
-                                                                    }
-
-                                                                    changePricingOption(index, {
-                                                                        ...pricingOption,
-                                                                        pricing_mode: value as PricingMode,
-                                                                        pricing_unit: value === 'variable' ? pricingOption.pricing_unit : '',
-                                                                    });
-                                                                }}
+                                                        <Field data-invalid={formErrors[`pricing_options.${index}.pricing_unit`] ? true : undefined}>
+                                                            <FieldLabel>{copy.pricing_unit_label}</FieldLabel>
+                                                            <Select
+                                                                value={pricingOption.pricing_unit}
+                                                                onValueChange={(value) => changePricingOption(index, {
+                                                                    ...pricingOption,
+                                                                    pricing_unit: value as PricingUnit,
+                                                                })}
                                                             >
-                                                                <ToggleGroupItem value="fixed" className="flex-1">
-                                                                    {copy.pricing_mode_fixed_label}
-                                                                </ToggleGroupItem>
-                                                                <ToggleGroupItem value="variable" className="flex-1">
-                                                                    {copy.pricing_mode_variable_label}
-                                                                </ToggleGroupItem>
-                                                            </ToggleGroup>
-                                                            <FieldError>{formErrors[`pricing_options.${index}.pricing_mode`]}</FieldError>
+                                                                <SelectTrigger className="w-full" aria-invalid={Boolean(formErrors[`pricing_options.${index}.pricing_unit`])}>
+                                                                    <SelectValue placeholder={copy.pricing_unit_placeholder} />
+                                                                </SelectTrigger>
+                                                                <SelectContent position="popper">
+                                                                    <SelectGroup>
+                                                                        {pricingUnits.map((pricingUnit) => (
+                                                                            <SelectItem key={pricingUnit.value} value={pricingUnit.value}>
+                                                                                {pricingUnit.label}
+                                                                            </SelectItem>
+                                                                        ))}
+                                                                    </SelectGroup>
+                                                                </SelectContent>
+                                                            </Select>
+
+                                                            <FieldError>{formErrors[`pricing_options.${index}.pricing_unit`]}</FieldError>
                                                         </Field>
-
-                                                        {pricingOption.pricing_mode === 'variable' ? (
-                                                            <Field data-invalid={formErrors[`pricing_options.${index}.pricing_unit`] ? true : undefined}>
-                                                                <FieldLabel>{copy.pricing_unit_label}</FieldLabel>
-                                                                <Select
-                                                                    value={pricingOption.pricing_unit}
-                                                                    onValueChange={(value) => changePricingOption(index, {
-                                                                        ...pricingOption,
-                                                                        pricing_unit: value as PricingUnit,
-                                                                    })}
-                                                                >
-                                                                    <SelectTrigger className="w-full" aria-invalid={Boolean(formErrors[`pricing_options.${index}.pricing_unit`])}>
-                                                                        <SelectValue placeholder={copy.pricing_unit_placeholder} />
-                                                                    </SelectTrigger>
-                                                                    <SelectContent position="popper">
-                                                                        <SelectGroup>
-                                                                            {pricingUnits.map((pricingUnit) => (
-                                                                                <SelectItem key={pricingUnit.value} value={pricingUnit.value}>
-                                                                                    {pricingUnit.label}
-                                                                                </SelectItem>
-                                                                            ))}
-                                                                        </SelectGroup>
-                                                                    </SelectContent>
-                                                                </Select>
-
-                                                                <FieldError>{formErrors[`pricing_options.${index}.pricing_unit`]}</FieldError>
-                                                            </Field>
-                                                        ) : null}
 
                                                         <Field data-invalid={formErrors[`pricing_options.${index}.price_in_minor`] ? true : undefined}>
                                                             <FieldLabel htmlFor={`price-amount-${index}`}>{copy.price_amount_label}</FieldLabel>
@@ -636,9 +594,7 @@ const CreateServicePage: CreateServicePageComponent = function CreateServicePage
                                                                     aria-invalid={Boolean(formErrors[`pricing_options.${index}.price_in_minor`])}
                                                                 />
                                                                 <InputGroupAddon align="inline-end">
-                                                                    {pricingOption.pricing_mode === 'variable' && pricingOption.pricing_unit
-                                                                        ? `${formatPriceAmountDescription(pricingOption.price_in_minor, locale)} / ${pricingUnits.find((pricingUnit) => pricingUnit.value === pricingOption.pricing_unit)?.priceUnit || ''}`
-                                                                        : formatPriceAmountDescription(pricingOption.price_in_minor, locale)}
+                                                                    {`${formatPriceAmountDescription(pricingOption.price_in_minor, locale)} / ${pricingUnits.find((pricingUnit) => pricingUnit.value === pricingOption.pricing_unit)?.priceUnit || ''}`}
                                                                 </InputGroupAddon>
                                                             </InputGroup>
                                                             <FieldError>{formErrors[`pricing_options.${index}.price_in_minor`]}</FieldError>
