@@ -11,6 +11,7 @@ return [
     'pricing_heading' => 'Prijzen',
     'add_ons_heading' => "Optionele extra's",
     'included_label' => 'Inbegrepen',
+    'options_count_one' => ':count optie',
     'options_count' => ':count opties',
     'starting_from' => 'Vanaf',
     'prices_count' => ':count prijzen',

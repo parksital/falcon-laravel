@@ -24,7 +24,7 @@ export default function PublicServicePage({ copy, vendor, service, categorySlug,
     const lowestPricingOption = service.pricing_options.toSorted((first, second) => first.price_in_minor - second.price_in_minor)[0];
     const [serviceByVendorPrefix, serviceByVendorSuffix] = copy.service_by_vendor.split(':vendor');
 
-    const contactCard = <PublicServiceContactCard copy={copy} vendor={vendor} className={isMobile ? undefined : 'sticky top-6 flex-[1_1_320px] self-start'} />;
+    const contactCard = <PublicServiceContactCard copy={copy} vendor={vendor} className={isMobile ? undefined : 'sticky top-22 flex-[1_1_320px] self-start'} />;
 
     return (
         <PublicLayout breadcrumbs={breadcrumbs}>
@@ -34,6 +34,8 @@ export default function PublicServicePage({ copy, vendor, service, categorySlug,
             </Head>
 
             <main className="flex flex-col gap-8 px-4 pt-6 pb-12 sm:px-6 sm:pb-16">
+                {isMobile && service.media.length > 0 ? <div className="-mt-6"><PublicServiceMediaCarousel copy={copy} serviceName={service.name} media={service.media} /></div> : null}
+
                 <header className="flex max-w-180 flex-col gap-2">
                     {!vendor.is_claimed ? <Badge variant="outline" className="self-start">{copy.found_by_huurmaar}</Badge> : null}
                     <h1 className="text-2xl/tight font-semibold tracking-tight text-balance sm:text-[2rem]">{service.name}</h1>
@@ -57,7 +59,7 @@ export default function PublicServicePage({ copy, vendor, service, categorySlug,
 
                 <div className="flex flex-wrap items-start gap-10">
                     <div className="flex min-w-0 flex-[999_1_480px] flex-col gap-12">
-                        {service.media.length > 0 ? <PublicServiceMediaCarousel copy={copy} serviceName={service.name} media={service.media} /> : null}
+                        {!isMobile && service.media.length > 0 ? <PublicServiceMediaCarousel copy={copy} serviceName={service.name} media={service.media} /> : null}
 
                         {service.description ? (
                             <section aria-labelledby="service-details-heading" className="flex flex-col gap-3">
@@ -70,7 +72,7 @@ export default function PublicServicePage({ copy, vendor, service, categorySlug,
                             <section id="prices" aria-labelledby="prices-heading" className="flex flex-col gap-4">
                                 <div className="flex flex-col gap-1">
                                     <h2 id="prices-heading" className="text-lg font-semibold">{copy.pricing_heading}</h2>
-                                    <p className="text-sm text-muted-foreground">{copy.options_count.replace(':count', String(service.pricing_options.length))}</p>
+                                    <p className="text-sm text-muted-foreground">{(service.pricing_options.length === 1 ? copy.options_count_one : copy.options_count).replace(':count', String(service.pricing_options.length))}</p>
                                 </div>
                                 <div className="flex flex-col gap-3">
                                     {service.pricing_options.map((pricingOption) => (
@@ -117,7 +119,7 @@ export default function PublicServicePage({ copy, vendor, service, categorySlug,
             {isMobile && lowestPricingOption ? (
                 <div className="sticky bottom-0 z-10 flex items-center gap-3 border-t bg-background px-4 py-3">
                     <div className="flex min-w-0 flex-1 flex-col text-xs/snug">
-                        <span className="text-muted-foreground">{copy.starting_from}</span>
+                        {service.pricing_options.length > 1 ? <span className="text-muted-foreground">{copy.starting_from}</span> : null}
                         <span className="whitespace-nowrap">
                             <span className="text-sm font-semibold tabular-nums">{lowestPricingOption.formatted_price}</span>{' '}
                             <span className="text-muted-foreground">{copy.per_unit.replace(':unit', lowestPricingOption.pricing_unit_label.toLocaleLowerCase())}</span>

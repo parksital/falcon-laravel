@@ -14,7 +14,7 @@ export function PublicServiceContactCard({ copy, vendor, className }: PublicServ
     const hasContactDetails = Boolean(vendor.contact_email || vendor.contact_phone || vendor.website_url);
 
     return (
-        <section id="contact" aria-labelledby={hasContactDetails ? 'contact-heading' : undefined} aria-label={hasContactDetails ? undefined : vendor.name} className={cn('flex flex-col gap-5 bg-card p-4 text-xs/relaxed text-card-foreground ring-1 ring-foreground/10 sm:p-5', className)}>
+        <section id="contact" aria-labelledby={hasContactDetails ? 'contact-heading' : undefined} aria-label={hasContactDetails ? undefined : vendor.name} className={cn('flex scroll-mt-20 flex-col gap-5 bg-card p-4 text-xs/relaxed text-card-foreground ring-1 ring-foreground/10 sm:p-5', className)}>
             <div className="flex items-center gap-3">
                 <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted text-muted-foreground">
                     {vendor.logo_url ? <img src={vendor.logo_url} alt="" className="size-full object-cover" /> : <StorefrontIcon aria-hidden="true" className="size-[18px]" />}

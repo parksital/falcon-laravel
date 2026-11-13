@@ -11,6 +11,7 @@ return [
     'pricing_heading' => 'Pricing',
     'add_ons_heading' => 'Optional extras',
     'included_label' => 'Included',
+    'options_count_one' => ':count option',
     'options_count' => ':count options',
     'starting_from' => 'From',
     'prices_count' => ':count prices',
