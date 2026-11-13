@@ -18,11 +18,11 @@ test('creates a public service with pricing options and features', function () {
         'name' => 'Fotobooth',
         'category' => 'photobooths',
         'pricing_options' => [
-            ['name' => 'Basic', 'price_in_minor' => 14950, 'pricing_mode' => 'fixed', 'features' => [
+            ['name' => 'Basic', 'price_in_minor' => 14950, 'pricing_unit' => 'booking', 'features' => [
                 ['feature_key' => 'prints', 'value' => 'unlimited'],
                 ['feature_key' => 'attendant', 'is_included' => false],
             ]],
-            ['name' => 'Per hour', 'price_in_minor' => 5000, 'pricing_mode' => 'variable', 'pricing_unit' => 'hour'],
+            ['name' => 'Per hour', 'price_in_minor' => 5000, 'pricing_unit' => 'hour'],
         ],
     ]);
 
@@ -33,7 +33,7 @@ test('creates a public service with pricing options and features', function () {
     expect($service->vendor_id)->toBe($this->vendor->id)
         ->and($service->is_public)->toBeTrue()
         ->and($service->prices->pluck('name')->all())->toBe(['Basic', 'Per hour'])
-        ->and($service->prices[0]->pricing_unit)->toBeNull()
+        ->and($service->prices[0]->pricing_unit)->toBe('booking')
         ->and($service->prices[0]->features->pluck('feature_key')->all())->toBe(['prints', 'attendant'])
         ->and($service->prices[0]->features[1]->is_included)->toBeFalse()
         ->and($service->prices[1]->pricing_unit)->toBe('hour');
@@ -53,16 +53,16 @@ test('refuses unknown vendors', function () {
         ->assertHasErrors(['No vendor has this slug']);
 });
 
-test('refuses feature keys outside the category and variable prices without a unit', function () {
+test('refuses feature keys outside the category and pricing options without a unit', function () {
     IngressServer::actingAs($this->admin)->tool(CreateService::class, [
         'vendor_slug' => 'fotobooth-utrecht',
         'name' => 'Photography',
         'category' => 'photography',
         'pricing_options' => [
-            ['price_in_minor' => 10000, 'pricing_mode' => 'fixed', 'features' => [['feature_key' => 'prints']]],
-            ['price_in_minor' => 5000, 'pricing_mode' => 'variable'],
+            ['price_in_minor' => 10000, 'pricing_unit' => 'booking', 'features' => [['feature_key' => 'prints']]],
+            ['price_in_minor' => 5000],
         ],
-    ])->assertHasErrors(['feature key is not allowed', 'variable price needs a pricing_unit']);
+    ])->assertHasErrors(['feature key is not allowed', 'Every pricing option needs a pricing_unit']);
 
     expect(Service::count())->toBe(0);
 });
