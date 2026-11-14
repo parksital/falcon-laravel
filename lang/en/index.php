@@ -22,7 +22,6 @@ return [
     'per_unit' => 'per :unit',
     'starting_from' => 'From',
     'prices_count' => ':count prices',
-    'view_service' => 'View service',
     'bookable_directly' => 'Book directly',
     'price_not_set' => 'Price not set',
     'unit_not_set' => 'unit',

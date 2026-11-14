@@ -1,6 +1,6 @@
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { type Service } from '@/pages/public-booking/types';
-import { ArrowRightIcon, ImageIcon, MapPinSimpleIcon, SealCheckIcon, StorefrontIcon } from '@phosphor-icons/react';
+import { ImageIcon, MapPinSimpleIcon, SealCheckIcon, StorefrontIcon } from '@phosphor-icons/react';
 
 export type ServiceCardService = Service & { vendor_location: string };
 
@@ -50,11 +50,6 @@ export function ServiceCard({ copy, service }: ServiceCardProps) {
                     {lowestPrice.pricing_unit_label ? <span className="whitespace-nowrap">{copy.per_unit.replace(':unit', lowestPrice.pricing_unit_label.toLocaleLowerCase())}</span> : null}
                 </CardContent>
             ) : null}
-
-            <CardFooter className="justify-between text-muted-foreground">
-                <span>{copy.view_service}</span>
-                <ArrowRightIcon aria-hidden="true" />
-            </CardFooter>
         </Card>
     );
 }
