@@ -85,6 +85,8 @@ export type PublicServicePageProps = {
     copy: Record<string, string>;
     vendor: Vendor;
     service: Service;
+    categorySlug: string;
+    otherServices: (Service & { vendor_location: string })[];
     locale: string;
     seo: {
         title: string;
