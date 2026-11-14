@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Service;
 use App\Models\Vendor;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Number;
 use Inertia\Inertia;
@@ -11,18 +12,11 @@ use Inertia\Response;
 
 class IndexPageController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        return $this->render(null);
-    }
+        $category = collect(config('service_categories'))->search(fn (array $categoryConfig) => $categoryConfig['slug'] === $request->query('category'));
 
-    public function showCategory(string $slug): Response
-    {
-        $category = collect(config('service_categories'))->search(fn (array $categoryConfig) => $categoryConfig['slug'] === $slug);
-
-        abort_if($category === false, 404);
-
-        return $this->render($category);
+        return $this->render($category === false ? null : $category);
     }
 
     private function render(?string $category): Response
@@ -59,7 +53,7 @@ class IndexPageController extends Controller
             ->pluck('aggregate', 'category');
         $copy = __('index');
         $categoryLabel = $category !== null ? $serviceCategoryLabels[$category] : null;
-        $pageUrl = $category !== null ? route('category.show', config("service_categories.{$category}.slug")) : route('home');
+        $pageUrl = $category !== null ? route('home', ['category' => config("service_categories.{$category}.slug")]) : route('home');
         $schemaServices = $publicServices
             ->values()
             ->map(function (Service $service, int $index) use ($serviceCategoryLabels) {
@@ -151,7 +145,7 @@ class IndexPageController extends Controller
                     'value' => $value,
                     'label' => $label,
                     'count' => (int) ($publicServiceCountsByCategory[$value] ?? 0),
-                    'url' => route('category.show', config("service_categories.{$value}.slug")),
+                    'url' => route('home', ['category' => config("service_categories.{$value}.slug")]),
                 ])
                 ->filter(fn (array $categoryCount) => $categoryCount['count'] > 0 || $categoryCount['value'] === $category)
                 ->values()

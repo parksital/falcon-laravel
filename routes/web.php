@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 Route::get('/', [IndexPageController::class, 'index'])->name('home');
-Route::get('/category/{slug}', [IndexPageController::class, 'showCategory'])->name('category.show');
 
 Route::get('/book/{vendorSlug}/services/{servicePublicId}', fn (string $vendorSlug, string $servicePublicId) => redirect()->route(
     'public.booking.service.show',
