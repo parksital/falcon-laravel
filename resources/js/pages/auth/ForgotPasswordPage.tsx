@@ -84,7 +84,7 @@ export default function ForgotPasswordPage({
                         <span>{copy.login_prompt}</span>
                         <Link
                             href={login()}
-                            className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current text-xs"
+                            className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current dark:decoration-neutral-500 text-xs"
                         >
                             {copy.login_link}
                         </Link>

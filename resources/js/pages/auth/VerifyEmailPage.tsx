@@ -35,7 +35,7 @@ export default function VerifyEmailPage({ status }: { status?: string }) {
                                     replace: true,
                                 });
                             }}
-                            className="mx-auto block text-foreground text-sm underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current"
+                            className="mx-auto block text-foreground text-sm underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current dark:decoration-neutral-500"
                         >
                             Log out
                         </button>
