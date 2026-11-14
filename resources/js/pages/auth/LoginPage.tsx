@@ -86,7 +86,7 @@ export default function LoginPage({
                                             {canResetPassword && (
                                                 <Link
                                                     href={request()}
-                                                    className="ml-auto text-foreground text-xs underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current dark:decoration-neutral-500"
+                                                    className="ml-auto text-foreground text-xs underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current"
                                                     tabIndex={5}
                                                 >
                                                     {copy.forgot_password}
@@ -125,7 +125,7 @@ export default function LoginPage({
                                     <Link
                                         href={register()}
                                         tabIndex={5}
-                                        className="text-foreground text-xs underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current dark:decoration-neutral-500"
+                                        className="text-foreground text-xs underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current"
                                     >
                                         {copy.register_link}
                                     </Link>

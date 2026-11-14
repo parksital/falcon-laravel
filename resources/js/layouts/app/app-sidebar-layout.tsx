@@ -104,7 +104,7 @@ export default function AppSidebarLayout({ children }: PropsWithChildren) {
                                         src={auth.user.avatar}
                                         alt={auth.user.name}
                                     />
-                                    <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
+                                    <AvatarFallback className="rounded-lg bg-neutral-200 text-black">
                                         {getInitials(auth.user.name)}
                                     </AvatarFallback>
                                 </Avatar>

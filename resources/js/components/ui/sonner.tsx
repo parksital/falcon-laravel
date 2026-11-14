@@ -1,14 +1,11 @@
-import { useAppearance } from '@/hooks/use-appearance';
 import { CheckCircleIcon, InfoIcon, SpinnerIcon, WarningIcon, XCircleIcon } from '@phosphor-icons/react';
 import { Toaster as Sonner, type ToasterProps } from 'sonner';
 import type { CSSProperties } from 'react';
 
 const Toaster = ({ ...props }: ToasterProps) => {
-    const { appearance } = useAppearance();
-
     return (
         <Sonner
-            theme={appearance}
+            theme="light"
             className="toaster group"
             icons={{
                 success: <CheckCircleIcon className="size-4" />,
