@@ -127,7 +127,7 @@ export default function IndexPage({ services, categories, category_counts, servi
                             ) : (
                                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                                     {categoryGroup.services.map((service) => (
-                                        <Link key={service.id} href={service.url} className="flex flex-col self-start text-left outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                                        <Link key={service.id} href={service.url} className="flex flex-col text-left outline-none focus-visible:ring-2 focus-visible:ring-ring">
                                             <ServiceCard copy={copy} service={service} />
                                         </Link>
                                     ))}
