@@ -14,7 +14,7 @@ export function ServiceCard({ copy, service }: ServiceCardProps) {
 
     return (
         <Card id={`service-${service.public_id}`} className="rounded-none pt-0 transition-shadow hover:ring-foreground/25">
-            <div className="relative flex aspect-[16/9] w-full items-center justify-center overflow-hidden border-b bg-muted text-muted-foreground">
+            <div className="relative flex aspect-square w-full items-center justify-center overflow-hidden border-b bg-muted text-muted-foreground">
                 {service.media[0] ? (
                     <img src={service.media[0].url} alt={service.name} className="size-full object-cover" />
                 ) : (
