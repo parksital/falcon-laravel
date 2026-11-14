@@ -84,7 +84,7 @@ export default function MobileDashboardLayout({ children, breadcrumbs = [] }: Mo
                                     {layoutCopy.navigation_menu}
                                 </SheetTitle>
                                 <SheetHeader className="flex justify-start text-left">
-                                    <AppLogoIcon className="h-6 w-6 fill-current text-black" />
+                                    <AppLogoIcon className="h-6 w-6 fill-current text-black dark:text-white" />
                                 </SheetHeader>
                                 <nav className="flex flex-col gap-1 px-4 text-sm font-medium text-sidebar-foreground">
                                     <Link
@@ -110,7 +110,7 @@ export default function MobileDashboardLayout({ children, breadcrumbs = [] }: Mo
                         </Sheet>
 
                         <Link href={overview.url()} className="flex min-w-0 items-center gap-2">
-                            <AppLogoIcon className="size-6 shrink-0 fill-current text-black" />
+                            <AppLogoIcon className="size-6 shrink-0 fill-current text-black dark:text-white" />
                             <span className="truncate text-base font-semibold text-foreground">
                                 {breadcrumbs.at(-1)?.title || name}
                             </span>
@@ -122,7 +122,7 @@ export default function MobileDashboardLayout({ children, breadcrumbs = [] }: Mo
                             <div className="flex flex-row items-center">
                                 <Avatar>
                                     <AvatarImage src={auth.user.avatar} alt={auth.user.name} />
-                                    <AvatarFallback className="bg-neutral-200 text-black">
+                                    <AvatarFallback className="bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
                                         {getInitials(auth.user.name)}
                                     </AvatarFallback>
                                 </Avatar>
