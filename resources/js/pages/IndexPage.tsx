@@ -75,12 +75,12 @@ export default function IndexPage({ services, categories, category_counts, servi
 
                     <div className="sticky top-[calc(3.5rem+1px)] z-[5] -mx-4 -mt-4 border-b bg-background sm:static sm:mx-0 sm:-mt-6 sm:border-0 sm:bg-transparent">
                         <nav aria-label={copy.categories_heading} className="flex gap-2 overflow-x-auto px-4 py-2 whitespace-nowrap [scrollbar-width:none] [mask-image:linear-gradient(to_right,#000_calc(100%-40px),transparent)] sm:flex-wrap sm:justify-center sm:overflow-visible sm:p-0 sm:[mask-image:none]">
-                            <Link href={home()} aria-current={selectedCategory === null ? 'page' : undefined} className={cn(toggleVariants({ variant: 'outline', size: isMobile ? 'lg' : 'default' }), 'shrink-0 gap-1.5 aria-[current=page]:bg-muted')}>
+                            <Link href={home()} preserveState aria-current={selectedCategory === null ? 'page' : undefined} className={cn(toggleVariants({ variant: 'outline', size: isMobile ? 'lg' : 'default' }), 'shrink-0 gap-1.5 aria-[current=page]:bg-muted')}>
                                 {copy.category_all}
                                 <span className="text-muted-foreground tabular-nums">{service_count}</span>
                             </Link>
                             {category_counts.map((category) => (
-                                <Link key={category.value} href={category.url} aria-current={category.value === selectedCategory ? 'page' : undefined} className={cn(toggleVariants({ variant: 'outline', size: isMobile ? 'lg' : 'default' }), 'shrink-0 gap-1.5 aria-[current=page]:bg-muted')}>
+                                <Link key={category.value} href={category.url} preserveState aria-current={category.value === selectedCategory ? 'page' : undefined} className={cn(toggleVariants({ variant: 'outline', size: isMobile ? 'lg' : 'default' }), 'shrink-0 gap-1.5 aria-[current=page]:bg-muted')}>
                                     {category.label}
                                     <span className="text-muted-foreground tabular-nums">{category.count}</span>
                                 </Link>
