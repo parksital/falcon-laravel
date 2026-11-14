@@ -72,7 +72,7 @@ export default function DesktopDashboardLayout({ children, breadcrumbs = [] }: D
                 <div className="container mx-auto flex flex-col px-4">
                     <div className="flex h-16 items-center gap-6">
                         <Link href={overview.url()} className="flex items-center gap-2">
-                            <AppLogoIcon className="size-6 fill-current text-black dark:text-white" />
+                            <AppLogoIcon className="size-6 fill-current text-black" />
                             <span className="font-semibold text-foreground text-xs">
                                 {name}
                             </span>
@@ -105,7 +105,7 @@ export default function DesktopDashboardLayout({ children, breadcrumbs = [] }: D
                                 <div className="flex flex-row items-center">
                                     <Avatar>
                                         <AvatarImage src={auth.user.avatar} alt={auth.user.name} />
-                                        <AvatarFallback className="bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
+                                        <AvatarFallback className="bg-neutral-200 text-black">
                                             {getInitials(auth.user.name)}
                                         </AvatarFallback>
                                     </Avatar>

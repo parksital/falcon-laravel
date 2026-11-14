@@ -9,6 +9,8 @@
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 
+/* The app is light-only. Tie `dark` to a class that is never set so library
+   `@variant dark` rules can't follow the OS preference. */
 @custom-variant dark (&:is(.dark *));
 
 @theme {
@@ -103,41 +105,6 @@
     --gutter: color-mix(in oklch, var(--muted) 40%, var(--background));
 }
 
-.dark {
-    --background: oklch(0.265 0.012 255);
-    --foreground: oklch(0.94 0.005 255);
-    --card: oklch(0.30 0.012 255);
-    --card-foreground: oklch(0.94 0.005 255);
-    --popover: oklch(0.33 0.012 255);
-    --popover-foreground: oklch(0.94 0.005 255);
-    --primary: oklch(0.70 0.165 44);
-    --primary-foreground: oklch(0.22 0.02 40);
-    --secondary: oklch(0.35 0.012 255);
-    --secondary-foreground: oklch(0.90 0.006 255);
-    --muted: oklch(0.39 0.012 255);
-    --muted-foreground: oklch(0.78 0.01 255);
-    --accent: oklch(0.36 0.016 255);
-    --accent-foreground: oklch(0.83 0.095 55);
-    --destructive: oklch(0.77 0.15 20);
-    --destructive-foreground: oklch(0.22 0.02 30);
-    --border: oklch(0.39 0.012 255);
-    --input: oklch(0.45 0.012 255);
-    --ring: oklch(0.70 0.165 44);
-    --chart-1: oklch(0.70 0.165 44);
-    --chart-2: oklch(0.84 0.1 60);
-    --chart-3: oklch(0.62 0.15 38);
-    --chart-4: oklch(0.72 0.06 240);
-    --chart-5: oklch(0.88 0.05 70);
-    --sidebar: oklch(0.245 0.012 255);
-    --sidebar-foreground: oklch(0.94 0.005 255);
-    --sidebar-primary: oklch(0.70 0.165 44);
-    --sidebar-primary-foreground: oklch(0.22 0.02 40);
-    --sidebar-accent: oklch(0.36 0.016 255);
-    --sidebar-accent-foreground: oklch(0.94 0.005 255);
-    --sidebar-border: oklch(0.39 0.012 255);
-    --sidebar-ring: oklch(0.70 0.165 44);
-    --gutter: var(--sidebar);
-}
 
 @layer base {
     * {
@@ -153,10 +120,6 @@
     caret-color: var(--primary);
     scrollbar-color: var(--border) transparent;
     color-scheme: light;
-    }
-
-    .dark {
-        color-scheme: dark;
     }
 
     ::selection {

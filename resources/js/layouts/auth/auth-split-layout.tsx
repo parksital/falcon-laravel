@@ -55,7 +55,7 @@ export default function AuthSplitLayout({ children }: PropsWithChildren) {
                 </DropdownMenu>
             </div>
 
-            <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">
+            <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex">
                 <div className="absolute inset-0 bg-zinc-900" />
                 <Link
                     href={home()}

@@ -114,7 +114,7 @@ function PublicDesktopHeader({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbIte
         <header className="sticky top-0 z-10">
             <div className="mx-auto flex h-16 w-full max-w-5xl items-center gap-3 border-b bg-background px-4 sm:gap-4 sm:px-6 lg:border-x">
                 <Link href={home()} className="flex min-w-0 items-center gap-2 font-heading text-sm font-semibold">
-                    <AppLogoIcon className="size-6 shrink-0 fill-current text-black dark:text-white" />
+                    <AppLogoIcon className="size-6 shrink-0 fill-current text-black" />
                     <span className="truncate">{layoutCopy.app_name}</span>
                 </Link>
 
@@ -144,7 +144,7 @@ function PublicMobileHeader() {
         <header className="sticky top-0 z-10 border-b bg-background">
             <div className="flex h-14 items-center justify-between gap-3 px-4">
                 <Link href={home()} className="flex min-w-0 items-center gap-2 font-heading text-sm font-semibold">
-                    <AppLogoIcon className="size-6 shrink-0 fill-current text-black dark:text-white" />
+                    <AppLogoIcon className="size-6 shrink-0 fill-current text-black" />
                     <span className="truncate">{layoutCopy.app_name}</span>
                 </Link>
 
@@ -161,7 +161,7 @@ function PublicMobileHeader() {
                         </SheetTitle>
                         <SheetHeader className="text-left">
                             <Link href={home()} className="flex min-w-0 items-center gap-2 font-heading text-sm font-semibold">
-                                <AppLogoIcon className="size-6 shrink-0 fill-current text-black dark:text-white" />
+                                <AppLogoIcon className="size-6 shrink-0 fill-current text-black" />
                                 <span className="truncate">{layoutCopy.app_name}</span>
                             </Link>
                         </SheetHeader>
