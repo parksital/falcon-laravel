@@ -43,7 +43,7 @@ export function ServiceCard({ copy, service }: ServiceCardProps) {
             </CardHeader>
 
             {lowestPrice ? (
-                <CardContent className="flex flex-wrap items-baseline gap-x-1 text-muted-foreground">
+                <CardContent className="mt-auto flex flex-wrap items-baseline gap-x-1 text-muted-foreground">
                     <span className="text-sm font-semibold whitespace-nowrap text-card-foreground tabular-nums">
                         {service.pricing_options.length > 1 ? `${copy.starting_from} ${lowestPrice.formatted_price}` : lowestPrice.formatted_price}
                     </span>
